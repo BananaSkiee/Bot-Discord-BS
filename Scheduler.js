@@ -1,4 +1,3 @@
-const cron = require("node-cron");
 const config = require("./config");
 
 const greetings = {
@@ -6,63 +5,55 @@ const greetings = {
     "☀️ Selamat pagi semuanya! Jangan lupa sarapan ya!",
     "Pagi! Semoga harimu cerah seperti hatimu 😄",
     "Selamat pagi! Udah ngopi belum?",
-    "Pagi! Hari ini semoga menyenangkan~",
     "Bangun bangun! Semangat ya hari ini!"
   ],
   afternoon: [
     "🌤️ Siang! Jangan lupa makan siang~",
     "Siang semuanya, semangat terus ya!",
-    "Siang yang panas cocok buat tidur siang... tapi kerja dulu 😅",
-    "Semangat terus meski siang ngantuk 🌞",
-    "Kalian lagi ngapain di siang hari gini?"
+    "Semangat terus meski siang ngantuk 🌞"
   ],
   night: [
     "🌙 Malam! Waktunya istirahat, jangan begadang~",
     "Selamat malam semua! Semoga mimpi indah ya~",
-    "Malam! Jangan lupa cuci kaki sebelum tidur 😴",
-    "Good night! Sampai ketemu besok~",
-    "Udah makan malam belum? 🍽️"
+    "Good night! Sampai ketemu besok~"
   ],
   randomQuestions: [
     "Lagi ngapain sekarang?",
     "Ada cerita seru hari ini?",
-    "Kalo boleh milih, kamu pengen liburan ke mana?",
-    "Lagu yang kamu putar terus minggu ini apa?",
-    "Apa makanan favorit kamu?",
-    "Pernah nggak sih ngerasa gabut kayak sekarang?",
+    "Lagu favorit minggu ini apa?",
+    "Pernah gabut kayak sekarang?",
     "Ada yang mau ngobrol?"
   ]
 };
 
+function getHours() {
+  return new Date().getHours();
+}
+
+function getRandom(arr) {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+
 module.exports = (client) => {
-  const channelId = config.logChannelId; // channel buat kirim chat otomatis
-  const sendMessage = (messages) => {
-    const channel = client.channels.cache.get(channelId);
-    if (channel && channel.isTextBased()) {
-      const msg = messages[Math.floor(Math.random() * messages.length)];
-      channel.send(msg).catch(console.error);
+  const channel = client.channels.cache.get(config.logChannelId);
+  if (!channel || !channel.isTextBased()) return;
+
+  setInterval(() => {
+    const hour = getHours();
+    let message;
+
+    if (hour >= 6 && hour < 10) {
+      message = getRandom(greetings.morning);
+    } else if (hour >= 11 && hour < 15) {
+      message = getRandom(greetings.afternoon);
+    } else if (hour >= 20 && hour <= 23) {
+      message = getRandom(greetings.night);
+    } else if (hour % 4 === 0 && Math.random() < 0.5) {
+      message = getRandom(greetings.randomQuestions);
     }
-  };
 
-  // Jam 7 pagi
-  cron.schedule("0 7 * * *", () => {
-    sendMessage(greetings.morning);
-  });
-
-  // Jam 12 siang
-  cron.schedule("0 12 * * *", () => {
-    sendMessage(greetings.afternoon);
-  });
-
-  // Jam 9 malam
-  cron.schedule("0 21 * * *", () => {
-    sendMessage(greetings.night);
-  });
-
-  // Tiap 4 jam: pertanyaan acak (50% kemungkinan)
-  cron.schedule("0 */4 * * *", () => {
-    if (Math.random() < 0.5) {
-      sendMessage(greetings.randomQuestions);
+    if (message) {
+      channel.send(message).catch(console.error);
     }
-  });
+  }, 1000 * 60 * 60); // setiap 1 jam dicek
 };
