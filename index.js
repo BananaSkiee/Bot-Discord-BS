@@ -2,7 +2,7 @@ const { Client, GatewayIntentBits } = require("discord.js");
 const fs = require("fs");
 const express = require("express");
 const config = require("./config");
-const scheduler = require("./scheduler");
+const scheduler = require("./scheduler"); // <-- Auto chat tiap jam
 
 const client = new Client({
   intents: [
@@ -14,14 +14,14 @@ const client = new Client({
   ],
 });
 
-// Keep-alive server (Railway)
+// Keep-alive server (buat Railway)
 const app = express();
 app.get("/", (_, res) => res.send("Bot Akira aktif"));
 app.listen(process.env.PORT || 3000, () => {
   console.log("🌐 Web server hidup");
 });
 
-// Load event handler
+// Load event handler (dari folder /events)
 fs.readdirSync("./events").forEach((file) => {
   const event = require(`./events/${file}`);
   if (event.once) {
@@ -31,12 +31,13 @@ fs.readdirSync("./events").forEach((file) => {
   }
 });
 
-// Pasang scheduler saat bot ready
+// Jalankan scheduler saat bot siap
 client.once("ready", () => {
-  scheduler(client);
+  console.log(`🤖 Bot siap sebagai ${client.user.tag}`);
+  scheduler(client); // ← auto chat mulai jalan
 });
 
-// Handle global error
+// Handle error global
 process.on("unhandledRejection", (err) => {
   console.error("💥 Unhandled Error:", err);
 });
