@@ -1,5 +1,4 @@
 module.exports = {
   token: process.env.TOKEN,
-  voiceChannelId: "1366854862608007329",
-  prefix: "!"
+  voiceChannelId: "1366854862608007329", // Ganti ke channel voice lo!
 };
