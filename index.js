@@ -1,4 +1,4 @@
-// index.js — Bot Akira dengan fitur online member
+// index.js - Akira Bot fitur auto update online member voice channel
 
 const express = require("express");
 const { Client, GatewayIntentBits } = require("discord.js");
@@ -16,71 +16,72 @@ const bot = new Client({
   ]
 });
 
-async function updateVoice(guild) {
-  if (!guild) throw "Guild tidak ditemukan";
-  const ch = guild.channels.cache.get(VOICE_CHANNEL_ID);
-  if (!ch?.isVoiceBased()) throw "Channel voice tidak valid";
+// Web server Railway
+const app = express();
+app.get("/", (_, res) => res.send("Akira aktif!"));
+app.listen(process.env.PORT || 3000, () =>
+  console.log("🌐 Web server aktif")
+);
 
-  await guild.members.fetch({ withPresences: true });  // penting agar presence tersedia 6
-  const count = guild.members.cache.filter(m =>
-    ["online","idle","dnd"].includes(m.presence?.status)
+// Fungsi update nama voice channel
+async function updateVoice(guild) {
+  if (!guild) return;
+  const channel = guild.channels.cache.get(VOICE_CHANNEL_ID);
+  if (!channel?.isVoiceBased()) return;
+
+  await guild.members.fetch({ withPresences: true });
+
+  const count = guild.members.cache.filter(
+    m => ["online", "idle", "dnd"].includes(m.presence?.status)
   ).size;
 
-  await ch.setName(`「 Online: ${count} 」`);
-  console.log(`✅ Channel rename → Online: ${count}`);
+  try {
+    await channel.setName(`「 Online: ${count} 」`);
+    console.log(`✅ Channel rename → Online: ${count}`);
+  } catch (err) {
+    console.error("❌ Gagal rename channel:", err);
+  }
 }
 
-const app = express();
-app.get("/", (_req, res) => res.send("Bot Akira aktif!"));
-app.listen(process.env.PORT || 3000, () => console.log("🌐 Server alive"));
-
+// Saat bot online
 bot.on("ready", () => {
-  console.log(`🤖 Bot siap sebagai ${bot.user.tag}`);
-  updateVoice(bot.guilds.cache.first()).catch(console.error);
+  console.log(`🤖 Bot login sebagai ${bot.user.tag}`);
+  const guild = bot.guilds.cache.first();
+  updateVoice(guild);
 });
 
+// Perintah Discord
 bot.on("messageCreate", async msg => {
   if (msg.author.bot) return;
 
   if (msg.content === "!ping") {
-    console.log("DEBUG: ping");
     return msg.reply("Pong! Aku online 😎");
   }
 
   if (msg.content === "!online") {
-    console.log("DEBUG: online command");
     await msg.guild.members.fetch({ withPresences: true });
-    const count = msg.guild.members.cache.filter(m =>
-      ["online","idle","dnd"].includes(m.presence?.status)
+    const count = msg.guild.members.cache.filter(
+      m => ["online", "idle", "dnd"].includes(m.presence?.status)
     ).size;
-    console.log("DEBUG: online count =", count);
-    return msg.reply(`🟢 Ada ${count} member aktif (online/idle/dnd).`);
+    return msg.reply(`🟢 ${count} member sedang aktif (online/idle/dnd).`);
   }
 
   if (msg.content === "!sync") {
-    console.log("DEBUG: sync command");
-    try {
-      await msg.guild.members.fetch({ withPresences: true });
-      await updateVoice(msg.guild);
-      console.log("DEBUG: updateVoice done");
-      return msg.reply("✅ Voice channel diperbarui!");
-    } catch (e) {
-      console.error("⚠️ Error di !sync:", e);
-      return msg.reply("❌ Gagal memperbarui voice channel, cek log.");
-    }
+    await msg.guild.members.fetch({ withPresences: true });
+    await updateVoice(msg.guild);
+    return msg.reply("✅ Voice channel diperbarui!");
   }
 });
 
-bot.on("voiceStateUpdate", (o, n) => {
-  if (o.channelId === VOICE_CHANNEL_ID || n.channelId === VOICE_CHANNEL_ID) {
-    updateVoice(n.guild).catch(console.error);
-  }
+// ⏱️ Update otomatis saat member online/offline
+bot.on("presenceUpdate", async (_oldPresence, newPresence) => {
+  if (!newPresence.guild) return;
+  await updateVoice(newPresence.guild);
 });
 
-bot.on("presenceUpdate", (_oldP, newP) => {
-  if (newP.guild) {
-    updateVoice(newP.guild).catch(console.error);
-  }
+// Juga update saat member join/leave voice channel
+bot.on("voiceStateUpdate", (_oldState, newState) => {
+  updateVoice(newState.guild);
 });
 
 bot.login(process.env.TOKEN);
