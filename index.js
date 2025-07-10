@@ -1,6 +1,7 @@
-// index.js — server + bot login + import fitur online
 const express = require("express");
 const { Client, GatewayIntentBits } = require("discord.js");
+const updateVoiceName = require("./online");  // import fitur
+
 const bot = new Client({
   intents: [
     GatewayIntentBits.Guilds,
@@ -8,15 +9,18 @@ const bot = new Client({
     GatewayIntentBits.MessageContent,
     GatewayIntentBits.GuildMembers,
     GatewayIntentBits.GuildPresences,
-    GatewayIntentBits.GuildVoiceStates
+    GatewayIntentBits.GuildVoiceStates // penting
   ]
 });
 
+// server keep-alive
 const app = express();
-app.get("/", (req, res) => res.send("Bot Akira aktif 24 jam!"));
+app.get("/", (req, res) => res.send("Bot Akira aktif"));
 app.listen(process.env.PORT || 3000, () =>
-  console.log("🌐 Web server aktif"));
+  console.log("🌐 Server alive")
+);
 
-require("./features/online")(bot); // import fitur online
+// jalankan fitur update voice channel
+updateVoiceName(bot);
 
 bot.login(process.env.TOKEN);
