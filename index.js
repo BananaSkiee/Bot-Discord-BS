@@ -1,33 +1,42 @@
 const express = require("express");
-const { Client, GatewayIntentBits } = require("discord.js");
+const { Client, GatewayIntentBits, Collection } = require("discord.js");
 const config = require("./config");
-const updateOnline = require("./online");
+const fs = require("fs");
+const path = require("path");
 
 const bot = new Client({
   intents: [
     GatewayIntentBits.Guilds,
+    GatewayIntentBits.GuildMessages,
+    GatewayIntentBits.MessageContent,
     GatewayIntentBits.GuildMembers,
     GatewayIntentBits.GuildPresences
   ]
 });
 
-// Keep-alive untuk Railway
+// Web server untuk Railway
 const app = express();
-app.get("/", (_, res) => res.send("Bot Akira aktif!"));
-app.listen(process.env.PORT || 3000, () => {
-  console.log("🌐 Web server aktif");
-});
+app.get("/", (_, res) => res.send("Akira Bot aktif"));
+app.listen(process.env.PORT || 3000, () => console.log("🌐 Server hidup"));
 
-bot.on("ready", () => {
-  console.log(`🤖 Login sebagai ${bot.user.tag}`);
-  const guild = bot.guilds.cache.first();
-  if (guild) updateOnline(guild);
-});
+bot.commands = new Collection();
 
-// Update otomatis saat status member berubah
-bot.on("presenceUpdate", (_, newPresence) => {
-  const guild = newPresence.guild;
-  if (guild) updateOnline(guild);
-});
+// Load commands
+const commandFiles = fs.readdirSync("./commands").filter(file => file.endsWith(".js"));
+for (const file of commandFiles) {
+  const command = require(`./commands/${file}`);
+  bot.commands.set(command.name, command);
+}
+
+// Load events
+const eventFiles = fs.readdirSync("./events").filter(file => file.endsWith(".js"));
+for (const file of eventFiles) {
+  const event = require(`./events/${file}`);
+  if (event.once) {
+    bot.once(event.name, (...args) => event.execute(...args, bot));
+  } else {
+    bot.on(event.name, (...args) => event.execute(...args, bot));
+  }
+}
 
 bot.login(config.token);
