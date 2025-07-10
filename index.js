@@ -1,42 +1,31 @@
-const express = require("express");
-const { Client, GatewayIntentBits, Collection } = require("discord.js");
-const config = require("./config");
+const { Client, GatewayIntentBits } = require("discord.js");
 const fs = require("fs");
-const path = require("path");
+const express = require("express");
+const config = require("./config");
 
-const bot = new Client({
+const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
-    GatewayIntentBits.GuildMessages,
-    GatewayIntentBits.MessageContent,
     GatewayIntentBits.GuildMembers,
-    GatewayIntentBits.GuildPresences
+    GatewayIntentBits.GuildPresences,
+    GatewayIntentBits.GuildMessages,
+    GatewayIntentBits.MessageContent
   ]
 });
 
-// Web server untuk Railway
+// Keep-alive (untuk Railway / Replit)
 const app = express();
-app.get("/", (_, res) => res.send("Akira Bot aktif"));
-app.listen(process.env.PORT || 3000, () => console.log("🌐 Server hidup"));
-
-bot.commands = new Collection();
-
-// Load commands
-const commandFiles = fs.readdirSync("./commands").filter(file => file.endsWith(".js"));
-for (const file of commandFiles) {
-  const command = require(`./commands/${file}`);
-  bot.commands.set(command.name, command);
-}
+app.get("/", (_, res) => res.send("Bot aktif"));
+app.listen(process.env.PORT || 3000, () => console.log("🌐 Web server hidup"));
 
 // Load events
-const eventFiles = fs.readdirSync("./events").filter(file => file.endsWith(".js"));
-for (const file of eventFiles) {
+fs.readdirSync("./events").forEach(file => {
   const event = require(`./events/${file}`);
   if (event.once) {
-    bot.once(event.name, (...args) => event.execute(...args, bot));
+    client.once(event.name, (...args) => event.execute(...args, client));
   } else {
-    bot.on(event.name, (...args) => event.execute(...args, bot));
+    client.on(event.name, (...args) => event.execute(...args, client));
   }
-}
+});
 
-bot.login(config.token);
+client.login(config.token);
