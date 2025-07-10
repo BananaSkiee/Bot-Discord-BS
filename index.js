@@ -5,17 +5,19 @@ const updateVoice = require("./online");
 const bot = new Client({
   intents: [
     GatewayIntentBits.Guilds,
-    GatewayIntentBits.GuildMessages,
-    GatewayIntentBits.MessageContent,
     GatewayIntentBits.GuildMembers,
     GatewayIntentBits.GuildPresences,
-    GatewayIntentBits.GuildVoiceStates
+    GatewayIntentBits.GuildVoiceStates,
+    GatewayIntentBits.GuildMessages,
+    GatewayIntentBits.MessageContent
   ]
 });
 
 const app = express();
 app.get("/", (req, res) => res.send("Bot Akira aktif 24 jam!"));
-app.listen(process.env.PORT || 3000, () => console.log("🌐 Server alive"));
+app.listen(process.env.PORT || 3000, () =>
+  console.log("🌐 Server alive")
+);
 
 bot.on("ready", () => {
   console.log(`🤖 Bot login sebagai ${bot.user.tag}`);
@@ -27,9 +29,8 @@ bot.on("messageCreate", async msg => {
   if (msg.author.bot) return;
   if (msg.content === "!ping") return msg.reply("Pong! Aku online 😎");
   if (msg.content === "!online") {
-    const guild = msg.guild;
-    await guild.members.fetch();
-    const count = guild.members.cache.filter(m =>
+    await msg.guild.members.fetch({ withPresences: true });
+    const count = msg.guild.members.cache.filter(m =>
       ["online", "idle", "dnd"].includes(m.presence?.status)
     ).size;
     return msg.reply(`🟢 Ada ${count} member aktif sekarang!`);
@@ -40,15 +41,15 @@ bot.on("messageCreate", async msg => {
   }
 });
 
-bot.on("voiceStateUpdate", (oldS, newS) => {
+bot.on("voiceStateUpdate", (o, n) => {
   if (
-    oldS.channelId === "1366854862608007329" ||
-    newS.channelId === "1366854862608007329"
-  ) updateVoice(newS.guild);
+    o.channelId === "1366854862608007329" ||
+    n.channelId === "1366854862608007329"
+  ) updateVoice(n.guild);
 });
 
-bot.on("presenceUpdate", (_, newP) => {
-  if (newP.guild) updateVoice(newP.guild);
+bot.on("presenceUpdate", (_, n) => {
+  if (n.guild) updateVoice(n.guild);
 });
 
 bot.login(process.env.TOKEN);
