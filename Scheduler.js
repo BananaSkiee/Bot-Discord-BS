@@ -36,7 +36,10 @@ function getRandom(arr) {
 
 module.exports = (client) => {
   const channel = client.channels.cache.get(config.greetingChannelId);
-  if (!channel || !channel.isTextBased()) return;
+  if (!channel || !channel.isTextBased()) {
+    console.warn("❌ Channel tidak ditemukan atau bukan text-based");
+    return;
+  }
 
   setInterval(() => {
     const hour = getHours();
@@ -55,5 +58,5 @@ module.exports = (client) => {
     if (message) {
       channel.send(message).catch(console.error);
     }
-  }, 1000 * 60 * 60); // setiap 1 jam
+  }, 1000 * 60 * 60); // Cek setiap 1 jam
 };
