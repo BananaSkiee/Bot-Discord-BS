@@ -1,14 +1,16 @@
-const cron = require("node-cron"); const config = require("./config");
+const { Client, GatewayIntentBits } = require("discord.js"); const fs = require("fs"); const express = require("express"); const config = require("./config");
 
-const greetings = { morning: [ "Selamat pagi semuanya! 🌞", "Pagi! Udah sarapan belum?", "Bangun bangun! Semangat ya hari ini!", "Good morning! Semoga harimu penuh berkah!", "☕ Waktunya ngopi dan mulai hari!", "Met pagi! Semangat kerja atau sekolahnya!", "Pagi itu awal yang baru, ayo kita mulai dengan senyum!", "Pagi juga buat kamu yang baru bangun siang 🤭" ], afternoon: [ "Halo siang semuanya! 🌤️", "Jangan lupa makan siang, ya!", "Siang yang panas cocok buat tidur siang... tapi kerja dulu 😅", "Semangat terus meski siang ngantuk 🌞", "Kalian lagi ngapain di siang hari gini?", "Siang bolong gini enaknya ngopi atau es teh ya?", "Cek energi! Jangan lemes di siang hari!" ], night: [ "Selamat malam 🌙 Waktunya istirahat!", "Malam! Jangan begadang terus ya", "Udah makan malam belum? 🍽️", "Semoga malam ini tenang dan damai buat kalian semua 😴", "Good night! Sampai ketemu besok~", "Malam itu waktunya refleksi, besok semangat baru ya!", "Tidur yang nyenyak semua 💫" ], randomQuestions: [ "Lagi ngapain sekarang?", "Ada cerita seru hari ini?", "Kalo boleh milih, kamu pengen liburan ke mana?", "Lagu yang kamu putar terus minggu ini apa?", "Apa makanan favorit kamu?", "Ada rekomendasi film seru?", "Pernah ngalamin hal kocak minggu ini?", "Kalau bisa teleport, kamu mau ke mana sekarang?" ] };
+const client = new Client({ intents: [ GatewayIntentBits.Guilds, GatewayIntentBits.GuildMembers, GatewayIntentBits.GuildPresences, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent, ], });
 
-module.exports = (client) => { const channelId = config.logChannelId; const sendMessage = (messages) => { const channel = client.channels.cache.get(channelId); if (channel && channel.isTextBased()) { const msg = messages[Math.floor(Math.random() * messages.length)]; channel.send(msg); } };
+// Keep-alive server (Railway) const app = express(); app.get("/", (_, res) => res.send("Bot Akira aktif")); app.listen(process.env.PORT || 3000, () => { console.log("🌐 Web server hidup"); });
 
-// 7 pagi cron.schedule("0 7 * * *", () => { sendMessage(greetings.morning); });
+// Load event handler fs.readdirSync("./events").forEach((file) => { const event = require(./events/${file}); if (event.once) { client.once(event.name, (...args) => event.execute(...args, client)); } else { client.on(event.name, (...args) => event.execute(...args, client)); } });
 
-// 12 siang cron.schedule("0 12 * * *", () => { sendMessage(greetings.afternoon); });
+// Load scheduler (pesan otomatis) const schedule = require("./scheduler"); schedule(client);
 
-// 9 malam cron.schedule("0 21 * * *", () => { sendMessage(greetings.night); });
+// Handle global error process.on("unhandledRejection", (err) => { console.error("💥 Unhandled Error:", err); });
 
-// Setiap 4 jam random nanya cron.schedule("0 */4 * * *", () => { if (Math.random() < 0.5) { sendMessage(greetings.randomQuestions); } }); };
+// Command test: !test client.on("messageCreate", (message) => { if (message.content.toLowerCase() === "!test") { message.channel.send("✅ Bot aktif dan merespon command !test"); } });
+
+client.login(config.token);
 
