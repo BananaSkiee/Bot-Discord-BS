@@ -1,44 +1,47 @@
-module.exports = (client) => {
-  client.on('messageCreate', async (message) => {
-    if (message.content.toLowerCase() === '!createvoice') {
-      const guild = message.guild;
+const express = require("express");
+const { Client, GatewayIntentBits } = require("discord.js");
 
-      try {
-        // Buat channel voice baru
-        const newVoiceChannel = await guild.channels.create({
-          name: 'Online Members',
-          type: 2, // 2 = GUILD_VOICE (pakai angka di v14)
-          reason: 'Channel voice untuk jumlah anggota online',
-        });
+const VOICE_CHANNEL_ID = "1366854862608007329";
 
-        message.reply(`✅ Voice channel telah dibuat: ${newVoiceChannel.name}`);
+const bot = new Client({
+  intents: [
+    GatewayIntentBits.Guilds,
+    GatewayIntentBits.GuildMembers,
+    GatewayIntentBits.GuildPresences
+  ]
+});
 
-        // Fungsi hitung member online
-        const updateOnlineCount = async () => {
-          await guild.members.fetch({ withPresences: true });
+const app = express();
+app.get("/", (_, res) => res.send("Akira aktif 24/7!"));
+app.listen(process.env.PORT || 3000, () => console.log("🌐 Server aktif"));
 
-          const count = guild.members.cache.filter(member =>
-            member.presence &&
-            ['online', 'idle', 'dnd'].includes(member.presence.status) &&
-            !member.user.bot
-          ).size;
+async function updateOnlineCount(guild) {
+  try {
+    await guild.members.fetch({ withPresences: true });
 
-          await newVoiceChannel.setName(`「 Online: ${count} 」`);
-          console.log(`✅ Updated: Online: ${count}`);
-        };
+    const onlineCount = guild.members.cache.filter(member =>
+      member.presence && ["online", "idle", "dnd"].includes(member.presence.status) && !member.user.bot
+    ).size;
 
-        // Update pertama kali
-        await updateOnlineCount();
-
-        // Update otomatis saat presence berubah
-        client.on('presenceUpdate', async () => {
-          await updateOnlineCount();
-        });
-
-      } catch (err) {
-        console.error('❌ Gagal membuat channel:', err);
-        message.reply('❌ Gagal membuat voice channel.');
-      }
+    const channel = guild.channels.cache.get(VOICE_CHANNEL_ID);
+    if (channel && channel.isVoiceBased()) {
+      await channel.setName(`「 Online: ${onlineCount} 」`);
+      console.log(`✅ Voice channel diupdate: ${onlineCount}`);
     }
-  });
-};
+  } catch (err) {
+    console.error("❌ ERROR update:", err);
+  }
+}
+
+bot.on("ready", () => {
+  console.log(`🤖 Akira login sebagai ${bot.user.tag}`);
+  const guild = bot.guilds.cache.first();
+  if (guild) updateOnlineCount(guild);
+});
+
+bot.on("presenceUpdate", async (_, newPresence) => {
+  const guild = newPresence.guild;
+  if (guild) updateOnlineCount(guild);
+});
+
+bot.login(process.env.TOKEN);
