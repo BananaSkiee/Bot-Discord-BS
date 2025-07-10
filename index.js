@@ -2,7 +2,7 @@ const { Client, GatewayIntentBits } = require("discord.js");
 const fs = require("fs");
 const express = require("express");
 const config = require("./config");
-const scheduler = require("./scheduler"); // <- Tambahin ini
+const scheduler = require("./scheduler");
 
 const client = new Client({
   intents: [
@@ -33,7 +33,7 @@ fs.readdirSync("./events").forEach((file) => {
 
 // Pasang scheduler saat bot ready
 client.once("ready", () => {
-  scheduler(client); // <-- panggil scheduler agar mulai kirim pesan otomatis
+  scheduler(client);
 });
 
 // Handle global error
