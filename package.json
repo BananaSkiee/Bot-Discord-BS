@@ -1,13 +1,13 @@
 {
   "name": "akira-bot",
   "version": "1.0.0",
+  "description": "Bot Discord Akira buatan sendiri",
   "main": "index.js",
   "scripts": {
     "start": "node index.js"
   },
   "dependencies": {
     "discord.js": "^14.11.0",
-    "express": "^4.18.2",
-    "node-cron": "^3.0.2"
+    "express": "^4.18.2"
   }
 }
