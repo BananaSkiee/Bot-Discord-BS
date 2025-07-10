@@ -10,14 +10,32 @@ module.exports = async function updateOnline(guild) {
         ["online", "idle", "dnd"].includes(m.presence?.status)
     ).size;
 
-    const channel = guild.channels.cache.get(config.voiceChannelId);
-    if (channel && channel.isVoiceBased()) {
-      await channel.setName(`「 Online: ${onlineCount} 」`);
+    const voiceChannel = guild.channels.cache.get(config.voiceChannelId);
+    const logChannel = guild.channels.cache.get(config.logChannelId); // Log ke sini
+
+    if (voiceChannel && voiceChannel.isVoiceBased()) {
+      await voiceChannel.setName(`「 Online: ${onlineCount} 」`);
       console.log(`✅ Channel rename → Online: ${onlineCount}`);
+
+      if (logChannel && logChannel.isTextBased()) {
+        logChannel.send({
+          content: `📢 **[UPDATE SERVER]**\nJumlah member aktif saat ini: **${onlineCount}**`,
+          allowedMentions: { parse: [] }
+        });
+      }
+
     } else {
-      console.warn("⚠️ Channel tidak ditemukan atau bukan voice.");
+      console.warn("⚠️ Voice channel tidak ditemukan.");
+      if (logChannel && logChannel.isTextBased()) {
+        logChannel.send("⚠️ Gagal update voice channel: Tidak ditemukan.");
+      }
     }
+
   } catch (err) {
     console.error("❌ Gagal update:", err.message);
+    const logChannel = guild.channels.cache.get(config.logChannelId);
+    if (logChannel && logChannel.isTextBased()) {
+      logChannel.send(`❌ Error saat update: ${err.message}`);
+    }
   }
 };
