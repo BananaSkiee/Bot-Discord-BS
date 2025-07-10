@@ -2,7 +2,6 @@ const { Client, GatewayIntentBits } = require("discord.js");
 const fs = require("fs");
 const express = require("express");
 const config = require("./config");
-const scheduler = require("./scheduler"); // <-- Auto chat tiap jam
 
 const client = new Client({
   intents: [
@@ -21,7 +20,7 @@ app.listen(process.env.PORT || 3000, () => {
   console.log("🌐 Web server hidup");
 });
 
-// Load event handler (dari folder /events)
+// Load event handler
 fs.readdirSync("./events").forEach((file) => {
   const event = require(`./events/${file}`);
   if (event.once) {
@@ -31,13 +30,12 @@ fs.readdirSync("./events").forEach((file) => {
   }
 });
 
-// Jalankan scheduler saat bot siap
+// Event ready (kalau ada)
 client.once("ready", () => {
   console.log(`🤖 Bot siap sebagai ${client.user.tag}`);
-  scheduler(client); // ← auto chat mulai jalan
 });
 
-// Handle error global
+// Error handler
 process.on("unhandledRejection", (err) => {
   console.error("💥 Unhandled Error:", err);
 });
