@@ -1,29 +1,32 @@
-module.exports = (client) => {
-  const channelId = '1366854862608007329'; // Ganti dengan ID voice channel lo
+const config = require("./config");
 
-  async function updateVoiceChannel(guild) {
-    await guild.members.fetch(); // penting
+/**
+ * Fungsi untuk update nama voice channel dengan jumlah anggota online.
+ */
+module.exports = async function updateOnline(guild) {
+  try {
+    // Fetch semua member biar data presence lengkap
+    await guild.members.fetch({ withPresences: true });
+
+    // Hitung member yang online, idle, atau dnd
     const onlineCount = guild.members.cache.filter(
-      m => !m.user.bot && ['online', 'idle', 'dnd'].includes(m.presence?.status)
+      m =>
+        !m.user.bot &&
+        ["online", "idle", "dnd"].includes(m.presence?.status)
     ).size;
 
-    const channel = guild.channels.cache.get(channelId);
-    if (channel) {
+    // Ambil voice channel dari config
+    const channel = guild.channels.cache.get(config.voiceChannelId);
+
+    // Update nama voice channel
+    if (channel && channel.isVoiceBased()) {
       await channel.setName(`「 Online: ${onlineCount} 」`);
       console.log(`✅ Channel rename → Online: ${onlineCount}`);
+    } else {
+      console.warn("⚠️ Channel tidak ditemukan atau bukan voice.");
     }
+
+  } catch (error) {
+    console.error("❌ Gagal update voice channel:", error.message);
   }
-
-  client.on('ready', async () => {
-    const guild = client.guilds.cache.first();
-    if (guild) {
-      await updateVoiceChannel(guild);
-      setInterval(() => updateVoiceChannel(guild), 60000); // tiap menit
-    }
-  });
-
-  client.on('presenceUpdate', async () => {
-    const guild = client.guilds.cache.first();
-    if (guild) await updateVoiceChannel(guild);
-  });
 };
