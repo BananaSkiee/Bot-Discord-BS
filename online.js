@@ -1,8 +1,8 @@
 module.exports = (client) => {
-  const channelId = '1366854862608007329';
+  const channelId = '1366854862608007329'; // Ganti dengan ID voice channel lo
 
   async function updateVoiceChannel(guild) {
-    await guild.members.fetch();
+    await guild.members.fetch(); // penting
     const onlineCount = guild.members.cache.filter(
       m => !m.user.bot && ['online', 'idle', 'dnd'].includes(m.presence?.status)
     ).size;
@@ -18,7 +18,7 @@ module.exports = (client) => {
     const guild = client.guilds.cache.first();
     if (guild) {
       await updateVoiceChannel(guild);
-      setInterval(() => updateVoiceChannel(guild), 60 * 1000); // per menit
+      setInterval(() => updateVoiceChannel(guild), 60000); // tiap menit
     }
   });
 
