@@ -35,7 +35,7 @@ function getRandom(arr) {
 }
 
 module.exports = (client) => {
-  const channel = client.channels.cache.get(config.logChannelId);
+  const channel = client.channels.cache.get(config.greetingChannelId);
   if (!channel || !channel.isTextBased()) return;
 
   setInterval(() => {
@@ -55,5 +55,5 @@ module.exports = (client) => {
     if (message) {
       channel.send(message).catch(console.error);
     }
-  }, 1000 * 60 * 60); // setiap 1 jam dicek
+  }, 1000 * 60 * 60); // setiap 1 jam
 };
