@@ -1,6 +1,8 @@
+// online.js
 const VOICE_CHANNEL_ID = "1366854862608007329";
 
 module.exports = async function updateVoice(guild) {
+  if (!guild) return;
   const ch = guild.channels.cache.get(VOICE_CHANNEL_ID);
   if (!ch?.isVoiceBased()) return;
 
@@ -13,6 +15,6 @@ module.exports = async function updateVoice(guild) {
     await ch.setName(`「 Online: ${count} 」`);
     console.log(`✅ Channel rename → Online: ${count}`);
   } catch (err) {
-    console.error("❌ Gagal ganti nama channel:", err);
+    console.error("❌ Gagal rename voice channel:", err);
   }
 };
