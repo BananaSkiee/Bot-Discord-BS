@@ -17,12 +17,12 @@ module.exports = async function updateOnline(guild) {
       await voiceChannel.setName(`「 Online: ${onlineCount} 」`);
       console.log(`✅ Channel rename → Online: ${onlineCount}`);
 
-      if (logChannel && logChannel.isTextBased()) {
-        logChannel.send({
-          content: `📢 **[UPDATE SERVER]**\nJumlah member aktif saat ini: **${onlineCount}**`,
-          allowedMentions: { parse: [] }
-        });
-      }
+    if (logChannel && logChannel.isTextBased()) {
+      logChannel.send({
+    content: `📢 Update status online!\nSaat ini ada **${onlineCount}** member yang aktif di server.`,
+       allowedMentions: { parse: [] }
+     });
+  }
 
     } else {
       console.warn("⚠️ Voice channel tidak ditemukan.");
