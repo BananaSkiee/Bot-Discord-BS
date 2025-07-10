@@ -1,20 +1,21 @@
-// online.js
-const VOICE_CHANNEL_ID = "1366854862608007329";
+const config = require("./config");
 
-module.exports = async function updateVoice(guild) {
-  if (!guild) return;
-  const ch = guild.channels.cache.get(VOICE_CHANNEL_ID);
-  if (!ch?.isVoiceBased()) return;
-
-  await guild.members.fetch({ withPresences: true });
-  const count = guild.members.cache.filter(m =>
-    ["online", "idle", "dnd"].includes(m.presence?.status)
-  ).size;
-
+module.exports = async function updateOnline(guild) {
   try {
-    await ch.setName(`「 Online: ${count} 」`);
-    console.log(`✅ Channel rename → Online: ${count}`);
+    await guild.members.fetch({ withPresences: true });
+
+    const count = guild.members.cache.filter(m =>
+      m.presence &&
+      ["online", "idle", "dnd"].includes(m.presence.status) &&
+      !m.user.bot
+    ).size;
+
+    const channel = guild.channels.cache.get(config.voiceChannelId);
+    if (channel && channel.isVoiceBased()) {
+      await channel.setName(`「 Online: ${count} 」`);
+      console.log(`✅ Channel updated: Online: ${count}`);
+    }
   } catch (err) {
-    console.error("❌ Gagal rename voice channel:", err);
+    console.error("❌ Error update online:", err.message);
   }
 };
