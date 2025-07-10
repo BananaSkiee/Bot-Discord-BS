@@ -9,23 +9,30 @@ const client = new Client({
     GatewayIntentBits.GuildMembers,
     GatewayIntentBits.GuildPresences,
     GatewayIntentBits.GuildMessages,
-    GatewayIntentBits.MessageContent
-  ]
+    GatewayIntentBits.MessageContent,
+  ],
 });
 
-// Keep-alive (untuk Railway / Replit)
+// Keep-alive server (Railway)
 const app = express();
-app.get("/", (_, res) => res.send("Bot aktif"));
-app.listen(process.env.PORT || 3000, () => console.log("🌐 Web server hidup"));
+app.get("/", (_, res) => res.send("Bot Akira aktif"));
+app.listen(process.env.PORT || 3000, () => {
+  console.log("🌐 Web server hidup");
+});
 
-// Load events
-fs.readdirSync("./events").forEach(file => {
+// Load event handler
+fs.readdirSync("./events").forEach((file) => {
   const event = require(`./events/${file}`);
   if (event.once) {
     client.once(event.name, (...args) => event.execute(...args, client));
   } else {
     client.on(event.name, (...args) => event.execute(...args, client));
   }
+});
+
+// Handle global error
+process.on("unhandledRejection", (err) => {
+  console.error("💥 Unhandled Error:", err);
 });
 
 client.login(config.token);
