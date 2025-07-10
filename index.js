@@ -5,19 +5,17 @@ const updateVoice = require("./online");
 const bot = new Client({
   intents: [
     GatewayIntentBits.Guilds,
+    GatewayIntentBits.GuildMessages,
+    GatewayIntentBits.MessageContent,
     GatewayIntentBits.GuildMembers,
     GatewayIntentBits.GuildPresences,
-    GatewayIntentBits.GuildVoiceStates,
-    GatewayIntentBits.GuildMessages,
-    GatewayIntentBits.MessageContent
+    GatewayIntentBits.GuildVoiceStates
   ]
 });
 
 const app = express();
-app.get("/", (req, res) => res.send("Bot Akira aktif 24 jam!"));
-app.listen(process.env.PORT || 3000, () =>
-  console.log("🌐 Server alive")
-);
+app.get("/", (req, res) => res.send("Bot Akira aktif!"));
+app.listen(process.env.PORT || 3000, () => console.log("🌐 Server live"));
 
 bot.on("ready", () => {
   console.log(`🤖 Bot login sebagai ${bot.user.tag}`);
@@ -28,28 +26,32 @@ bot.on("ready", () => {
 bot.on("messageCreate", async msg => {
   if (msg.author.bot) return;
   if (msg.content === "!ping") return msg.reply("Pong! Aku online 😎");
+
   if (msg.content === "!online") {
     await msg.guild.members.fetch({ withPresences: true });
     const count = msg.guild.members.cache.filter(m =>
       ["online", "idle", "dnd"].includes(m.presence?.status)
     ).size;
-    return msg.reply(`🟢 Ada ${count} member aktif sekarang!`);
+    return msg.reply(`🟢 Ada ${count} member aktif saat ini!`);
   }
+
   if (msg.content === "!sync") {
     await updateVoice(msg.guild);
     return msg.reply("✅ Voice channel diperbarui!");
   }
 });
 
-bot.on("voiceStateUpdate", (o, n) => {
-  if (
-    o.channelId === "1366854862608007329" ||
-    n.channelId === "1366854862608007329"
-  ) updateVoice(n.guild);
+// update saat ada member join/leave voice
+bot.on("voiceStateUpdate", (oldS, newS) => {
+  if (oldS.channelId === "1366854862608007329" ||
+      newS.channelId === "1366854862608007329") {
+    updateVoice(newS.guild);
+  }
 });
 
-bot.on("presenceUpdate", (_, n) => {
-  if (n.guild) updateVoice(n.guild);
+// update saat presence berubah
+bot.on("presenceUpdate", (_, newP) => {
+  if (newP.guild) updateVoice(newP.guild);
 });
 
 bot.login(process.env.TOKEN);
