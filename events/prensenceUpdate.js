@@ -6,5 +6,5 @@ module.exports = {
     const guild = newPresence.guild;
     if (!guild) return;
     await updateOnline(guild);
-  }
+  },
 };
