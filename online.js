@@ -5,14 +5,14 @@ module.exports = async function updateVoice(guild) {
   if (!ch?.isVoiceBased()) return;
 
   await guild.members.fetch({ withPresences: true });
-  const count = ch.members.filter(m =>
+  const count = guild.members.cache.filter(m =>
     ["online", "idle", "dnd"].includes(m.presence?.status)
   ).size;
 
   try {
     await ch.setName(`「 Online: ${count} 」`);
     console.log(`✅ Channel rename → Online: ${count}`);
-  } catch (e) {
-    console.error("❌ Gagal ganti nama channel:", e);
+  } catch (err) {
+    console.error("❌ Gagal ganti nama channel:", err);
   }
 };
