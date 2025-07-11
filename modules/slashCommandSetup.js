@@ -1,14 +1,17 @@
-// modules/slashCommandSetup.js
-require("dotenv").config();
 const { REST, Routes } = require("discord.js");
 const fs = require("fs");
 const path = require("path");
+require("dotenv").config();
 
-const clientId = process.env.CLIENT_ID;
-const guildId = process.env.GUILD_ID;
+const CLIENT_ID = process.env.CLIENT_ID;
+const GUILD_ID = process.env.GUILD_ID;
+const TOKEN = process.env.TOKEN;
 
+// Ambil semua command dari folder modules/
 const commands = [];
-const commandFiles = fs.readdirSync(path.join(__dirname)).filter(file => file.endsWith("Command.js"));
+const commandFiles = fs
+  .readdirSync(path.join(__dirname))
+  .filter(file => file.endsWith("Command.js"));
 
 for (const file of commandFiles) {
   const command = require(`./${file}`);
@@ -17,17 +20,19 @@ for (const file of commandFiles) {
   }
 }
 
-const rest = new REST({ version: "10" }).setToken(process.env.TOKEN);
+const rest = new REST({ version: "10" }).setToken(TOKEN);
 
 (async () => {
   try {
-    console.log("🚀 Mendaftarkan slash command...");
+    console.log("🚀 Mengupdate slash commands (guild)...");
+
     await rest.put(
-      Routes.applicationGuildCommands(clientId, guildId),
+      Routes.applicationGuildCommands(CLIENT_ID, GUILD_ID),
       { body: commands }
     );
-    console.log("✅ Slash command berhasil didaftarkan.");
+
+    console.log("✅ Berhasil update slash commands (guild)");
   } catch (error) {
-    console.error("❌ Gagal mendaftar:", error);
+    console.error("❌ Gagal update slash commands:", error);
   }
 })();
