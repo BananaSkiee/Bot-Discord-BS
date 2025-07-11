@@ -1,4 +1,5 @@
 const { config } = require("dotenv");
+const { ActionRowBuilder, ButtonBuilder, ButtonStyle } = require("discord.js");
 config();
 
 module.exports = {
@@ -35,6 +36,50 @@ module.exports = {
       } catch (err) {
         console.error(err);
         await message.reply("❌ Gagal mengirim ucapan.");
+      }
+      return;
+    }
+
+    // ===== Command: !testdm @user [TAG] =====
+    if (content.startsWith(`${prefix}testdm`)) {
+      const args = message.content.split(" ");
+      if (args.length < 3 || message.mentions.users.size === 0) {
+        return message.reply("❌ Format salah. Contoh: `!testdm @user [TAG]`");
+      }
+
+      const user = message.mentions.users.first();
+      const tag = args.slice(2).join(" ");
+
+      const row = new ActionRowBuilder().addComponents(
+        new ButtonBuilder()
+          .setCustomId("use_tag_fake")
+          .setLabel("Pakai Tag")
+          .setStyle(ButtonStyle.Success),
+        new ButtonBuilder()
+          .setCustomId("remove_tag_fake")
+          .setLabel("Hapus Tag")
+          .setStyle(ButtonStyle.Secondary)
+      );
+
+      try {
+        await user.send({
+          content: `✨ *Selamat datang, ${user.username}!*
+
+🔰 *Kamu telah menerima tag eksklusif ${tag} di server BananaSkiee Community.*
+
+*Ingin menampilkan tag itu di nickname kamu?*
+*Contoh:* \`${tag} ${user.username}\`
+
+──────────────────────
+
+*Pilih opsi di bawah ini 👇*`,
+          components: [row],
+        });
+
+        await message.reply(`✅ DM berhasil dikirim ke ${user.username}`);
+      } catch (err) {
+        console.error(err);
+        await message.reply("❌ Gagal mengirim DM.");
       }
       return;
     }
@@ -129,7 +174,5 @@ module.exports = {
         return message.reply(reply).catch(console.error);
       }
     }
-
-    // ❌ Bagian mention bot/chat AI dihapus sesuai permintaan.
   },
 };
