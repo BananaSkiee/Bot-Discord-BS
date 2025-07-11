@@ -6,7 +6,7 @@ const config = require("./config");
 
 const stickyHandler = require("./sticky");
 const setupSlashCommands = require("./slashCommandSetup");
-const createVoiceChannel = require("./modules/createVoiceChannel"); // ✅ Tambahan
+const createVoiceChannel = require("./createVoiceChannel"); // ✅ Tambahan
 const handleNickname = require("./modules/nicknameTag"); // ✅ Tambahan
 
 const client = new Client({
