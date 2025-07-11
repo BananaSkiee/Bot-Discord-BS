@@ -21,7 +21,44 @@ module.exports = {
       }
     }
 
-    // ===== !testdm @user [TAG] =====
+// Jika belum di-import:
+const ROLES = [
+  { id: "1352279577174605884", tag: "[OWNER]" },
+  { id: "1352282368043389069", tag: "[ADMIN]" },
+  { id: "1352282892935368787", tag: "[MOD]" },
+  { id: "1358311584681693324", tag: "[BOOST]" },
+  { id: "1352285051521601618", tag: "[CREATOR]" },
+  { id: "1354161955669147649", tag: "[ALUMNI]" },
+  { id: "1354196993680867370", tag: "[100]" },
+  { id: "1354197284476420106", tag: "[80]" },
+  { id: "1354197417754628176", tag: "[70]" },
+  { id: "1354197527582212106", tag: "[60]" },
+  { id: "1354197530010976521", tag: "[55]" },
+  { id: "1352286232331292814", tag: "[VIP]" },
+  { id: "1352286224420962376", tag: "[FRIEND]" },
+  { id: "1357693246268244209", tag: "[PARTNER]" },
+  { id: "1352286235233620108", tag: "[MEM]" }
+];
+
+const ROLE_DISPLAY_MAP = {
+  "1352279577174605884": "「 👑 」sᴇʀᴠᴇʀ ᴏᴡɴᴇʀ",
+  "1352282368043389069": "「 ❗ 」ᴀᴅᴍɪɴɪsᴛʀᴀᴛᴏʀ",
+  "1352282892935368787": "「 ❓ 」ᴍᴏᴅᴇʀᴀᴛᴏʀ",
+  "1358311584681693324": "「🚀」ʙᴏᴏsᴛ",
+  "1352285051521601618": "「📸」ᴄᴏɴᴛᴇɴᴛ ᴄʀᴇᴀᴛᴏʀ",
+  "1354161955669147649": "『 👨‍🎓』ᴀʟᴜᴍɴɪ",
+  "1354196993680867370": "「100」ᴘᴇᴇʀʟᴇꜱꜱ",
+  "1354197284476420106": "「80」ᴛʀᴀɴꜱᴄᴇɴᴅᴇɴᴛ",
+  "1354197417754628176": "「70」ꜱᴜᴘʀᴇᴍᴇ",
+  "1354197527582212106": "「60」ʟᴏʀᴅ",
+  "1354197530010976521": "「55」ᴇᴍᴘᴇʀᴏʀ",
+  "1352286232331292814": "『💛』VIP",
+  "1352286224420962376": "『💙』ғʀɪᴇɴᴅs",
+  "1357693246268244209": "「🤝」ᴘᴀʀᴛɴᴇʀsʜɪᴘ",
+  "1352286235233620108": "『〽️』ᴍᴇᴍʙᴇʀ"
+};
+
+// ===== !testdm @user [TAG] =====
 if (content.startsWith("!testdm")) {
   const args = message.content.trim().split(/\s+/);
   const user = message.mentions.users.first();
@@ -47,7 +84,7 @@ if (content.startsWith("!testdm")) {
   try {
     const member = await message.guild.members.fetch(user.id);
 
-    // ✅ Cari role dari ROLES (berdasarkan tag) dan tambahkan
+    // ✅ Tambahkan role jika tag cocok
     const matchedRole = ROLES.find(r => r.tag === tag);
     if (matchedRole) {
       await member.roles.add(matchedRole.id).catch(() => null);
@@ -56,7 +93,7 @@ if (content.startsWith("!testdm")) {
       console.warn(`⚠️ Tidak ada role yang cocok dengan tag ${tag}`);
     }
 
-    // ✅ Ambil role display tertinggi (berdasarkan prioritas di ROLES)
+    // ✅ Ambil role display tertinggi dari member
     const userDisplayRole = ROLES.find(r => member.roles.cache.has(r.id));
     const roleDisplayText = userDisplayRole
       ? ROLE_DISPLAY_MAP[userDisplayRole.id] || "Tanpa Nama"
@@ -89,7 +126,7 @@ Silakan pilih opsi di bawah ini: 👇`,
       return message.reply("❌ Bot tidak punya izin untuk memberi role. Cek urutan role dan permission.");
     }
 
-    return message.reply(`❌ Terjadi kesalahan saat proses pengiriman DM atau pemberian role.`);
+    return message.reply("❌ Terjadi kesalahan saat proses pengiriman DM atau pemberian role.");
   }
 }
       // ===== Auto Reply Keywords (maks 3 balasan) =====
