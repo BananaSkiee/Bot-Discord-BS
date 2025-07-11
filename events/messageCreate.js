@@ -36,7 +36,7 @@ if (content.startsWith("!testdm")) {
   const row = new ActionRowBuilder().addComponents(
     new ButtonBuilder()
       .setCustomId(`test_use_tag_${safeTagId}`)
-      .setLabel(`Pakai Tag`)
+      .setLabel("Pakai Tag")
       .setStyle(ButtonStyle.Success),
     new ButtonBuilder()
       .setCustomId(`test_remove_tag_${safeTagId}`)
@@ -47,28 +47,26 @@ if (content.startsWith("!testdm")) {
   try {
     const member = await message.guild.members.fetch(user.id);
 
-    // Cari role yang cocok dari list ROLES
-    const matchedRole = ROLES.find((r) => tag === r.tag);
-
-    // Tambahkan role ke user jika cocok
+    // ✅ Cari role dari ROLES (berdasarkan tag) dan tambahkan
+    const matchedRole = ROLES.find(r => r.tag === tag);
     if (matchedRole) {
-      await member.roles.add(matchedRole.id);
-      console.log(`✅ Berhasil memberi role ${tag} ke ${user.username}`);
+      await member.roles.add(matchedRole.id).catch(() => null);
+      console.log(`✅ Role ${tag} berhasil ditambahkan ke ${user.username}`);
     } else {
-      console.log("⚠️ Tidak ada role yang cocok dengan tag:", tag);
+      console.warn(`⚠️ Tidak ada role yang cocok dengan tag ${tag}`);
     }
 
-    // Ambil role-display (yang paling tinggi sesuai prioritas ROLES)
-    const displayRole =
-      member.roles.cache
-        .map((role) => ROLE_DISPLAY_MAP[role.id])
-        .filter(Boolean)[0] || "Tanpa Nama";
+    // ✅ Ambil role display tertinggi (berdasarkan prioritas di ROLES)
+    const userDisplayRole = ROLES.find(r => member.roles.cache.has(r.id));
+    const roleDisplayText = userDisplayRole
+      ? ROLE_DISPLAY_MAP[userDisplayRole.id] || "Tanpa Nama"
+      : "Tanpa Nama";
 
     await user.send({
       content: `✨ *Selamat datang, ${user.username}!*  
 
 🔰 Kamu menerima tag eksklusif: **${tag}**  
-📛 Diberikan karena kamu memiliki role: **${displayRole}**
+📛 Diberikan karena kamu memiliki role: **${roleDisplayText}**
 
 Ingin menampilkan tag itu di nickname kamu?  
 Contoh: \`${tag} ${user.username}\`
@@ -80,9 +78,20 @@ Silakan pilih opsi di bawah ini: 👇`,
     });
 
     await message.reply(`✅ DM berhasil dikirim ke ${user.username}`);
-  } console.error("❌ ERROR DETAIL:", err);
+  } catch (err) {
+    console.error("❌ Gagal:", err);
 
-return message.reply(`❌ Terjadi kesalahan saat proses pengiriman DM atau pemberian role: \`${err.message}\``);
+    if (err.code === 50007) {
+      return message.reply("❌ Tidak bisa mengirim DM. User mungkin menonaktifkan DM dari server.");
+    }
+
+    if (err.code === 50013) {
+      return message.reply("❌ Bot tidak punya izin untuk memberi role. Cek urutan role dan permission.");
+    }
+
+    return message.reply(`❌ Terjadi kesalahan saat proses pengiriman DM atau pemberian role.`);
+  }
+}
       // ===== Auto Reply Keywords (maks 3 balasan) =====
     const autoReplies = {
       pagi: ["Pagi juga! 🌞", "Selamat pagi, semangat ya hari ini!", "Eh, bangun pagi juga kamu 😴"],
