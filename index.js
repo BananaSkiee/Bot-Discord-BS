@@ -6,8 +6,7 @@ const config = require("./config");
 
 const stickyHandler = require("./sticky");
 const setupSlashCommands = require("./slashCommandSetup");
-const updateOnline = require("./createVoiceChannel"); // ← Ini fungsimu
-const handleNickname = require("./modules/nicknameTag");
+const updateOnline = require("./createVoiceChannel"); // 🔊 Update Online VC
 
 const client = new Client({
   intents: [
@@ -19,14 +18,14 @@ const client = new Client({
   ],
 });
 
-// Keep-alive server (buat Railway)
+// 🌐 Web server untuk Railway
 const app = express();
 app.get("/", (_, res) => res.send("Bot Akira aktif"));
 app.listen(process.env.PORT || 3000, () => {
   console.log("🌐 Web server hidup");
 });
 
-// Event handler loader
+// 🔄 Load semua event dari folder events/
 fs.readdirSync("./events").forEach((file) => {
   const event = require(`./events/${file}`);
   if (event.once) {
@@ -36,7 +35,7 @@ fs.readdirSync("./events").forEach((file) => {
   }
 });
 
-// Saat bot siap
+// 🔔 Saat bot siap
 client.once("ready", async () => {
   console.log(`🤖 Bot siap sebagai ${client.user.tag}`);
 
@@ -46,33 +45,31 @@ client.once("ready", async () => {
     return console.error("❌ Gagal menemukan guild dengan ID:", config.guildId);
   }
 
-  // 🔊 Update voice channel online langsung saat bot aktif
+  // 🔊 Update voice channel "Online" pertama kali
   await updateOnline(guild);
 
-  // 🔁 Update online setiap 1 menit 30 detik (90000 ms)
+  // 🔁 Update voice channel setiap 1 menit 30 detik
   setInterval(async () => {
     await updateOnline(guild);
   }, 90000);
 
-  // 🔧 Pasang sticky handler
+  // 📌 Pasang sticky message handler
   stickyHandler(client);
 
   // 🛠️ Pasang slash commands
   await setupSlashCommands(client);
-
-  // 🎭 Nickname berdasarkan role
-  handleNickname(client);
 });
 
-// Tambahkan fitur messageCreate lain di sini jika perlu
+// 📨 Auto-reply atau command lain via message
 client.on("messageCreate", async (message) => {
   if (message.author.bot) return;
-  // Fitur auto-reply atau lainnya bisa ditambahkan di sini nanti
+  // Tambahkan fitur message-based di sini
 });
 
-// Error handler
+// 💥 Tangani error global
 process.on("unhandledRejection", (err) => {
   console.error("💥 Unhandled Error:", err);
 });
 
+// 🔐 Login ke bot
 client.login(config.token);
