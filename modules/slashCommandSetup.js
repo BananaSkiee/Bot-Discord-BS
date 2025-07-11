@@ -1,32 +1,34 @@
 const { REST, Routes } = require("discord.js");
 const fs = require("fs");
 const path = require("path");
-const config = require("../config");
+require("dotenv").config();
 
-module.exports = async function setupSlashCommands(client) {
-  const commands = [];
-  client.commands = new Map();
+const CLIENT_ID = process.env.CLIENT_ID;
+const GUILD_ID = process.env.GUILD_ID;
+const TOKEN = process.env.TOKEN;
 
-  const commandFiles = fs.readdirSync(__dirname).filter(file => file.endsWith("Command.js"));
+const commands = [];
 
-  for (const file of commandFiles) {
-    const command = require(`./${file}`);
-    if (command.data && command.execute) {
-      commands.push(command.data.toJSON());
-      client.commands.set(command.data.name, command);
-    }
+const commandFiles = fs.readdirSync("./modules").filter(file => file.endsWith("Command.js"));
+
+for (const file of commandFiles) {
+  const command = require(`./${file}`);
+  if (command.data) {
+    commands.push(command.data.toJSON());
   }
+}
 
-  const rest = new REST({ version: "10" }).setToken(config.token);
+const rest = new REST({ version: "10" }).setToken(TOKEN);
 
+(async () => {
   try {
-    console.log("🚀 Uploading slash commands...");
+    console.log("🔁 Mendaftarkan ulang semua slash command...");
     await rest.put(
-      Routes.applicationGuildCommands(client.user.id, config.guildId),
+      Routes.applicationGuildCommands(CLIENT_ID, GUILD_ID),
       { body: commands }
     );
-    console.log("✅ Slash command berhasil diupload!");
+    console.log("✅ Semua slash command berhasil didaftarkan!");
   } catch (error) {
-    console.error("❌ Gagal upload slash command:", error);
+    console.error("❌ Gagal daftar slash command:", error);
   }
-};
+})();
