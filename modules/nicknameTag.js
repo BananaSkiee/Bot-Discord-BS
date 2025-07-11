@@ -1,37 +1,40 @@
-module.exports = {
-  name: 'interactionCreate',
-  async execute(interaction, client) {
-    // ⛔ Jika interaction terjadi di luar server (misalnya DM), keluarin dulu
-    if (!interaction.inGuild()) return;
+// File: events/interactionCreate.js
 
-    // ✅ Akses aman ke member
-    const member = interaction.member;
+const fs = require("fs"); const path = require("path"); const { ButtonInteraction } = require("discord.js"); const ROLES = require("../config/roles"); const filePath = path.join(__dirname, "../data/taggedUsers.json");
 
-    // 🔘 Tangani Button Interaction
-    if (interaction.isButton()) {
-      if (interaction.customId === 'add_tag') {
-        const nickname = member.nickname || member.user.username;
-        const tag = '[TAG]'; // Ganti nanti dengan tag sesuai role user
-        await member.setNickname(`${tag} ${nickname}`);
-        return interaction.reply({ content: `✅ Nickname-mu sudah diubah menjadi \`${tag} ${nickname}\``, ephemeral: true });
-      }
+// Pastikan file JSON ada if (!fs.existsSync(filePath)) { fs.writeFileSync(filePath, JSON.stringify({})); }
 
-      if (interaction.customId === 'remove_tag') {
-        await member.setNickname(null);
-        return interaction.reply({ content: `🗑️ Tag di nickname-mu telah dihapus.`, ephemeral: true });
-      }
-    }
+module.exports = { name: "interactionCreate", async execute(interaction) { if (!interaction.isButton()) return;
 
-    // 🛠️ Kalau kamu pakai slash command (opsional)
-    if (interaction.isChatInputCommand()) {
-      const command = client.commands.get(interaction.commandName);
-      if (!command) return;
-      try {
-        await command.execute(interaction, client);
-      } catch (err) {
-        console.error("❌ Error saat menjalankan command:", err);
-        await interaction.reply({ content: '❌ Terjadi kesalahan saat menjalankan perintah.', ephemeral: true });
-      }
-    }
-  }
-};
+const { customId, user, guild } = interaction;
+const member = guild.members.cache.get(user.id);
+if (!member) return interaction.reply({ content: "❌ Gagal menemukan member.", ephemeral: true });
+
+const taggedData = JSON.parse(fs.readFileSync(filePath, "utf8"));
+
+const userId = user.id;
+const originalName = member.displayName.replace(/^[^]+\]\s?/, "").trim();
+
+if (customId === "add_tag") {
+  const highestRole = ROLES.find((r) => member.roles.cache.has(r.id));
+  if (!highestRole) return interaction.reply({ content: "❌ Tidak ditemukan role khusus.", ephemeral: true });
+
+  const newName = `${highestRole.tag} ${originalName}`;
+  await member.setNickname(newName).catch(() => {});
+
+  taggedData[userId] = true;
+  fs.writeFileSync(filePath, JSON.stringify(taggedData, null, 2));
+
+  await interaction.reply({ content: `✅ Nickname kamu diubah menjadi **${newName}**`, ephemeral: true });
+
+} else if (customId === "remove_tag") {
+  await member.setNickname(originalName).catch(() => {});
+
+  delete taggedData[userId];
+  fs.writeFileSync(filePath, JSON.stringify(taggedData, null, 2));
+
+  await interaction.reply({ content: `🗑️ Tag dihapus. Nama kamu kembali ke **${originalName}**`, ephemeral: true });
+}
+
+} };
+
