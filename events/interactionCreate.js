@@ -32,15 +32,9 @@ module.exports = {
       taggedUsers = {};
     }
 
+    // === Handle tombol asli ===
     const role = ROLES.find((r) => member.roles.cache.has(r.id));
-    if (!role) {
-      return interaction.reply({
-        content: "❌ Kamu tidak punya role prioritas.",
-        ephemeral: true,
-      }).catch(console.error);
-    }
-
-    if (interaction.customId === "use_tag") {
+    if (interaction.customId === "use_tag" && role) {
       await member.setNickname(`${role.tag} ${username}`).catch(console.error);
       taggedUsers[member.id] = true;
       saveTaggedUsers(taggedUsers);
@@ -61,5 +55,31 @@ module.exports = {
         ephemeral: true,
       }).catch(console.error);
     }
+
+    // === Handle tombol TEST ===
+    if (interaction.customId.startsWith("test_use_tag_")) {
+      const tag = interaction.customId.replace("test_use_tag_", "");
+      await member.setNickname(`${tag} ${username}`).catch(console.error);
+
+      return interaction.reply({
+        content: `🧪 Nickname kamu sekarang (tes): \`${tag} ${username}\``,
+        ephemeral: true,
+      }).catch(console.error);
+    }
+
+    if (interaction.customId.startsWith("test_remove_tag_")) {
+      await member.setNickname(null).catch(console.error);
+
+      return interaction.reply({
+        content: "🧪 Nickname kamu dikembalikan ke semula (tes).",
+        ephemeral: true,
+      }).catch(console.error);
+    }
+
+    // Default fallback
+    return interaction.reply({
+      content: "⚠️ Tombol tidak dikenali.",
+      ephemeral: true,
+    }).catch(console.error);
   },
 };
