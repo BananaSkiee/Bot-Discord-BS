@@ -5,7 +5,6 @@ const express = require("express");
 const config = require("./config");
 
 const stickyHandler = require("./sticky");
-const setupSlashCommands = require("./sticky");
 const updateOnline = require("./online"); // 🔊 Update Online VC
 
 const client = new Client({
@@ -55,9 +54,6 @@ client.once("ready", async () => {
 
   // 📌 Pasang sticky message handler
   stickyHandler(client);
-
-  // 🛠️ Pasang slash commands
-  await setupSlashCommands(client);
 });
 
 // 📨 Auto-reply atau command lain via message
