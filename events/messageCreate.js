@@ -1,7 +1,8 @@
 const { config } = require("dotenv");
 const { ActionRowBuilder, ButtonBuilder, ButtonStyle } = require("discord.js");
-const { ALLOWED_COMMAND_ROLES } = require("../config");
 config();
+
+const ALLOWED_ROLE_ID = "1352279577174605884"; // Hanya role admin ini yg bisa pakai command (!)
 
 module.exports = {
   name: "messageCreate",
@@ -11,13 +12,10 @@ module.exports = {
     const content = message.content.toLowerCase();
     const prefix = "!";
 
-    // === Cek role user jika pakai command ! ===
+    // ✅ Hanya role admin yang bisa pakai command (!)
     if (content.startsWith(prefix)) {
       const member = await message.guild.members.fetch(message.author.id);
-      const allowed = ALLOWED_COMMAND_ROLES.some(roleId =>
-        member.roles.cache.has(roleId)
-      );
-      if (!allowed) {
+      if (!member.roles.cache.has(ALLOWED_ROLE_ID)) {
         return message.reply("❌ Kamu tidak punya izin untuk menggunakan perintah ini.");
       }
     }
@@ -100,26 +98,10 @@ Pilih opsi di bawah ini 👇`,
 
     // ===== Auto-Reply Keyword (max 3 per keyword) =====
     const autoReplies = {
-      pagi: [
-        "Pagi juga! 🌞",
-        "Selamat pagi, semangat ya hari ini!",
-        "Eh, bangun pagi juga kamu 😴",
-      ],
-      siang: [
-        "Siang juga! 🌤️",
-        "Jangan lupa makan siang ya!",
-        "Siang siang panas bener 🥵",
-      ],
-      sore: [
-        "Sore juga! 🌇",
-        "Selamat sore, udah capek belom?",
-        "Sore gini enaknya jalan-jalan 🏃‍♂️",
-      ],
-      malam: [
-        "Selamat malam! 🌙",
-        "Malam juga, semangat istirahat ya!",
-        "Udah makan malam belom?",
-      ],
+      pagi: ["Pagi juga! 🌞", "Selamat pagi, semangat ya hari ini!", "Eh, bangun pagi juga kamu 😴"],
+      siang: ["Siang juga! 🌤️", "Jangan lupa makan siang ya!", "Siang siang panas bener 🥵"],
+      sore: ["Sore juga! 🌇", "Selamat sore, udah capek belom?", "Sore gini enaknya jalan-jalan 🏃‍♂️"],
+      malam: ["Selamat malam! 🌙", "Malam juga, semangat istirahat ya!", "Udah makan malam belom?"],
       halo: ["Halo halo! 👋", "Yo halo!", "Haiii! 😄"],
       makasih: ["Sama-sama! 😊", "Sippp 👍", "Yok sama-sama~"],
       ngantuk: ["Ngopi dulu gih! ☕", "Tidur sana jangan dipaksa 😴", "Ngantuk? Wajar, hidup berat 😆"],
