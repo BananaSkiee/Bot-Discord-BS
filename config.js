@@ -1,6 +1,24 @@
 module.exports = {
   token: process.env.TOKEN,
-  voiceChannelId: "1366854862608007329",     // 🔊 Voice Channel yang akan diganti namanya jadi "Online: ..."
-  logChannelId: "1393011303492092035",       // 📋 Channel log untuk info update online
-  guildId: "1347233781391560837"             // 🏠 ID server Discord kamu
+  voiceChannelId: "1366854862608007329",     // 🔊 Voice Channel
+  logChannelId: "1393011303492092035",       // 📋 Channel log
+  guildId: "1347233781391560837",            // 🏠 Guild ID
+
+  ROLES: [
+    { id: "1352279577174605884", tag: "[OWNER]" },
+    { id: "1352282368043389069", tag: "[ADMIN]" },
+    { id: "1352282892935368787", tag: "[MOD]" },
+    { id: "1358311584681693324", tag: "[BOOST]" },
+    { id: "1352285051521601618", tag: "[CREATOR]" },
+    { id: "1354161955669147649", tag: "[ALUMNI]" },
+    { id: "1354196993680867370", tag: "[100]" },
+    { id: "1354197284476420106", tag: "[80]" },
+    { id: "1354197417754628176", tag: "[70]" },
+    { id: "1354197527582212106", tag: "[60]" },
+    { id: "1354197530010976521", tag: "[55]" },
+    { id: "1352286232331292814", tag: "[VIP]" },
+    { id: "1352286224420962376", tag: "[FRIEND]" },
+    { id: "1357693246268244209", tag: "[PARTNER]" },
+    { id: "1352286235233620108", tag: "[MEM]" }
+  ]
 };
