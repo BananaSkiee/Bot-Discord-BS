@@ -26,16 +26,6 @@ app.listen(process.env.PORT || 3000, () => {
   console.log("🌐 Web server hidup");
 });
 
-// 🧠 Simpan semua Slash Command
-client.commands = new Collection();
-const commandFiles = fs.readdirSync("./modules").filter(file => file.endsWith("Command.js"));
-for (const file of commandFiles) {
-  const command = require(`./modules/${file}`);
-  if (command.data && command.execute) {
-    client.commands.set(command.data.name, command);
-  }
-}
-
 // 📦 Load semua event dari folder events/
 fs.readdirSync("./events").forEach((file) => {
   const event = require(`./events/${file}`);
