@@ -25,16 +25,16 @@ const ROLES = [
 
 module.exports = async (client) => {
   const guild = await client.guilds.fetch(process.env.GUILD_ID);
-  const member = await guild.members.fetch("1346964077309595658"); // 👈 hanya kamu
+  const member = await guild.members.fetch("1346964077309595658"); // 👈 ID kamu
 
   if (!member || member.user.bot) return;
 
   let taggedUsers = {};
-  const fileExists = fs.existsSync(filePath);
-  if (fileExists) {
+  if (fs.existsSync(filePath)) {
     taggedUsers = JSON.parse(fs.readFileSync(filePath, "utf8"));
   }
 
+  // ❌ Sudah pernah dikirimi, skip
   if (taggedUsers[member.id] !== undefined) return;
 
   const role = ROLES.find(r => member.roles.cache.has(r.id));
@@ -53,7 +53,7 @@ module.exports = async (client) => {
 
   try {
     await member.send({
-  content: `✨ *Selamat datang, ${member.user.username}!*
+      content: `✨ *Selamat datang, ${member.user.username}!*
 
 🔰 *Kami melihat kamu telah menerima role eksklusif ${role.tag} di server BananaSkiee Community.*
 
@@ -63,8 +63,8 @@ module.exports = async (client) => {
 ──────────────────────
 
 *Pilih opsi di bawah ini 👇*`,
-  components: [row],
-});
+      components: [row],
+    });
 
     taggedUsers[member.id] = null;
     fs.writeFileSync(filePath, JSON.stringify(taggedUsers, null, 2));
