@@ -1,27 +1,9 @@
 const { config } = require("dotenv");
 const { ActionRowBuilder, ButtonBuilder, ButtonStyle } = require("discord.js");
-const { ROLES } = require("../config");
 config();
 
 const ADMIN_ROLE_ID = "1352279577174605884";
 
-module.exports = {
-  name: "messageCreate",
-  async execute(message, client) {
-    if (message.author.bot) return;
-
-    const prefix = "!";
-    const content = message.content.trim().toLowerCase();
-
-    // Hanya admin yg boleh pakai command !
-    if (content.startsWith(prefix)) {
-      const member = await message.guild.members.fetch(message.author.id);
-      if (!member.roles.cache.has(ADMIN_ROLE_ID)) {
-        return message.reply("❌ Kamu tidak punya izin untuk menggunakan perintah ini.");
-      }
-    }
-
-// Daftar role prioritas (ROLES)
 const ROLES = [
   { id: "1352279577174605884", tag: "[OWNER]" },
   { id: "1352282368043389069", tag: "[ADMIN]" },
@@ -40,7 +22,6 @@ const ROLES = [
   { id: "1352286235233620108", tag: "[MEM]" }
 ];
 
-// Map role ID ke nama keren
 const ROLE_DISPLAY_MAP = {
   "1352279577174605884": "「 👑 」sᴇʀᴠᴇʀ ᴏᴡɴᴇʀ",
   "1352282368043389069": "「 ❗ 」ᴀᴅᴍɪɴɪsᴛʀᴀᴛᴏʀ",
@@ -59,78 +40,96 @@ const ROLE_DISPLAY_MAP = {
   "1352286235233620108": "『〽️』ᴍᴇᴍʙᴇʀ"
 };
 
-// ====== !testdm command ======
-if (content.startsWith("!testdm")) {
-  const args = message.content.trim().split(/\s+/);
-  const user = message.mentions.users.first();
-  const inputTag = args.slice(2).join(" ").trim().toUpperCase(); // Biar bisa nulis "mod" atau "MOD"
+module.exports = {
+  name: "messageCreate",
+  async execute(message, client) {
+    if (message.author.bot) return;
 
-  if (!user || !inputTag) {
-    return message.reply("❌ Format salah. Contoh: `!testdm @user MOD`");
-  }
+    const prefix = "!";
+    const content = message.content.trim().toLowerCase();
 
-  const matchedRole = ROLES.find(r => r.tag.replace(/\[|\]/g, "") === inputTag);
-  if (!matchedRole) {
-    return message.reply("❌ Tag tidak dikenali. Gunakan tag dari daftar ROLES yang valid.");
-  }
+    if (content.startsWith(prefix)) {
+      const member = await message.guild.members.fetch(message.author.id);
+      if (!member.roles.cache.has(ADMIN_ROLE_ID)) {
+        return message.reply("❌ Kamu tidak punya izin untuk menggunakan perintah ini.");
+      }
+    }
 
-  const realTag = matchedRole.tag;
-  const safeTagId = realTag.replace(/[^\w-]/g, "");
+    // ====== !testdm command ======
+    if (content.startsWith("!testdm")) {
+      const args = message.content.trim().split(/\s+/);
+      const user = message.mentions.users.first();
+      const inputTag = args.slice(2).join(" ").trim().toUpperCase();
 
-  const row = new ActionRowBuilder().addComponents(
-    new ButtonBuilder()
-      .setCustomId(`test_use_tag_${safeTagId}`)
-      .setLabel("Pakai Tag")
-      .setStyle(ButtonStyle.Success),
-    new ButtonBuilder()
-      .setCustomId(`test_remove_tag_${safeTagId}`)
-      .setLabel("Hapus Tag")
-      .setStyle(ButtonStyle.Secondary)
-  );
+      if (!user || !inputTag) {
+        return message.reply("❌ Format salah. Contoh: `!testdm @user MOD`");
+      }
 
-  try {
-    const member = await message.guild.members.fetch(user.id);
-    await member.roles.add(matchedRole.id).catch(() => null);
-    console.log(`✅ Role ${realTag} berhasil ditambahkan ke ${user.username}`);
+      const matchedRole = ROLES.find(r => r.tag.replace(/\[|\]/g, "") === inputTag);
+      if (!matchedRole) {
+        return message.reply("❌ Tag tidak dikenali. Gunakan tag dari daftar ROLES yang valid.");
+      }
 
-    const highestDisplayRole = ROLES.find(r => member.roles.cache.has(r.id));
-    const roleDisplay = highestDisplayRole
-      ? ROLE_DISPLAY_MAP[highestDisplayRole.id] || "Tanpa Nama"
-      : "Tanpa Nama";
+      const realTag = matchedRole.tag;
+      const safeTagId = realTag.replace(/[^\w-]/g, "");
 
-    const displayName = user.globalName || user.username;
+      const row = new ActionRowBuilder().addComponents(
+        new ButtonBuilder()
+          .setCustomId(`test_use_tag_${safeTagId}`)
+          .setLabel("Pakai Tag")
+          .setStyle(ButtonStyle.Success),
+        new ButtonBuilder()
+          .setCustomId(`test_remove_tag_${safeTagId}`)
+          .setLabel("Hapus Tag")
+          .setStyle(ButtonStyle.Secondary)
+      );
 
-    await user.send({
-      content: `✨ *Selamat datang, ${displayName}!*  
+      try {
+        const member = await message.guild.members.fetch(user.id);
+        await member.roles.add(matchedRole.id).catch(() => null);
 
-🔰 Kamu menerima tag eksklusif: **${realTag}**  
-📛 Diberikan karena kamu memiliki role: **${roleDisplay}**
+        console.log(`✅ Role ${realTag} berhasil ditambahkan ke ${user.username}`);
+
+        const highestDisplayRole = ROLES.find(r => member.roles.cache.has(r.id));
+        const roleDisplay = highestDisplayRole
+          ? ROLE_DISPLAY_MAP[highestDisplayRole.id] || "Tanpa Nama"
+          : "Tanpa Nama";
+
+        const displayName = user.globalName || user.username;
+
+        await user.send({
+          content: `✨ Selamat datang, ${displayName}!
+
+🔰 Kami melihat kamu telah menerima role eksklusif ${realTag} di server **BananaSkiee Community**.
 
 Ingin menampilkan tag itu di nickname kamu?  
 Contoh: \`${realTag} ${displayName}\`
 
-───────────────────────────
+──────────────────────
 
-Silakan pilih opsi di bawah ini: 👇`,
-      components: [row],
-    });
+Pilih opsi di bawah ini 👇  
+1. Ya, pakai tag (${realTag})  
+2. Tidak, tanpa tag`,
+          components: [row],
+        });
 
-    await message.reply(`✅ DM berhasil dikirim ke ${displayName}`);
-  } catch (err) {
-    console.error("❌ Gagal:", err);
+        await message.reply(`✅ DM berhasil dikirim ke ${displayName}`);
+      } catch (err) {
+        console.error("❌ Gagal:", err);
 
-    if (err.code === 50007) {
-      return message.reply("❌ Tidak bisa mengirim DM. User mungkin menonaktifkan DM dari server.");
+        if (err.code === 50007) {
+          return message.reply("❌ Tidak bisa mengirim DM. User mungkin menonaktifkan DM dari server.");
+        }
+
+        if (err.code === 50013) {
+          return message.reply("❌ Bot tidak punya izin untuk memberi role. Cek urutan role dan permission.");
+        }
+
+        return message.reply("❌ Terjadi kesalahan saat proses pengiriman DM atau pemberian role.");
+      }
     }
 
-    if (err.code === 50013) {
-      return message.reply("❌ Bot tidak punya izin untuk memberi role. Cek urutan role dan permission.");
-    }
-
-    return message.reply("❌ Terjadi kesalahan saat proses pengiriman DM atau pemberian role.");
-  }
-}
-      // ===== Auto Reply Keywords (maks 3 balasan) =====
+    // ====== Auto Reply (maks 3 balasan per keyword) ======
     const autoReplies = {
       pagi: ["Pagi juga! 🌞", "Selamat pagi, semangat ya hari ini!", "Eh, bangun pagi juga kamu 😴"],
       siang: ["Siang juga! 🌤️", "Jangan lupa makan siang ya!", "Siang siang panas bener 🥵"],
