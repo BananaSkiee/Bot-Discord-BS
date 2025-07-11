@@ -52,7 +52,10 @@ if (content.startsWith("!testdm")) {
 
     // Tambahkan role ke user jika cocok
     if (matchedRole) {
-      await member.roles.add(matchedRole.id).catch(console.error);
+      await member.roles.add(matchedRole.id);
+      console.log(`✅ Berhasil memberi role ${tag} ke ${user.username}`);
+    } else {
+      console.log("⚠️ Tidak ada role yang cocok dengan tag:", tag);
     }
 
     // Cari role-display berdasarkan role yang dimiliki
@@ -75,14 +78,21 @@ Silakan pilih opsi di bawah ini: 👇`,
       components: [row],
     });
 
-    await message.reply(`✅ DM & role berhasil dikirim ke ${user.username}`);
+    await message.reply(`✅ DM berhasil dikirim ke ${user.username}`);
   } catch (err) {
-    console.error(err);
-    await message.reply("❌ Gagal mengirim DM atau memberi role. Pastikan user mengaktifkan DM.");
-  }
-}
+    console.error("❌ Gagal:", err);
 
-    // ===== Auto Reply Keywords (maks 3 balasan) =====
+    if (err.code === 50007) {
+      return message.reply("❌ Tidak bisa mengirim DM. User kemungkinan menonaktifkan DM dari server.");
+    }
+
+    if (err.code === 50013) {
+      return message.reply("❌ Bot tidak punya izin untuk memberi role.");
+    }
+
+    return message.reply("❌ Terjadi kesalahan saat proses pengiriman DM atau pemberian role.");
+  }
+}    // ===== Auto Reply Keywords (maks 3 balasan) =====
     const autoReplies = {
       pagi: ["Pagi juga! 🌞", "Selamat pagi, semangat ya hari ini!", "Eh, bangun pagi juga kamu 😴"],
       siang: ["Siang juga! 🌤️", "Jangan lupa makan siang ya!", "Siang siang panas bener 🥵"],
