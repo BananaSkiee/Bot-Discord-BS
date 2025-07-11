@@ -4,37 +4,32 @@ module.exports = (client) => {
   client.on("messageCreate", async (message) => {
     if (!message.guild || message.author.bot) return;
 
-    const isAdmin = message.member.permissions.has("ManageMessages");
+    // ✅ Command sticky (hanya admin/mod)
+    if (message.member.permissions.has("ManageMessages")) {
+      if (message.content.startsWith("!setsticky")) {
+        const args = message.content.slice("!setsticky".length).trim();
+        if (!args)
+          return message.reply("❌ Masukkan pesan sticky-nya setelah !setsticky");
 
-    // ==== 🔧 SET STICKY ====
-    if (isAdmin && message.content.startsWith("!setsticky")) {
-      const args = message.content.slice("!setsticky".length).trim();
-      if (!args)
-        return message.reply("❌ Masukkan isi pesan sticky-nya setelah `!setsticky`.");
+        stickyMessages.set(message.channel.id, {
+          content: args,
+          lastMessageId: null,
+        });
 
-      stickyMessages.set(message.channel.id, {
-        content: args,
-        lastMessageId: null,
-      });
+        return message.reply("✅ Sticky message berhasil disetel.");
+      }
 
-      return message.reply("✅ Sticky message disetel di channel ini.");
-    }
-
-    // ==== 🗑 REMOVE STICKY ====
-    if (isAdmin && message.content.startsWith("!removesticky")) {
-      if (stickyMessages.has(message.channel.id)) {
+      if (message.content.startsWith("!removesticky")) {
         stickyMessages.delete(message.channel.id);
-        return message.reply("🗑 Sticky message berhasil dihapus.");
-      } else {
-        return message.reply("⚠️ Tidak ada sticky message di channel ini.");
+        return message.reply("🗑️ Sticky message berhasil dihapus.");
       }
     }
 
-    // ==== 🔁 TRIGGER STICKY ====
+    // ✅ Jalankan sticky (kalau ada)
     const stickyData = stickyMessages.get(message.channel.id);
     if (!stickyData) return;
 
-    // Hapus sticky sebelumnya
+    // Hapus pesan sticky sebelumnya
     if (stickyData.lastMessageId) {
       try {
         const oldMsg = await message.channel.messages.fetch(
@@ -42,11 +37,11 @@ module.exports = (client) => {
         );
         await oldMsg.delete();
       } catch (err) {
-        // Mungkin sudah dihapus manual, abaikan
+        // mungkin udah kehapus, abaikan
       }
     }
 
-    // Kirim ulang sticky
+    // Kirim sticky baru
     const sent = await message.channel.send(stickyData.content);
     stickyData.lastMessageId = sent.id;
   });
