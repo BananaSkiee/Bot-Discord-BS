@@ -5,7 +5,7 @@ const express = require("express");
 const config = require("./config");
 
 const stickyHandler = require("./sticky");
-const setupSlashCommands = require("./slashCommandSetup");
+const setupSlashCommands = require("./sticky");
 const updateOnline = require("./online"); // 🔊 Update Online VC
 
 const client = new Client({
