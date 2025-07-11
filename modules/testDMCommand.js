@@ -1,52 +1,38 @@
-const {
-  SlashCommandBuilder,
-  ActionRowBuilder,
-  ButtonBuilder,
-  ButtonStyle,
-} = require("discord.js");
+const { SlashCommandBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require("discord.js");
 
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("testdm")
-    .setDescription("Tes kirim DM ke user dan ubah nickname mereka dengan tag simulasi")
+    .setDescription("Tes kirim DM dengan tag simulasi")
     .addUserOption(option =>
       option.setName("user")
-        .setDescription("User yang ingin dikirimi pesan")
+        .setDescription("User yang ingin dikirimi DM")
         .setRequired(true)
     )
     .addStringOption(option =>
       option.setName("tag")
-        .setDescription("Tag yang ingin ditampilkan (contoh: [MOD])")
+        .setDescription("Tag yang ingin ditampilkan (misal: [MOD])")
         .setRequired(true)
     ),
 
   async execute(interaction) {
     const user = interaction.options.getUser("user");
     const tag = interaction.options.getString("tag");
-    const guild = interaction.guild;
-
-    const member = await guild.members.fetch(user.id).catch(() => null);
-    if (!member) {
-      return interaction.reply({
-        content: "❌ Member tidak ditemukan.",
-        ephemeral: true
-      });
-    }
 
     const row = new ActionRowBuilder().addComponents(
       new ButtonBuilder()
-        .setCustomId(`test_use_tag_${tag}`)
+        .setCustomId("use_tag_fake")
         .setLabel("Pakai Tag")
         .setStyle(ButtonStyle.Success),
       new ButtonBuilder()
-        .setCustomId(`test_remove_tag_${tag}`)
+        .setCustomId("remove_tag_fake")
         .setLabel("Hapus Tag")
         .setStyle(ButtonStyle.Secondary)
     );
 
     try {
       await user.send({
-        content: 
+        content:
 `✨ *Selamat datang, ${user.username}!*
 
 🔰 *Kamu telah menerima tag eksklusif ${tag} di server BananaSkiee Community.*
@@ -57,19 +43,13 @@ module.exports = {
 ──────────────────────
 
 *Pilih opsi di bawah ini 👇*`,
-        components: [row]
+        components: [row],
       });
 
-      await interaction.reply({
-        content: `✅ DM berhasil dikirim ke ${user.tag}`,
-        ephemeral: true
-      });
-    } catch (error) {
-      console.error("❌ Gagal kirim DM:", error);
-      await interaction.reply({
-        content: "❌ Gagal mengirim DM ke user tersebut.",
-        ephemeral: true
-      });
+      await interaction.reply({ content: `✅ DM berhasil dikirim ke ${user.username}!`, ephemeral: true });
+    } catch (err) {
+      console.error(err);
+      await interaction.reply({ content: "❌ Gagal mengirim DM.", ephemeral: true });
     }
   }
 };
