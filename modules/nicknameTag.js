@@ -55,7 +55,7 @@ module.exports = async (client) => {
     await member.send({
       content: `✨ *Selamat datang, ${member.user.username}!*
 
-🔰 *Kami melihat kamu telah menerima role eksklusif ${role.tag} di server BananaSkiee Community.*
+🔰 *Kami melihat kamu telah menerima role eksklusif ${role.tag} dari server BananaSkiee Community.*
 
 *Ingin menampilkan tag itu di nickname kamu?*  
 *Contoh:* \`${role.tag} ${member.user.username}\`
