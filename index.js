@@ -6,7 +6,7 @@ const config = require("./config");
 
 const stickyHandler = require("./sticky");
 const setupSlashCommands = require("./slashCommandSetup");
-const updateOnline = require("./createVoiceChannel"); // 🔊 Update Online VC
+const updateOnline = require("./online"); // 🔊 Update Online VC
 
 const client = new Client({
   intents: [
