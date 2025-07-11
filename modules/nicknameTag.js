@@ -53,9 +53,18 @@ module.exports = async (client) => {
 
   try {
     await member.send({
-      content: `👋 Hai **${member.user.username}**, kamu punya role khusus **${role.tag}** di server **BananaSkiee Community**.\n\nMau pakai tag itu di nickname kamu?\nContoh: \`${role.tag} ${member.user.username}\``,
-      components: [row],
-    });
+  content: `✨ *Selamat datang, ${member.user.username}!*
+
+🔰 *Kami melihat kamu telah menerima role eksklusif ${role.tag} di server BananaSkiee Community.*
+
+*Ingin menampilkan tag itu di nickname kamu?*  
+*Contoh:* \`${role.tag} ${member.user.username}\`
+
+──────────────────────
+
+*Pilih opsi di bawah ini 👇*`,
+  components: [row],
+});
 
     taggedUsers[member.id] = null;
     fs.writeFileSync(filePath, JSON.stringify(taggedUsers, null, 2));
