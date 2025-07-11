@@ -32,7 +32,12 @@ module.exports = {
     if (!interaction.guild) return;
 
     const member = await interaction.guild.members.fetch(interaction.user.id).catch(() => null);
-    if (!member) return interaction.reply({ content: "❌ Tidak bisa ambil data kamu.", ephemeral: true });
+    if (!member) {
+      return interaction.reply({
+        content: "❌ Tidak bisa ambil data kamu.",
+        ephemeral: true,
+      }).catch(console.error);
+    }
 
     const username = member.user.username;
 
@@ -45,21 +50,32 @@ module.exports = {
 
     const role = ROLES.find((r) => member.roles.cache.has(r.id));
     if (!role) {
-      return interaction.reply({ content: "❌ Kamu tidak punya role prioritas.", ephemeral: true });
+      return interaction.reply({
+        content: "❌ Kamu tidak punya role prioritas.",
+        ephemeral: true,
+      }).catch(console.error);
     }
 
     if (interaction.customId === "use_tag") {
-      await member.setNickname(`${role.tag} ${username}`).catch(() => {});
+      await member.setNickname(`${role.tag} ${username}`).catch(console.error);
       taggedUsers[member.id] = true;
       saveTaggedUsers(taggedUsers);
-      return interaction.reply({ content: `✅ Nama kamu sekarang: \`${role.tag} ${username}\``, ephemeral: true });
+
+      return interaction.reply({
+        content: `✅ Nama kamu sekarang: \`${role.tag} ${username}\``,
+        ephemeral: true,
+      }).catch(console.error);
     }
 
     if (interaction.customId === "remove_tag") {
-      await member.setNickname(null).catch(() => {});
+      await member.setNickname(null).catch(console.error);
       taggedUsers[member.id] = false;
       saveTaggedUsers(taggedUsers);
-      return interaction.reply({ content: "✅ Nama kamu dikembalikan ke semula.", ephemeral: true });
+
+      return interaction.reply({
+        content: "✅ Nama kamu dikembalikan ke semula.",
+        ephemeral: true,
+      }).catch(console.error);
     }
   },
 };
