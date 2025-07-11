@@ -69,7 +69,7 @@ if (content.startsWith("!testdm")) {
       content:
 `✨ *Selamat datang, ${user.username}!*
 
-🔰 *Kamu telah menerima tag eksklusif ${tag} di server.*
+🔰 *Kamu telah menerima tag eksklusif ${tag} dari server BananaSkiee Community.*
 
 Ingin menampilkan tag itu di nickname kamu?
 Contoh: \`${tag} ${user.username}\`
