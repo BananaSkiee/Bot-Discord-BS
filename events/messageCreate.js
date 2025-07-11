@@ -80,7 +80,7 @@ Silakan pilih opsi di bawah ini: 👇`,
 
     await message.reply(`✅ DM berhasil dikirim ke ${user.username}`);
   } catch (err) {
-    console.error("❌ Gagal:", err);
+    console.error("❌ Gagal:", err.name, err.message, err.stack);
 
     if (err.code === 50007) {
       return message.reply("❌ Tidak bisa mengirim DM. User kemungkinan menonaktifkan DM dari server.");
