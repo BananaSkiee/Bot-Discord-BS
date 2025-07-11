@@ -41,8 +41,8 @@ module.exports = {
     }
 
     // ===== Command: !testdm @user [TAG] =====
-    if (content.startsWith("!testdm")) {
-  const args = message.content.split(" ");
+if (content.startsWith("!testdm")) {
+  const args = message.content.trim().split(/\s+/); // Pisahkan berdasarkan spasi
   const user = message.mentions.users.first();
   const tag = args.slice(2).join(" ").trim();
 
@@ -50,13 +50,16 @@ module.exports = {
     return message.reply("❌ Format salah. Contoh: `!testdm @user [TAG]`");
   }
 
+  // Hapus karakter aneh dari tag agar aman untuk customId
+  const safeTagId = tag.replace(/[^\w-]/g, "");
+
   const row = new ActionRowBuilder().addComponents(
     new ButtonBuilder()
-      .setCustomId(`test_use_tag_${tag}`)
+      .setCustomId(`test_use_tag_${safeTagId}`)
       .setLabel("Pakai Tag")
       .setStyle(ButtonStyle.Success),
     new ButtonBuilder()
-      .setCustomId(`test_remove_tag_${tag}`)
+      .setCustomId(`test_remove_tag_${safeTagId}`)
       .setLabel("Hapus Tag")
       .setStyle(ButtonStyle.Secondary)
   );
@@ -80,7 +83,7 @@ Pilih opsi di bawah ini 👇`,
     await message.reply(`✅ DM berhasil dikirim ke ${user.username}`);
   } catch (err) {
     console.error(err);
-    await message.reply("❌ Gagal mengirim DM.");
+    await message.reply("❌ Gagal mengirim DM. Pastikan user mengaktifkan DM dari server.");
   }
 }
     // ===== Auto-Reply Keyword (max 3 per keyword) =====
