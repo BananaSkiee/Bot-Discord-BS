@@ -58,10 +58,11 @@ if (content.startsWith("!testdm")) {
       console.log("⚠️ Tidak ada role yang cocok dengan tag:", tag);
     }
 
-    // Cari role-display berdasarkan role yang dimiliki
-    const displayRole = member.roles.cache
-      .map((role) => ROLE_DISPLAY_MAP[role.id])
-      .filter(Boolean)[0] || "Tanpa Nama";
+    // Ambil role-display (yang paling tinggi sesuai prioritas ROLES)
+    const displayRole =
+      member.roles.cache
+        .map((role) => ROLE_DISPLAY_MAP[role.id])
+        .filter(Boolean)[0] || "Tanpa Nama";
 
     await user.send({
       content: `✨ *Selamat datang, ${user.username}!*  
@@ -80,20 +81,20 @@ Silakan pilih opsi di bawah ini: 👇`,
 
     await message.reply(`✅ DM berhasil dikirim ke ${user.username}`);
   } catch (err) {
-  console.error("❌ ERROR DETAIL:", err);
+    console.error("❌ Gagal:", err);
 
-  if (err.code === 50007) {
-    return message.reply("❌ Tidak bisa mengirim DM. User kemungkinan menonaktifkan DM dari server.");
-  }
+    if (err.code === 50007) {
+      return message.reply("❌ Tidak bisa mengirim DM. User kemungkinan menonaktifkan DM dari server.");
+    }
 
-  if (err.code === 50013) {
-    return message.reply("❌ Bot tidak punya izin untuk memberi role.");
-  }
+    if (err.code === 50013) {
+      return message.reply("❌ Bot tidak punya izin untuk memberi role.");
+    }
 
-  return message.reply(`❌ Terjadi kesalahan saat proses pengiriman DM atau pemberian role: \`${err.message}\``);
+    return message.reply("❌ Terjadi kesalahan saat proses pengiriman DM atau pemberian role.");
   }
-}  
-    // ===== Auto Reply Keywords (maks 3 balasan) =====
+} 
+      // ===== Auto Reply Keywords (maks 3 balasan) =====
     const autoReplies = {
       pagi: ["Pagi juga! 🌞", "Selamat pagi, semangat ya hari ini!", "Eh, bangun pagi juga kamu 😴"],
       siang: ["Siang juga! 🌤️", "Jangan lupa makan siang ya!", "Siang siang panas bener 🥵"],
