@@ -62,7 +62,7 @@ module.exports = {
       await member.setNickname(`${tag} ${username}`).catch(console.error);
 
       return interaction.reply({
-        content: `🧪 Nickname kamu sekarang (tes): \`${tag} ${username}\``,
+        content: `🧪 Nickname kamu sekarang : \`${tag} ${username}\``,
         ephemeral: true,
       }).catch(console.error);
     }
@@ -71,7 +71,7 @@ module.exports = {
       await member.setNickname(null).catch(console.error);
 
       return interaction.reply({
-        content: "🧪 Nickname kamu dikembalikan ke semula (tes).",
+        content: "🧪 Nickname kamu dikembalikan ke semula .",
         ephemeral: true,
       }).catch(console.error);
     }
