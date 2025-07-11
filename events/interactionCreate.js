@@ -1,38 +1,20 @@
+const fs = require("fs");
+const path = require("path");
+const { ROLES, guildId } = require("../config"); // 🔥 Ambil dari config.js
+
+const filePath = path.join(__dirname, "../data/taggedUsers.json");
+
+function saveTaggedUsers(data) {
+  fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
+}
+
 module.exports = {
   name: "interactionCreate",
   async execute(interaction) {
     if (!interaction.isButton()) return;
 
     const username = interaction.user.username;
-
-    const fs = require("fs");
-    const path = require("path");
-
-    const filePath = path.join(__dirname, "../data/taggedUsers.json");
-    const ROLES = [
-      { id: process.env.ROLE_1_ID, tag: "[OWNER]" },
-      { id: process.env.ROLE_2_ID, tag: "[ADMIN]" },
-      { id: process.env.ROLE_3_ID, tag: "[MOD]" },
-      { id: process.env.ROLE_4_ID, tag: "[BOOST]" },
-      { id: process.env.ROLE_5_ID, tag: "[CREATOR]" },
-      { id: process.env.ROLE_6_ID, tag: "[ALUMNI]" },
-      { id: process.env.ROLE_7_ID, tag: "[100]" },
-      { id: process.env.ROLE_8_ID, tag: "[80]" },
-      { id: process.env.ROLE_9_ID, tag: "[70]" },
-      { id: process.env.ROLE_10_ID, tag: "[60]" },
-      { id: process.env.ROLE_11_ID, tag: "[55]" },
-      { id: process.env.ROLE_12_ID, tag: "[VIP]" },
-      { id: process.env.ROLE_13_ID, tag: "[FRIEND]" },
-      { id: process.env.ROLE_14_ID, tag: "[PARTNER]" },
-      { id: process.env.ROLE_15_ID, tag: "[MEM]" },
-    ];
-
-    function saveTaggedUsers(data) {
-      fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
-    }
-
-    // 🛡️ HARUS CEK GUILD DULU (karena DM tidak punya guild)
-    const guild = interaction.client.guilds.cache.get(process.env.GUILD_ID);
+    const guild = interaction.client.guilds.cache.get(guildId);
     if (!guild) return;
 
     const member = await guild.members.fetch(interaction.user.id).catch(() => null);
