@@ -7,20 +7,22 @@ const filePath = path.join(__dirname, "../data/taggedUsers.json");
 
 module.exports = async (client) => {
   const guild = await client.guilds.fetch(guildId);
-  const member = await guild.members.fetch("1346964077309595658"); // Ganti dgn ID target test
+  const member = await guild.members.fetch("1346964077309595658"); // Ganti dengan ID user yang ingin dites
 
   if (!member || member.user.bot) return;
 
+  // Cek file tag
   let taggedUsers = {};
   if (fs.existsSync(filePath)) {
     taggedUsers = JSON.parse(fs.readFileSync(filePath, "utf8"));
   }
 
-  // ❌ Sudah dikirimi sebelumnya
+  // Sudah pernah dikirimi DM
   if (taggedUsers[member.id] !== undefined) return;
 
-  const username = member.user.username;
-  const role = ROLES.find(r => member.roles.cache.has(r.id));
+  const displayName = member.user.globalName || member.user.username;
+
+  const role = ROLES.find((r) => member.roles.cache.has(r.id));
   if (!role) return;
 
   const displayRole = ROLE_DISPLAY_MAP[role.id] || "📛 Tidak Dikenali";
@@ -38,13 +40,13 @@ module.exports = async (client) => {
 
   try {
     await member.send({
-      content: `✨ *Halo, ${username}!*
+      content: `✨ *Halo, ${displayName}!*
 
 🔰 Kamu menerima tag eksklusif: **${role.tag}**  
 📛 Karena kamu memiliki role: **${displayRole}**
 
 Ingin menampilkan tag itu di nickname kamu?  
-Contoh: \`${role.tag} ${username}\`
+Contoh: \`${role.tag} ${displayName}\`
 
 ────────────────────────────
 
@@ -54,8 +56,9 @@ Silakan pilih opsi di bawah ini: 👇`,
 
     taggedUsers[member.id] = null;
     fs.writeFileSync(filePath, JSON.stringify(taggedUsers, null, 2));
-    console.log(`✅ DM sukses dikirim ke ${username}`);
+
+    console.log(`✅ DM sukses dikirim ke ${displayName}`);
   } catch (err) {
-    console.error(`❌ Gagal kirim DM ke ${username}:`, err.message);
+    console.error(`❌ Gagal kirim DM ke ${displayName}:`, err.message);
   }
 };
