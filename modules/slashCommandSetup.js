@@ -5,29 +5,29 @@ require("dotenv").config();
 
 const commands = [];
 
-const commandFiles = fs
-  .readdirSync("./modules")
-  .filter(file => file.endsWith("Command.js"));
+// Ambil semua command dari folder modules/
+const commandFiles = fs.readdirSync("./modules").filter(file => file.endsWith("Command.js"));
 
 for (const file of commandFiles) {
-  const command = require(`../modules/${file}`);
-  commands.push(command.data.toJSON());
+  const command = require(`./${file}`);
+  if (command.data) {
+    commands.push(command.data.toJSON());
+  }
 }
 
 const rest = new REST({ version: "10" }).setToken(process.env.TOKEN);
 
 (async () => {
   try {
-    console.log("🔁 Refreshing slash commands...");
+    console.log("🚀 Mendaftarkan slash command...");
+
     await rest.put(
-      Routes.applicationGuildCommands(
-        process.env.CLIENT_ID,
-        config.guildId
-      ),
+      Routes.applicationGuildCommands(process.env.CLIENT_ID, config.guildId),
       { body: commands }
     );
-    console.log("✅ Slash commands updated!");
+
+    console.log("✅ Slash command berhasil didaftarkan.");
   } catch (error) {
-    console.error(error);
+    console.error("❌ Gagal daftar command:", error);
   }
 })();
