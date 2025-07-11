@@ -1,34 +1,61 @@
-const { REST, Routes } = require("discord.js");
-const fs = require("fs");
-const path = require("path");
-require("dotenv").config();
+const { SlashCommandBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require("discord.js");
 
-const CLIENT_ID = process.env.CLIENT_ID;
-const GUILD_ID = process.env.GUILD_ID;
-const TOKEN = process.env.TOKEN;
+module.exports = {
+  data: new SlashCommandBuilder()
+    .setName("testdm")
+    .setDescription("Tes kirim DM ke user seolah-olah dia dapat tag eksklusif")
+    .addUserOption(option =>
+      option.setName("user")
+        .setDescription("User yang ingin dikirimi pesan")
+        .setRequired(true)
+    )
+    .addStringOption(option =>
+      option.setName("tag")
+        .setDescription("Tag yang ingin ditampilkan (contoh: [MOD])")
+        .setRequired(true)
+    ),
 
-const commands = [];
+  async execute(interaction) {
+    const user = interaction.options.getUser("user");
+    const tag = interaction.options.getString("tag");
 
-const commandFiles = fs.readdirSync("./modules").filter(file => file.endsWith("Command.js"));
-
-for (const file of commandFiles) {
-  const command = require(`./${file}`);
-  if (command.data) {
-    commands.push(command.data.toJSON());
-  }
-}
-
-const rest = new REST({ version: "10" }).setToken(TOKEN);
-
-(async () => {
-  try {
-    console.log("🔁 Mendaftarkan ulang semua slash command...");
-    await rest.put(
-      Routes.applicationGuildCommands(CLIENT_ID, GUILD_ID),
-      { body: commands }
+    const row = new ActionRowBuilder().addComponents(
+      new ButtonBuilder()
+        .setCustomId("use_tag_fake")
+        .setLabel("Pakai Tag")
+        .setStyle(ButtonStyle.Success),
+      new ButtonBuilder()
+        .setCustomId("remove_tag_fake")
+        .setLabel("Hapus Tag")
+        .setStyle(ButtonStyle.Secondary)
     );
-    console.log("✅ Semua slash command berhasil didaftarkan!");
-  } catch (error) {
-    console.error("❌ Gagal daftar slash command:", error);
-  }
-})();
+
+    try {
+      await user.send({
+        content:
+`✨ *Selamat datang, ${user.username}!*
+
+🔰 *Kamu telah menerima tag eksklusif ${tag} di server BananaSkiee Community.*
+
+*Ingin menampilkan tag itu di nickname kamu?*
+*Contoh:* \`${tag} ${user.username}\`
+
+──────────────────────
+
+*Pilih opsi di bawah ini 👇*`,
+        components: [row],
+      });
+
+      await interaction.reply({
+        content: `✅ DM berhasil dikirim ke ${user.tag}`,
+        ephemeral: true
+      });
+    } catch (error) {
+      console.error("❌ Gagal kirim DM:", error);
+      await interaction.reply({
+        content: "❌ Gagal mengirim DM ke user tersebut.",
+        ephemeral: true
+      });
+    }
+  },
+};
