@@ -41,49 +41,48 @@ module.exports = {
     }
 
     // ===== Command: !testdm @user [TAG] =====
-    if (content.startsWith(`${prefix}testdm`)) {
-      const args = message.content.split(" ");
-      if (args.length < 3 || message.mentions.users.size === 0) {
-        return message.reply("❌ Format salah. Contoh: `!testdm @user [TAG]`");
-      }
+    if (content.startsWith("!testdm")) {
+  const args = message.content.split(" ");
+  const user = message.mentions.users.first();
+  const tag = args.slice(2).join(" ").trim();
 
-      const user = message.mentions.users.first();
-      const tag = args.slice(2).join(" ");
+  if (!user || !tag) {
+    return message.reply("❌ Format salah. Contoh: `!testdm @user [TAG]`");
+  }
 
-      const row = new ActionRowBuilder().addComponents(
-        new ButtonBuilder()
-          .setCustomId("use_tag_fake")
-          .setLabel("Pakai Tag")
-          .setStyle(ButtonStyle.Success),
-        new ButtonBuilder()
-          .setCustomId("remove_tag_fake")
-          .setLabel("Hapus Tag")
-          .setStyle(ButtonStyle.Secondary)
-      );
+  const row = new ActionRowBuilder().addComponents(
+    new ButtonBuilder()
+      .setCustomId(`test_use_tag_${tag}`)
+      .setLabel("Pakai Tag")
+      .setStyle(ButtonStyle.Success),
+    new ButtonBuilder()
+      .setCustomId(`test_remove_tag_${tag}`)
+      .setLabel("Hapus Tag")
+      .setStyle(ButtonStyle.Secondary)
+  );
 
-      try {
-        await user.send({
-          content: `✨ *Selamat datang, ${user.username}!*
+  try {
+    await user.send({
+      content:
+`✨ *Selamat datang, ${user.username}!*
 
-🔰 *Kamu telah menerima tag eksklusif ${tag} di server BananaSkiee Community.*
+🔰 *Kamu telah menerima tag eksklusif ${tag} di server.*
 
-*Ingin menampilkan tag itu di nickname kamu?*
-*Contoh:* \`${tag} ${user.username}\`
+Ingin menampilkan tag itu di nickname kamu?
+Contoh: \`${tag} ${user.username}\`
 
 ──────────────────────
 
-*Pilih opsi di bawah ini 👇*`,
-          components: [row],
-        });
+Pilih opsi di bawah ini 👇`,
+      components: [row],
+    });
 
-        await message.reply(`✅ DM berhasil dikirim ke ${user.username}`);
-      } catch (err) {
-        console.error(err);
-        await message.reply("❌ Gagal mengirim DM.");
-      }
-      return;
-    }
-
+    await message.reply(`✅ DM berhasil dikirim ke ${user.username}`);
+  } catch (err) {
+    console.error(err);
+    await message.reply("❌ Gagal mengirim DM.");
+  }
+}
     // ===== Auto-Reply Keyword (max 3 per keyword) =====
     const autoReplies = {
       pagi: [
