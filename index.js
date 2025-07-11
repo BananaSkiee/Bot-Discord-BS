@@ -1,12 +1,12 @@
 require("dotenv").config();
-const { Client, GatewayIntentBits } = require("discord.js");
+const { Client, GatewayIntentBits, Collection } = require("discord.js");
 const fs = require("fs");
 const express = require("express");
 const config = require("./config");
 
 const stickyHandler = require("./sticky");
-const updateOnline = require("./online"); // ðŸ”Š Update Online VC
-const handleNickname = require("./modules/nicknameTag"); // âœ… Fitur DM tag nickname
+const updateOnline = require("./online");
+const handleNickname = require("./modules/nicknameTag");
 
 const client = new Client({
   intents: [
@@ -18,14 +18,24 @@ const client = new Client({
   ],
 });
 
-// ðŸŒ Web server untuk Railway
+// 🌐 Web server untuk Railway
 const app = express();
 app.get("/", (_, res) => res.send("Bot Akira aktif"));
 app.listen(process.env.PORT || 3000, () => {
-  console.log("ðŸŒ Web server hidup");
+  console.log("🌐 Web server hidup");
 });
 
-// ðŸ”„ Load semua event dari folder events/
+// 🧠 Simpan semua Slash Command
+client.commands = new Collection();
+const commandFiles = fs.readdirSync("./modules").filter(file => file.endsWith("Command.js"));
+for (const file of commandFiles) {
+  const command = require(`./modules/${file}`);
+  if (command.data && command.execute) {
+    client.commands.set(command.data.name, command);
+  }
+}
+
+// 📦 Load semua event dari folder events/
 fs.readdirSync("./events").forEach((file) => {
   const event = require(`./events/${file}`);
   if (event.once) {
@@ -35,41 +45,52 @@ fs.readdirSync("./events").forEach((file) => {
   }
 });
 
-// ðŸ”” Saat bot siap
+// ✅ Saat bot siap
 client.once("ready", async () => {
-  console.log(`ðŸ¤– Bot siap sebagai ${client.user.tag}`);
+  console.log(`🤖 Bot siap sebagai ${client.user.tag}`);
 
-  // âœ… Ambil guild
   const guild = client.guilds.cache.get(config.guildId);
   if (!guild) {
-    return console.error("âŒ Gagal menemukan guild dengan ID:", config.guildId);
+    return console.error("❌ Gagal menemukan guild dengan ID:", config.guildId);
   }
 
-  // ðŸ”Š Update voice channel "Online" pertama kali
-  await updateOnline(guild);
-
-  // ðŸ” Update voice channel setiap 1 menit 30 detik
+  await updateOnline(guild); // Update pertama
   setInterval(async () => {
-    await updateOnline(guild);
+    await updateOnline(guild); // Update tiap 1,5 menit
   }, 90000);
 
-  // ðŸ“Œ Pasang sticky message handler
   stickyHandler(client);
-
-  // ðŸŽ­ Jalankan fitur DM Tag Nickname otomatis
-  handleNickname(client); // â¬…ï¸ Ini penting!
+  handleNickname(client); // Fitur DM tag nickname
 });
 
-// ðŸ“¨ Auto-reply atau command lain via message
+// 🎯 Jalankan Slash Command
+client.on("interactionCreate", async (interaction) => {
+  if (!interaction.isChatInputCommand()) return;
+
+  const command = client.commands.get(interaction.commandName);
+  if (!command) return;
+
+  try {
+    await command.execute(interaction, client);
+  } catch (error) {
+    console.error(error);
+    await interaction.reply({
+      content: "❌ Terjadi error saat menjalankan perintah.",
+      ephemeral: true,
+    });
+  }
+});
+
+// 💬 Auto-reply atau command biasa
 client.on("messageCreate", async (message) => {
   if (message.author.bot) return;
-  // Tambahkan fitur message-based di sini
+  // Tambahkan auto-reply manual di sini
 });
 
-// ðŸ’¥ Tangani error global
+// 🚨 Tangani error global
 process.on("unhandledRejection", (err) => {
-  console.error("ðŸ’¥ Unhandled Error:", err);
+  console.error("🚨 Unhandled Error:", err);
 });
 
-// ðŸ” Login ke bot
+// 🔐 Login ke bot
 client.login(config.token);
