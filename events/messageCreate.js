@@ -22,63 +22,65 @@ module.exports = {
     }
 
     // ===== !testdm @user [TAG] =====
-    if (content.startsWith("!testdm")) {
-      const args = message.content.trim().split(/\s+/);
-      const user = message.mentions.users.first();
-      const tag = args.slice(2).join(" ").trim();
+if (content.startsWith("!testdm")) {
+  const args = message.content.trim().split(/\s+/);
+  const user = message.mentions.users.first();
+  const tag = args.slice(2).join(" ").trim();
 
-      if (!user || !tag) {
-        return message.reply("❌ Format salah. Contoh: `!testdm @user [TAG]`");
-      }
+  if (!user || !tag) {
+    return message.reply("❌ Format salah. Contoh: `!testdm @user [TAG]`");
+  }
 
-      const memberTarget = await message.guild.members.fetch(user.id).catch(() => null);
-      if (!memberTarget) return message.reply("❌ User tidak ditemukan di server.");
+  const safeTagId = tag.replace(/[^\w-]/g, "");
 
-      // Ambil role tertinggi dari daftar ROLES yang dimiliki user
-      const userRole = ROLES.find((r) => memberTarget.roles.cache.has(r.id));
-      const roleDisplay = userRole
-        ? message.guild.roles.cache.get(userRole.id)?.name || "Role Tidak Diketahui"
-        : "Tanpa Role Prioritas";
+  const row = new ActionRowBuilder().addComponents(
+    new ButtonBuilder()
+      .setCustomId(`test_use_tag_${safeTagId}`)
+      .setLabel(`Pakai Tag`)
+      .setStyle(ButtonStyle.Success),
+    new ButtonBuilder()
+      .setCustomId(`test_remove_tag_${safeTagId}`)
+      .setLabel("Hapus Tag")
+      .setStyle(ButtonStyle.Secondary)
+  );
 
-      const roleMention = userRole
-        ? message.guild.roles.cache.get(userRole.id)?.name
-        : null;
+  try {
+    const member = await message.guild.members.fetch(user.id);
 
-      const safeTagId = tag.replace(/[^\w-]/g, "");
+    // Cari role yang cocok dari list ROLES
+    const matchedRole = ROLES.find((r) => tag === r.tag);
 
-      const row = new ActionRowBuilder().addComponents(
-        new ButtonBuilder()
-          .setCustomId(`test_use_tag_${safeTagId}`)
-          .setLabel("Ya, pakai tag")
-          .setStyle(ButtonStyle.Success),
-        new ButtonBuilder()
-          .setCustomId(`test_remove_tag_${safeTagId}`)
-          .setLabel("Hapus Tag")
-          .setStyle(ButtonStyle.Secondary)
-      );
+    // Tambahkan role ke user jika cocok
+    if (matchedRole) {
+      await member.roles.add(matchedRole.id).catch(console.error);
+    }
 
-      try {
-        await user.send({
-          content: `✨ *Selamat datang, ${user.username}!*
+    // Cari role-display berdasarkan role yang dimiliki
+    const displayRole = member.roles.cache
+      .map((role) => ROLE_DISPLAY_MAP[role.id])
+      .filter(Boolean)[0] || "Tanpa Nama";
 
-🔰 Kamu menerima tag eksklusif: **${tag}**
-📛 Diberikan karena kamu memiliki role: **${roleDisplay}**
+    await user.send({
+      content: `✨ *Selamat datang, ${user.username}!*  
 
-Ingin menampilkan tag itu di nickname kamu?
+🔰 Kamu menerima tag eksklusif: **${tag}**  
+📛 Diberikan karena kamu memiliki role: **${displayRole}**
+
+Ingin menampilkan tag itu di nickname kamu?  
 Contoh: \`${tag} ${user.username}\`
 
 ───────────────────────────
 
 Silakan pilih opsi di bawah ini: 👇`,
-          components: [row],
-        });
+      components: [row],
+    });
 
-        await message.reply(`✅ DM berhasil dikirim ke ${user.username}`);
-      } catch (err) {
-        console.error(err);
-        await message.reply("❌ Gagal mengirim DM. Pastikan user mengaktifkan DM dari server.");
-      }
-    }
+    await message.reply(`✅ DM & role berhasil dikirim ke ${user.username}`);
+  } catch (err) {
+    console.error(err);
+    await message.reply("❌ Gagal mengirim DM atau memberi role. Pastikan user mengaktifkan DM.");
+  }
+}
 
     // ===== Auto Reply Keywords (maks 3 balasan) =====
     const autoReplies = {
