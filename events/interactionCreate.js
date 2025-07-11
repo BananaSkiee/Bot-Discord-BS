@@ -1,9 +1,19 @@
+const fs = require("fs");
+const path = require("path");
+
+const filePath = path.join(__dirname, "../data/taggedUsers.json");
+
 module.exports = {
   name: "interactionCreate",
   async execute(interaction, client) {
     if (!interaction.isButton()) return;
+    if (!interaction.guild) return;
 
-    const member = await interaction.guild.members.fetch(interaction.user.id);
+    const member = await interaction.guild.members.fetch(interaction.user.id).catch(() => null);
+    if (!member) {
+      return interaction.reply({ content: "❌ Tidak bisa menemukan member kamu.", ephemeral: true });
+    }
+
     const username = member.user.username;
 
     const ROLES = [
@@ -24,19 +34,52 @@ module.exports = {
       { id: process.env.ROLE_15_ID, tag: '[MEM]' },
     ];
 
+    let taggedUsers = {};
+    if (fs.existsSync(filePath)) {
+      taggedUsers = JSON.parse(fs.readFileSync(filePath, "utf8"));
+    }
+
     const role = ROLES.find(r => member.roles.cache.has(r.id));
     if (!role) {
       return interaction.reply({ content: "❌ Kamu tidak punya role prioritas.", ephemeral: true });
     }
 
     if (interaction.customId === "use_tag") {
-      await member.setNickname(`${role.tag} ${username}`).catch(() => {});
-      return interaction.reply({ content: `✅ Nama kamu sekarang: \`${role.tag} ${username}\``, ephemeral: true });
+      const newName = `${role.tag} ${username}`;
+
+      try {
+        await member.setNickname(newName);
+        taggedUsers[member.id] = {
+          status: "yes",
+          original: username
+        };
+        fs.writeFileSync(filePath, JSON.stringify(taggedUsers, null, 2));
+        return interaction.reply({
+          content: `✅ Nama kamu sekarang: \`${newName}\``,
+          ephemeral: true
+        });
+      } catch (err) {
+        return interaction.reply({ content: "❌ Gagal mengganti nickname.", ephemeral: true });
+      }
     }
 
     if (interaction.customId === "remove_tag") {
-      await member.setNickname(null).catch(() => {});
-      return interaction.reply({ content: `✅ Nama kamu dikembalikan ke semula.`, ephemeral: true });
+      const original = taggedUsers[member.id]?.original || username;
+
+      try {
+        await member.setNickname(original);
+        taggedUsers[member.id] = {
+          status: "no",
+          original
+        };
+        fs.writeFileSync(filePath, JSON.stringify(taggedUsers, null, 2));
+        return interaction.reply({
+          content: `✅ Nama kamu dikembalikan ke: \`${original}\``,
+          ephemeral: true
+        });
+      } catch (err) {
+        return interaction.reply({ content: "❌ Gagal menghapus tag.", ephemeral: true });
+      }
     }
   }
 };
