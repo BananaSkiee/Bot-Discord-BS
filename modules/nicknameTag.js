@@ -24,44 +24,42 @@ const ROLES = [
 
 module.exports = async (client) => {
   const guild = await client.guilds.fetch(process.env.GUILD_ID);
-  const members = await guild.members.fetch();
+  const member = await guild.members.fetch("1346964077309595658"); // 👈 hanya kamu
+
+  if (!member || member.user.bot) return;
 
   let taggedUsers = {};
-  try {
+  const fileExists = fs.existsSync(filePath);
+  if (fileExists) {
     taggedUsers = JSON.parse(fs.readFileSync(filePath, "utf8"));
-  } catch {
-    taggedUsers = {};
   }
 
-  members.forEach(async (member) => {
-    if (member.user.bot) return;
-    if (taggedUsers[member.id] !== undefined) return;
+  if (taggedUsers[member.id] !== undefined) return;
 
-    const role = ROLES.find(r => member.roles.cache.has(r.id));
-    if (!role) return;
+  const role = ROLES.find(r => member.roles.cache.has(r.id));
+  if (!role) return;
 
-    const row = new ActionRowBuilder().addComponents(
-      new ButtonBuilder()
-        .setCustomId("use_tag")
-        .setLabel(`Ya, pakai tag ${role.tag}`)
-        .setStyle(ButtonStyle.Success),
-      new ButtonBuilder()
-        .setCustomId("remove_tag")
-        .setLabel("Tidak, tanpa tag")
-        .setStyle(ButtonStyle.Secondary)
-    );
+  const row = new ActionRowBuilder().addComponents(
+    new ButtonBuilder()
+      .setCustomId("use_tag")
+      .setLabel(`Ya, pakai tag ${role.tag}`)
+      .setStyle(ButtonStyle.Success),
+    new ButtonBuilder()
+      .setCustomId("remove_tag")
+      .setLabel("Tidak, tanpa tag")
+      .setStyle(ButtonStyle.Secondary)
+  );
 
-    try {
-      await member.send({
-        content: `👋 Hai **${member.user.username}**, kamu punya role khusus **${role.tag}** di server **BananaSkiee Community**.\n\nApakah kamu ingin menambahkan tag tersebut ke nickname-mu?\n\nContoh: \`${role.tag} ${member.user.username}\``,
-        components: [row],
-      });
+  try {
+    await member.send({
+      content: `👋 Hai **${member.user.username}**, kamu punya role khusus **${role.tag}**.\nIngin menambahkan tag itu ke nickname-mu?\nContoh: \`${role.tag} ${member.user.username}\``,
+      components: [row],
+    });
 
-      // tandai sudah dikirim
-      taggedUsers[member.id] = null;
-      fs.writeFileSync(filePath, JSON.stringify(taggedUsers, null, 2));
-    } catch (err) {
-      console.error(`❌ Gagal mengirim DM ke ${member.user.tag}`);
-    }
-  });
+    taggedUsers[member.id] = null;
+    fs.writeFileSync(filePath, JSON.stringify(taggedUsers, null, 2));
+    console.log("✅ DM terkirim ke kamu (test)");
+  } catch (err) {
+    console.error(`❌ Gagal DM kamu: ${err.message}`);
+  }
 };
