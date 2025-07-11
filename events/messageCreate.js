@@ -80,20 +80,9 @@ Silakan pilih opsi di bawah ini: 👇`,
     });
 
     await message.reply(`✅ DM berhasil dikirim ke ${user.username}`);
-  } catch (err) {
-    console.error("❌ Gagal:", err);
+  } console.error("❌ ERROR DETAIL:", err);
 
-    if (err.code === 50007) {
-      return message.reply("❌ Tidak bisa mengirim DM. User kemungkinan menonaktifkan DM dari server.");
-    }
-
-    if (err.code === 50013) {
-      return message.reply("❌ Bot tidak punya izin untuk memberi role.");
-    }
-
-    return message.reply("❌ Terjadi kesalahan saat proses pengiriman DM atau pemberian role.");
-  }
-} 
+return message.reply(`❌ Terjadi kesalahan saat proses pengiriman DM atau pemberian role: \`${err.message}\``);
       // ===== Auto Reply Keywords (maks 3 balasan) =====
     const autoReplies = {
       pagi: ["Pagi juga! 🌞", "Selamat pagi, semangat ya hari ini!", "Eh, bangun pagi juga kamu 😴"],
