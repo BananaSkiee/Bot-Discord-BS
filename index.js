@@ -5,8 +5,6 @@ const express = require("express");
 const config = require("./config");
 
 const stickyHandler = require("./sticky");
-const createVoiceChannel = require("./createVoiceChannel");
-const handleNickname = require("./nicknameTag");
 const setupSlashCommands = require("./slashCommandSetup");
 
 const client = new Client({
