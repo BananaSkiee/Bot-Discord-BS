@@ -1,56 +1,27 @@
 const { config } = require("dotenv");
 const { ActionRowBuilder, ButtonBuilder, ButtonStyle } = require("discord.js");
+const { ROLES } = require("../config");
 config();
 
-const ALLOWED_ROLE_ID = "1352279577174605884"; // Hanya role admin ini yg bisa pakai command (!)
+const ADMIN_ROLE_ID = "1352279577174605884";
 
 module.exports = {
   name: "messageCreate",
   async execute(message, client) {
     if (message.author.bot) return;
 
-    const content = message.content.toLowerCase();
     const prefix = "!";
+    const content = message.content.trim().toLowerCase();
 
-    // ✅ Hanya role admin yang bisa pakai command (!)
+    // Hanya admin yg boleh pakai command !
     if (content.startsWith(prefix)) {
       const member = await message.guild.members.fetch(message.author.id);
-      if (!member.roles.cache.has(ALLOWED_ROLE_ID)) {
+      if (!member.roles.cache.has(ADMIN_ROLE_ID)) {
         return message.reply("❌ Kamu tidak punya izin untuk menggunakan perintah ini.");
       }
     }
 
-    // ===== Command: !testucapan pagi/siang/sore/malam =====
-    if (content.startsWith(`${prefix}testucapan`)) {
-      const args = content.split(" ");
-      const waktu = args[1];
-      const channelId = process.env.AUTO_CHAT_CHANNEL_ID;
-      const targetChannel = client.channels.cache.get(channelId);
-
-      if (!waktu || !["pagi", "siang", "sore", "malam"].includes(waktu)) {
-        return message.reply("❌ Format salah. Gunakan: `!testucapan pagi/siang/sore/malam`");
-      }
-
-      const ucapanMap = {
-        pagi: "🌤️ Selamat pagi semua! Semangat menjalani harinya ya~",
-        siang: "☀️ Selamat siang! Jangan lupa makan siang 🍱",
-        sore: "🌇 Selamat sore! Istirahat sejenak yuk~",
-        malam: "🌙 Selamat malam! Waktunya tidur nyenyak 😴",
-      };
-
-      if (!targetChannel) return message.reply("❌ Channel ucapan tidak ditemukan.");
-
-      try {
-        await targetChannel.send(ucapanMap[waktu]);
-        await message.reply(`✅ Ucapan ${waktu} berhasil dikirim ke <#${channelId}>`);
-      } catch (err) {
-        console.error(err);
-        await message.reply("❌ Gagal mengirim ucapan.");
-      }
-      return;
-    }
-
-    // ===== Command: !testdm @user [TAG] =====
+    // ===== !testdm @user [TAG] =====
     if (content.startsWith("!testdm")) {
       const args = message.content.trim().split(/\s+/);
       const user = message.mentions.users.first();
@@ -60,12 +31,25 @@ module.exports = {
         return message.reply("❌ Format salah. Contoh: `!testdm @user [TAG]`");
       }
 
+      const memberTarget = await message.guild.members.fetch(user.id).catch(() => null);
+      if (!memberTarget) return message.reply("❌ User tidak ditemukan di server.");
+
+      // Ambil role tertinggi dari daftar ROLES yang dimiliki user
+      const userRole = ROLES.find((r) => memberTarget.roles.cache.has(r.id));
+      const roleDisplay = userRole
+        ? message.guild.roles.cache.get(userRole.id)?.name || "Role Tidak Diketahui"
+        : "Tanpa Role Prioritas";
+
+      const roleMention = userRole
+        ? message.guild.roles.cache.get(userRole.id)?.name
+        : null;
+
       const safeTagId = tag.replace(/[^\w-]/g, "");
 
       const row = new ActionRowBuilder().addComponents(
         new ButtonBuilder()
           .setCustomId(`test_use_tag_${safeTagId}`)
-          .setLabel("Pakai Tag ${role.tag}")
+          .setLabel("Pakai Tag ")
           .setStyle(ButtonStyle.Success),
         new ButtonBuilder()
           .setCustomId(`test_remove_tag_${safeTagId}`)
@@ -75,17 +59,17 @@ module.exports = {
 
       try {
         await user.send({
-          content:
-`✨ *Selamat datang, ${user.username}!*
+          content: `✨ *Selamat datang, ${user.username}!*
 
-🔰 *Kamu telah menerima tag eksklusif ${tag} dari server BananaSkiee Community.*
+🔰 Kamu menerima tag eksklusif: **${tag}**
+📛 Diberikan karena kamu memiliki role: **${roleDisplay}**
 
 Ingin menampilkan tag itu di nickname kamu?
 Contoh: \`${tag} ${user.username}\`
 
-──────────────────────
+───────────────────────────
 
-Pilih opsi di bawah ini 👇`,
+Silakan pilih opsi di bawah ini: 👇`,
           components: [row],
         });
 
@@ -96,7 +80,7 @@ Pilih opsi di bawah ini 👇`,
       }
     }
 
-    // ===== Auto-Reply Keyword (max 3 per keyword) =====
+    // ===== Auto Reply Keywords (maks 3 balasan) =====
     const autoReplies = {
       pagi: ["Pagi juga! 🌞", "Selamat pagi, semangat ya hari ini!", "Eh, bangun pagi juga kamu 😴"],
       siang: ["Siang juga! 🌤️", "Jangan lupa makan siang ya!", "Siang siang panas bener 🥵"],
