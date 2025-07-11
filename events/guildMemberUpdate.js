@@ -7,16 +7,16 @@ const ROLES = [
   { id: process.env.ROLE_3_ID, tag: '[MOD]' },
   { id: process.env.ROLE_4_ID, tag: '[BOOST]' },
   { id: process.env.ROLE_5_ID, tag: '[CREATOR]' },
-  { id: process.env.ROLE_6_ID, tag: '[PARTNER]' },
-  { id: process.env.ROLE_7_ID, tag: '[ALUMNI]' },
-  { id: process.env.ROLE_8_ID, tag: '[100]' },
-  { id: process.env.ROLE_9_ID, tag: '[80]' },
-  { id: process.env.ROLE_10_ID, tag: '[70]' },
-  { id: process.env.ROLE_11_ID, tag: '[60]' },
-  { id: process.env.ROLE_12_ID, tag: '[55]' },
-  { id: process.env.ROLE_13_ID, tag: '[VIP]' },
-  { id: process.env.ROLE_14_ID, tag: '[FRIEND]' },
-  { id: process.env.ROLE_15_ID, tag: '[MEM]' },
+  { id: process.env.ROLE_6_ID, tag: '[ALUMNI]' },
+  { id: process.env.ROLE_7_ID, tag: '[100]' },
+  { id: process.env.ROLE_8_ID, tag: '[80]' },
+  { id: process.env.ROLE_9_ID, tag: '[70]' },
+  { id: process.env.ROLE_10_ID, tag: '[60]' },
+  { id: process.env.ROLE_11_ID, tag: '[55]' },
+  { id: process.env.ROLE_12_ID, tag: '[VIP]' },
+  { id: process.env.ROLE_13_ID, tag: '[FRIEND]' },
+  { id: process.env.ROLE_14_ID, tag: '[PARTNER]' },
+  { id: process.env.ROLE_15_ID, tag: '[MEM]' }
 ];
 
 module.exports = {
