@@ -6,6 +6,7 @@ const config = require("./config");
 
 const stickyHandler = require("./sticky");
 const updateOnline = require("./online"); // 🔊 Update Online VC
+const handleNickname = require("./modules/nicknameTag"); // ✅ Fitur DM tag nickname
 
 const client = new Client({
   intents: [
@@ -54,6 +55,9 @@ client.once("ready", async () => {
 
   // 📌 Pasang sticky message handler
   stickyHandler(client);
+
+  // 🎭 Jalankan fitur DM Tag Nickname otomatis
+  handleNickname(client); // ⬅️ Ini penting!
 });
 
 // 📨 Auto-reply atau command lain via message
