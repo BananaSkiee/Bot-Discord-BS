@@ -1,7 +1,15 @@
+require("dotenv").config();
 const { Client, GatewayIntentBits } = require("discord.js");
 const fs = require("fs");
 const express = require("express");
 const config = require("./config");
+
+const autoChat = require("./autoChat");
+const stickyHandler = require("./sticky");
+const createVoiceChannel = require("./createVoiceChannel");
+const handleNickname = require("./nicknameTag");
+const setupSlashCommands = require("./slashCommandSetup");
+const handleGacha = require("./gacha");
 
 const client = new Client({
   intents: [
@@ -20,7 +28,7 @@ app.listen(process.env.PORT || 3000, () => {
   console.log("🌐 Web server hidup");
 });
 
-// Load event handler
+// Event handler loader
 fs.readdirSync("./events").forEach((file) => {
   const event = require(`./events/${file}`);
   if (event.once) {
@@ -30,9 +38,29 @@ fs.readdirSync("./events").forEach((file) => {
   }
 });
 
-// Event ready (kalau ada)
-client.once("ready", () => {
+// Saat bot siap
+client.once("ready", async () => {
   console.log(`🤖 Bot siap sebagai ${client.user.tag}`);
+  
+  // 🔊 Update voice channel otomatis
+  createVoiceChannel(client);
+
+  // 🔧 Pasang sticky handler
+  stickyHandler(client);
+
+  // 🛠️ Pasang slash commands
+  await setupSlashCommands(client);
+
+  // 🎭 Nickname berdasarkan role
+  handleNickname(client);
+});
+
+// 🔁 Auto-chat dan AI-style reply
+client.on("messageCreate", async (message) => {
+  if (message.author.bot) return;
+
+  autoChat(message); // auto-reply dan !ai
+  handleGacha(message); // fitur gacha
 });
 
 // Error handler
