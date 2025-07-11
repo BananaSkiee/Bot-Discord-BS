@@ -6,8 +6,8 @@ const config = require("./config");
 
 const stickyHandler = require("./sticky");
 const setupSlashCommands = require("./slashCommandSetup");
-const createVoiceChannel = require("./createVoiceChannel"); // ✅ Tambahan
-const handleNickname = require("./modules/nicknameTag"); // ✅ Tambahan
+const updateOnline = require("./createVoiceChannel"); // ← Ini fungsimu
+const handleNickname = require("./modules/nicknameTag");
 
 const client = new Client({
   intents: [
@@ -39,9 +39,20 @@ fs.readdirSync("./events").forEach((file) => {
 // Saat bot siap
 client.once("ready", async () => {
   console.log(`🤖 Bot siap sebagai ${client.user.tag}`);
-  
-  // 🔊 Update voice channel otomatis
-  createVoiceChannel(client);
+
+  // ✅ Ambil guild
+  const guild = client.guilds.cache.get(config.guildId);
+  if (!guild) {
+    return console.error("❌ Gagal menemukan guild dengan ID:", config.guildId);
+  }
+
+  // 🔊 Update voice channel online langsung saat bot aktif
+  await updateOnline(guild);
+
+  // 🔁 Update online setiap 1 menit 30 detik (90000 ms)
+  setInterval(async () => {
+    await updateOnline(guild);
+  }, 90000);
 
   // 🔧 Pasang sticky handler
   stickyHandler(client);
