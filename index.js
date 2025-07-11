@@ -4,12 +4,10 @@ const fs = require("fs");
 const express = require("express");
 const config = require("./config");
 
-const autoChat = require("./autoChat");
 const stickyHandler = require("./sticky");
 const createVoiceChannel = require("./createVoiceChannel");
 const handleNickname = require("./nicknameTag");
 const setupSlashCommands = require("./slashCommandSetup");
-const handleGacha = require("./gacha");
 
 const client = new Client({
   intents: [
@@ -55,12 +53,10 @@ client.once("ready", async () => {
   handleNickname(client);
 });
 
-// 🔁 Auto-chat dan AI-style reply
+// Tambahkan fitur messageCreate lain di sini jika perlu
 client.on("messageCreate", async (message) => {
   if (message.author.bot) return;
-
-  autoChat(message); // auto-reply dan !ai
-  handleGacha(message); // fitur gacha
+  // Fitur auto-reply atau lainnya bisa ditambahkan di sini nanti
 });
 
 // Error handler
