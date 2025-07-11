@@ -49,7 +49,7 @@ module.exports = {
       const row = new ActionRowBuilder().addComponents(
         new ButtonBuilder()
           .setCustomId(`test_use_tag_${safeTagId}`)
-          .setLabel("Pakai Tag ")
+          .setLabel("Ya, pakai tag ${role.tag}")
           .setStyle(ButtonStyle.Success),
         new ButtonBuilder()
           .setCustomId(`test_remove_tag_${safeTagId}`)
