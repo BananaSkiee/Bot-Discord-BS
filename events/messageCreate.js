@@ -20,7 +20,7 @@ const ROLES = [
   { id: "1354197417754628176", tag: "[70]" },
   { id: "1354197527582212106", tag: "[60]" },
   { id: "1354197530010976521", tag: "[55]" },
-  { id: "1352286232331292814", tag: "[VIP]" }, // ✅ TIDAK diubah
+  { id: "1352286232331292814", tag: "[VIP]" },
   { id: "1352286224420962376", tag: "[FRIEND]" },
   { id: "1357693246268244209", tag: "[PARTNER]" },
   { id: "1352286235233620108", tag: "[MEM]" }
@@ -38,7 +38,7 @@ const ROLE_DISPLAY_MAP = {
   "1354197417754628176": "「70」ꜱᴜᴘʀᴇᴍᴇ",
   "1354197527582212106": "「60」ʟᴏʀᴅ",
   "1354197530010976521": "「55」ᴇᴍᴘᴇʀᴏʀ",
-  "1352286232331292814": "『💜』Sᴘᴇsɪᴀʟ", // ✅ TIDAK diubah
+  "1352286232331292814": "『💜』Sᴘᴇsɪᴀʟ",
   "1352286224420962376": "『💙』ғʀɪᴇɴᴅs",
   "1357693246268244209": "「🤝」ᴘᴀʀᴛɴᴇʀsʜɪᴘ",
   "1352286235233620108": "『〽️』ᴍᴇᴍʙᴇʀ"
@@ -80,7 +80,7 @@ module.exports = {
       }
 
       const realTag = matchedRole.tag;
-      const safeTagId = realTag.replace(/[^\w-]/g, "").toLowerCase(); // cocokkan dengan interactionCreate.js
+      const safeTagId = realTag.replace(/[^\w-]/g, "").toLowerCase();
 
       const row = new ActionRowBuilder().addComponents(
         new ButtonBuilder()
@@ -108,7 +108,7 @@ module.exports = {
         const displayName = user.globalName || user.username;
 
         await user.send({
-          content: `✨ *Selamat datang, ${displayName}!*  
+          content: `✨ *Selamat datang, ${displayName}!*
 
 🔰 Kamu menerima tag eksklusif: **${realTag}**  
 📛 Diberikan karena kamu memiliki role: **${roleDisplay}**
