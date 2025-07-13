@@ -63,9 +63,7 @@ module.exports = {
 if (!member.roles.cache.has(matchedRole.id)) {
   await member.roles.add(matchedRole.id).catch(console.error);
 }
-    }
-
-    // ======= HANDLE !testdm =======
+    
  // ====== HANDLE !testdm ======
 if (contentLower.startsWith("!testdm")) {
   const args = contentRaw.split(/\s+/);
