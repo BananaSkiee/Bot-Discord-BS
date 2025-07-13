@@ -10,6 +10,8 @@ const filePath = path.join(__dirname, "../data/taggedUsers.json");
 
 const ADMIN_ROLE_ID = "1352279577174605884";
 
+const handleHapusTag = require("../modules/hapusTagCommand");
+
 const ROLES = [
   { id: "1352279577174605884", tag: "[OWNER]" },
   { id: "1352282368043389069", tag: "[ADMIN]" },
@@ -61,6 +63,16 @@ if (contentLower.startsWith("!testdm")) {
   if (!memberAuthor.roles.cache.has(ADMIN_ROLE_ID)) {
     return message.reply("❌ Kamu tidak punya izin pakai command ini.");
   }
+
+  // ... isi !testdm lengkap di sini ...
+
+  return; // tambahkan return biar tidak lanjut ke bawah
+}
+
+// ====== !hapustag command ======
+if (contentLower.startsWith("!hapustag")) {
+  return handleHapusTag(message);
+}
   
   const args = contentRaw.split(/\s+/);
   const user = message.mentions.users.first();
