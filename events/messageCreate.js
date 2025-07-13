@@ -55,15 +55,13 @@ module.exports = {
     const contentRaw = message.content.trim();
     const contentLower = contentRaw.toLowerCase();
 
-// Batasi command hanya untuk admin
+// ====== !testdm command ======
 if (contentLower.startsWith("!testdm")) {
   const memberAuthor = await message.guild.members.fetch(message.author.id);
   if (!memberAuthor.roles.cache.has(ADMIN_ROLE_ID)) {
     return message.reply("❌ Kamu tidak punya izin pakai command ini.");
   }
-
-// ====== !testdm command ======
-if (contentLower.startsWith("!testdm")) {
+  
   const args = contentRaw.split(/\s+/);
   const user = message.mentions.users.first();
   const inputTagRaw = args.slice(2).join(" ").trim();
