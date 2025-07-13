@@ -72,7 +72,7 @@ module.exports = {
 
     try {
       await newMember.send({
-        content: `✨ *Salam hangat, ${displayName}.*
+        content: `✨ *Selamat kepada, ${displayName}.*
         
 🔰 Kamu menerima tag khusus: \`${matchingRole.tag}\`  
 📛 Diberikan karena kamu memiliki role: \`${roleDisplay}\`
