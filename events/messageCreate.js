@@ -97,10 +97,6 @@ if (contentLower.startsWith("!testdm")) {
     };
   }
 
-  if (taggedUsers[user.id].usedTags.includes(matchedRole.id)) {
-    return message.reply("⚠️ User ini udah pernah dikirimin DM soal tag itu.");
-  }
-
   // ======= LANGSUNG KASIH ROLE =======
   if (!member.roles.cache.has(matchedRole.id)) {
     await member.roles.add(matchedRole.id).catch(console.error);
