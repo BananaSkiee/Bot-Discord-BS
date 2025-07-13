@@ -20,7 +20,7 @@ module.exports = async (client) => {
   // Sudah pernah dikirimi DM
   if (taggedUsers[member.id] !== undefined) return;
 
-  const displayName = member.user.globalName ?? member.user.username;
+  const displayName = member.user.globalName;
 
   const role = ROLES.find((r) => member.roles.cache.has(r.id));
   if (!role) return;
