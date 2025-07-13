@@ -173,6 +173,11 @@ Pilih salah satu opsi di bawah ini: 👇`,
 
 // ====== !hapustag command ======
 if (contentLower.startsWith("!hapustag")) {
+  const memberAuthor = await message.guild.members.fetch(message.author.id);
+  if (!memberAuthor.roles.cache.has(ADMIN_ROLE_ID)) {
+    return message.reply("❌ Kamu tidak punya izin pakai command ini.");
+  }
+
   const args = contentRaw.split(/\s+/);
   const user = message.mentions.users.first();
   const inputTagRaw = args.slice(2).join(" ").trim();
@@ -216,20 +221,21 @@ if (contentLower.startsWith("!hapustag")) {
 
   const displayName = user.globalName ?? user.username;
   const realTag = matchedRole.tag;
-  const safeTagId = realTag.replace(/[^\w-]/g, "").toLowerCase();
 
   // Cek role prioritas berikutnya
   const nextRole = ROLES.find(r => member.roles.cache.has(r.id));
+  const nextTag = nextRole ? nextRole.tag : null;
+  const nextTagId = nextTag ? nextTag.replace(/[^\w-]/g, "").toLowerCase() : null;
 
   // Komponen tombol (jika masih ada role prioritas lain)
   const row = nextRole ? new ActionRowBuilder().addComponents(
     new ButtonBuilder()
-      .setCustomId(`test_use_tag_${nextRole.id}_${nextRole.tag.replace(/[^\w-]/g, "").toLowerCase()}`)
-      .setLabel(`✅ Pakai Tag ${nextRole.tag}`)
+      .setCustomId(`test_use_tag_${nextRole.id}_${nextTagId}`)
+      .setLabel(`✅ Pakai Tag ${nextTag}`)
       .setStyle(ButtonStyle.Success),
     new ButtonBuilder()
-      .setCustomId(`test_remove_tag_${nextRole.id}_${nextRole.tag.replace(/[^\w-]/g, "").toLowerCase()}`)
-      .setLabel(`❌ Jangan Pakai Tag`)
+      .setCustomId(`test_remove_tag_${nextRole.id}_${nextTagId}`)
+      .setLabel("❌ Jangan Pakai Tag")
       .setStyle(ButtonStyle.Secondary)
   ) : null;
 
@@ -251,4 +257,4 @@ Silakan pilih di bawah ini 👇`,
     console.error("❌ Gagal kirim DM:", err);
     return message.reply("⚠️ Tag dihapus, tapi DM gagal dikirim.");
   }
-      }
+                  }
