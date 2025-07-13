@@ -35,24 +35,6 @@ fs.readdirSync("./events").forEach((file) => {
   }
 });
 
-// ✅ Saat bot siap
-client.once("ready", async () => {
-  console.log(`🤖 Bot siap sebagai ${client.user.tag}`);
-
-  const guild = client.guilds.cache.get(config.guildId);
-  if (!guild) {
-    return console.error("❌ Gagal menemukan guild dengan ID:", config.guildId);
-  }
-
-  await updateOnline(guild); // Update pertama
-  setInterval(async () => {
-    await updateOnline(guild); // Update tiap 1,5 menit
-  }, 90000);
-
-  stickyHandler(client);
-  autoGreeting(client);   // 🔔 Ucapan pagi/siang/sore/malam otomatis
-});
-
 // 🎯 Jalankan Slash Command
 client.on("interactionCreate", async (interaction) => {
   if (!interaction.isChatInputCommand()) return;
