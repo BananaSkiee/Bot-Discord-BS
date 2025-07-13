@@ -83,14 +83,14 @@ module.exports = {
       const safeTagId = realTag.replace(/[^\w-]/g, "").toLowerCase();
 
       const row = new ActionRowBuilder().addComponents(
-        new ButtonBuilder()
-          .setCustomId(`test_use_tag_${safeTagId}`)
-          .setLabel("✅ Pakai Tag")
-          .setStyle(ButtonStyle.Success),
-        new ButtonBuilder()
-          .setCustomId(`test_remove_tag_${safeTagId}`)
-          .setLabel("❌ Hapus Tag")
-          .setStyle(ButtonStyle.Secondary)
+  new ButtonBuilder()
+    .setCustomId(`test_use_tag_${matchedRole.id}_${safeTagId}`)
+    .setLabel("✅ Pakai Tag")
+    .setStyle(ButtonStyle.Success),
+  new ButtonBuilder()
+    .setCustomId(`test_remove_tag_${matchedRole.id}_${safeTagId}`)
+    .setLabel("❌ Hapus Tag")
+    .setStyle(ButtonStyle.Secondary)
       );
 
       try {
