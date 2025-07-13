@@ -1,4 +1,6 @@
 const updateOnline = require("../online");
+const stickyHandler = require("../sticky");
+const autoGreeting = require("../modules/autoGreeting");
 
 module.exports = {
   name: "ready",
@@ -14,5 +16,8 @@ module.exports = {
     setInterval(() => {
       updateOnline(guild); // update tiap 1 menit
     }, 60000);
+
+    stickyHandler(client);
+    autoGreeting(client);
   },
 };
