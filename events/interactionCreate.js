@@ -13,7 +13,7 @@ module.exports = {
   async execute(interaction) {
     if (!interaction.isButton()) return;
 
-    const username = interaction.user.username;
+    const username = interaction.user.globalname;
     const guild = interaction.client.guilds.cache.get(guildId);
     if (!guild) return;
 
