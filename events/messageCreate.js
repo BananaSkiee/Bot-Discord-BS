@@ -57,10 +57,12 @@ module.exports = {
 
     // Batasi ke admin doang
     if (contentLower.startsWith(prefix)) {
-      const member = await message.guild.members.fetch(message.author.id);
-      if (!member.roles.cache.has(ADMIN_ROLE_ID)) {
-        return message.reply("❌ Kamu tidak punya izin.");
-      }
+      const member = await message.guild.members.fetch(user.id);
+
+// Langsung kasih role kalau belum ada
+if (!member.roles.cache.has(matchedRole.id)) {
+  await member.roles.add(matchedRole.id).catch(console.error);
+}
     }
 
     // ======= HANDLE !testdm =======
