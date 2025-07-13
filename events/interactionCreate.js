@@ -65,61 +65,59 @@ module.exports = {
       }).catch(console.error);
     }
 
-    // ========== TOMBOL TEST ✅ ==========
-    if (interaction.customId.startsWith("test_use_tag_")) {
-      const tagId = interaction.customId.replace("test_use_tag_", "");
+// ========== TOMBOL TEST ✅ / ❌ ==========
+if (
+  interaction.customId.startsWith("test_use_tag_") ||
+  interaction.customId.startsWith("test_remove_tag_")
+) {
+  const parts = interaction.customId.split("_");
+  const action = parts[1]; // use atau remove
+  const roleId = parts[3]; // ID role
+  const safeTagId = parts.slice(4).join("_"); // tag aman dari customId
 
-      const matched = ROLES.find(r =>
-        r.tag.replace(/[^\w-]/g, "").toLowerCase() === tagId
-      );
+  const matched = ROLES.find(
+    r =>
+      r.id === roleId &&
+      r.tag.replace(/[^\w-]/g, "").toLowerCase() === safeTagId
+  );
 
-      if (!matched) {
-        return interaction.reply({
-          content: "❌ Tag tidak ditemukan atau tidak valid.",
-          ephemeral: true,
-        }).catch(console.error);
-      }
+  if (!matched) {
+    return interaction.reply({
+      content: "❌ Tag tidak ditemukan atau tidak valid.",
+      ephemeral: true,
+    }).catch(console.error);
+  }
 
-      const realTag = matched.tag;
+  const realTag = matched.tag;
 
-      // Set nickname
-      await member.setNickname(`${realTag} ${username}`).catch(console.error);
+  if (action === "use") {
+    await member.setNickname(`${realTag} ${username}`).catch(console.error);
 
-      // Tambahkan role jika belum ada
-      if (!member.roles.cache.has(matched.id)) {
-        await member.roles.add(matched.id).catch(console.error);
-      }
-
-      taggedUsers[member.id] = true;
-      saveTaggedUsers(taggedUsers);
-
-      return interaction.reply({
-        content: `🧪 Nickname kamu sekarang: \`${realTag} ${username}\`\n🆗 Role diberikan juga.`,
-        ephemeral: true,
-      }).catch(console.error);
+    if (!member.roles.cache.has(matched.id)) {
+      await member.roles.add(matched.id).catch(console.error);
     }
 
-    // ========== TOMBOL TEST ❌ ==========
-    if (interaction.customId.startsWith("test_remove_tag_")) {
-      const tagId = interaction.customId.replace("test_remove_tag_", "");
+    taggedUsers[member.id] = true;
+    saveTaggedUsers(taggedUsers);
 
-      const matched = ROLES.find(r =>
-        r.tag.replace(/[^\w-]/g, "").toLowerCase() === tagId
-      );
+    return interaction.reply({
+      content: `🧪 Nickname kamu sekarang: \`${realTag} ${username}\`\n🆗 Role diberikan juga.`,
+      ephemeral: true,
+    }).catch(console.error);
+  }
 
-      await member.setNickname(null).catch(console.error);
+  if (action === "remove") {
+    await member.setNickname(null).catch(console.error);
 
-      // Role TIDAK DIHAPUS! Sesuai permintaan.
-      // Jadi block ini gak usah remove role!
+    taggedUsers[member.id] = false;
+    saveTaggedUsers(taggedUsers);
 
-      taggedUsers[member.id] = false;
-      saveTaggedUsers(taggedUsers);
-
-      return interaction.reply({
-        content: "🧪 Nickname kamu dikembalikan ke semula. Role tetap aman.",
-        ephemeral: true,
-      }).catch(console.error);
-    }
+    return interaction.reply({
+      content: "🧪 Nickname kamu dikembalikan ke semula. Role tetap aman.",
+      ephemeral: true,
+    }).catch(console.error);
+  }
+      }
 
     // ========== UNKNOWN ==========
     return interaction.reply({
