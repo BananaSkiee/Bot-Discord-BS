@@ -51,6 +51,7 @@ module.exports = {
   async execute(message, client) {
     if (message.author.bot) return;
 
+    // ... semua command di sini, contoh !testdm ...
     const prefix = "!";
     const contentRaw = message.content.trim();
     const contentLower = contentRaw.toLowerCase();
