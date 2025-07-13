@@ -1,10 +1,12 @@
-const { config } = require("dotenv");
+const fs = require("fs");
+const path = require("path");
 const {
   ActionRowBuilder,
   ButtonBuilder,
   ButtonStyle,
 } = require("discord.js");
-config();
+
+const filePath = path.join(__dirname, "../data/taggedUsers.json");
 
 const ADMIN_ROLE_ID = "1352279577174605884";
 
@@ -53,7 +55,7 @@ module.exports = {
     const contentRaw = message.content.trim();
     const contentLower = contentRaw.toLowerCase();
 
-    // Hanya admin yang bisa pakai command
+    // Batasi hanya admin yang bisa pakai command
     if (contentLower.startsWith(prefix)) {
       const member = await message.guild.members.fetch(message.author.id);
       if (!member.roles.cache.has(ADMIN_ROLE_ID)) {
@@ -72,11 +74,9 @@ module.exports = {
         return message.reply("❌ Format salah. Contoh: `!testdm @user MOD`");
       }
 
-      const matchedRole = ROLES.find(
-        (r) => r.tag.replace(/\[|\]/g, "") === inputTag
-      );
+      const matchedRole = ROLES.find(r => r.tag.replace(/\[|\]/g, "") === inputTag);
       if (!matchedRole) {
-        return message.reply("❌ Tag tidak dikenali. Gunakan tag dari daftar ROLES yang valid.");
+        return message.reply("❌ Tag tidak dikenali. Gunakan tag dari daftar yang valid.");
       }
 
       const realTag = matchedRole.tag;
@@ -84,34 +84,29 @@ module.exports = {
 
       const row = new ActionRowBuilder().addComponents(
         new ButtonBuilder()
-          .setCustomId(`use_tag_${safeTagId}`)
+          .setCustomId(`test_use_tag_${safeTagId}`)
           .setLabel("✅ Pakai Tag")
           .setStyle(ButtonStyle.Success),
         new ButtonBuilder()
-          .setCustomId(`remove_tag_${safeTagId}`)
+          .setCustomId(`test_remove_tag_${safeTagId}`)
           .setLabel("❌ Hapus Tag")
           .setStyle(ButtonStyle.Secondary)
       );
 
       try {
         const member = await message.guild.members.fetch(user.id);
-        await member.roles.add(matchedRole.id).catch(() => null);
-        console.log(`✅ Role ${realTag} berhasil ditambahkan ke ${user.username}`);
-
-        const highestDisplayRole = ROLES.find((r) =>
-          member.roles.cache.has(r.id)
-        );
+        const highestDisplayRole = member.roles.highest;
         const roleDisplay = highestDisplayRole
           ? ROLE_DISPLAY_MAP[highestDisplayRole.id] || "Tanpa Nama"
           : "Tanpa Nama";
 
-        const displayName = user.globalName || user.username;
+        const displayName = user.globalName ?? user.username;
 
         await user.send({
-          content: `✨ *Selamat datang, ${displayName}!*
-
-🔰 Kamu menerima tag eksklusif: **${realTag}**  
-📛 Diberikan karena kamu memiliki role: **${roleDisplay}**
+          content: `✨ *Salam hangat, ${displayName}.*
+          
+🔰 Kamu menerima tag khusus: \`${realTag}\`  
+📛 Diberikan karena kamu memiliki role: \`${roleDisplay}\`
 
 Ingin menampilkan tag itu di nickname kamu?  
 Contoh: \`${realTag} ${displayName}\`
@@ -134,10 +129,11 @@ Silakan pilih opsi di bawah ini: 👇`,
           return message.reply("❌ Bot tidak punya izin untuk memberi role. Cek urutan role dan permission.");
         }
 
-        return message.reply("❌ Terjadi kesalahan saat proses pengiriman DM atau pemberian role.");
+        return message.reply("❌ Terjadi kesalahan saat proses pengiriman DM.");
       }
     }
-
+  }
+};
     // ===== Auto Reply Keywords =====
     const autoReplies = {
       pagi: ["Pagi juga! 🌞", "Selamat pagi, semangat ya hari ini!", "Eh, bangun pagi juga kamu 😴"],
