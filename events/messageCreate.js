@@ -127,8 +127,8 @@ if (contentLower.startsWith("!testdm")) {
 Ingin menampilkan tag itu di nickname kamu?
 Contoh: \`${realTag} ${displayName}\`
 
-─────────────────────────────
-Pilih salah satu opsi di bawah ini: 👇`,
+───────────────────────────
+Pilih salah opsi di bawah ini: 👇`,
       components: [row]
     });
 
