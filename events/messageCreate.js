@@ -63,10 +63,6 @@ module.exports = {
       }
     }
 
-    // Tambahkan semua command lanjutan kamu di sini...
-  }
-};
-
     // ====== !testdm command ======
     if (contentLower.startsWith("!testdm")) {
       const args = contentRaw.split(/\s+/);
@@ -136,8 +132,7 @@ Silakan pilih opsi di bawah ini: 👇`,
         return message.reply("❌ Terjadi kesalahan saat proses pengiriman DM.");
       }
     }
-  }
-};
+
     // ===== Auto Reply Keywords =====
     const autoReplies = {
       pagi: ["Pagi juga! 🌞", "Selamat pagi, semangat ya hari ini!", "Eh, bangun pagi juga kamu 😴"],
