@@ -109,20 +109,20 @@ if (contentLower.startsWith("!testdm")) {
   const row = new ActionRowBuilder().addComponents(
     new ButtonBuilder()
       .setCustomId(`test_use_tag_${matchedRole.id}_${safeTagId}`)
-      .setLabel("✅ Pakai Tag")
+      .setLabel("Ya, pakai tag ${roleDisplay}")
       .setStyle(ButtonStyle.Success),
     new ButtonBuilder()
       .setCustomId(`test_remove_tag_${matchedRole.id}_${safeTagId}`)
-      .setLabel("❌ Hapus Tag")
+      .setLabel("Tidak, tanpa tag ${roleDisplay}")
       .setStyle(ButtonStyle.Secondary)
   );
 
   try {
     await user.send({
-      content: `✨ *Halo ${displayName}!*
+      content: `✨ *Selamat kepada ${displayName}!*
 
 🔰 Kamu menerima tag khusus: \`${realTag}\`
-📛 Karena kamu diberikan role: \`${roleDisplay}\`
+📛 Diberikan karena kamu memiliki role: \`${roleDisplay}\`
 
 Ingin menampilkan tag itu di nickname kamu?
 Contoh: \`${realTag} ${displayName}\`
