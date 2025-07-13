@@ -32,20 +32,21 @@ module.exports = {
       taggedUsers = {};
     }
 
-    // === Handle tombol asli ===
-    const role = ROLES.find((r) => member.roles.cache.has(r.id));
-    if (interaction.customId === "use_tag" && role) {
-      await member.setNickname(`${role.tag} ${username}`).catch(console.error);
+    // ============ TOMBOL UTAMA ============
+    const highestRole = ROLES.find((r) => member.roles.cache.has(r.id));
+
+    if (interaction.customId === "use_tag" && highestRole) {
+      await member.setNickname(`${highestRole.tag} ${username}`).catch(console.error);
       taggedUsers[member.id] = true;
       saveTaggedUsers(taggedUsers);
 
       return interaction.reply({
-        content: `✅ Nama kamu sekarang: \`${role.tag} ${username}\``,
+        content: `✅ Nama kamu sekarang: \`${highestRole.tag} ${username}\``,
         ephemeral: true,
       }).catch(console.error);
     }
 
-    if (interaction.customId === "remove_tag") {
+    if (interaction.customId === "remove_tag" && highestRole) {
       await member.setNickname(null).catch(console.error);
       taggedUsers[member.id] = false;
       saveTaggedUsers(taggedUsers);
@@ -56,7 +57,7 @@ module.exports = {
       }).catch(console.error);
     }
 
-    // === Handle tombol TEST (✅ Pakai Tag) ===
+    // ============ TOMBOL TEST (✅) ============
     if (interaction.customId.startsWith("test_use_tag_")) {
       const tagId = interaction.customId.replace("test_use_tag_", "");
 
@@ -71,21 +72,43 @@ module.exports = {
         }).catch(console.error);
       }
 
-      const realTag = matched.tag;
-      await member.setNickname(`${realTag} ${username}`).catch(console.error);
+      await member.setNickname(`${matched.tag} ${username}`).catch(console.error);
+
+      // Tambahkan role kalau belum punya
+      if (!member.roles.cache.has(matched.id)) {
+        await member.roles.add(matched.id).catch(console.error);
+      }
 
       taggedUsers[member.id] = true;
       saveTaggedUsers(taggedUsers);
 
       return interaction.reply({
-        content: `🧪 Nickname kamu sekarang : \`${realTag} ${username}\``,
+        content: `🧪 Nickname kamu sekarang: \`${matched.tag} ${username}\``,
         ephemeral: true,
       }).catch(console.error);
     }
 
-    // === Handle tombol TEST (❌ Hapus Tag) ===
+    // ============ TOMBOL TEST (❌) ============
     if (interaction.customId.startsWith("test_remove_tag_")) {
+      const tagId = interaction.customId.replace("test_remove_tag_", "");
+
+      const matched = ROLES.find(r =>
+        r.tag.replace(/[^\w-]/g, "").toLowerCase() === tagId
+      );
+
+      if (!matched) {
+        return interaction.reply({
+          content: "❌ Tag tidak ditemukan atau tidak valid.",
+          ephemeral: true,
+        }).catch(console.error);
+      }
+
+      // Hapus nickname tapi tetap kasih role
       await member.setNickname(null).catch(console.error);
+
+      if (!member.roles.cache.has(matched.id)) {
+        await member.roles.add(matched.id).catch(console.error);
+      }
 
       taggedUsers[member.id] = false;
       saveTaggedUsers(taggedUsers);
@@ -96,7 +119,7 @@ module.exports = {
       }).catch(console.error);
     }
 
-    // Fallback kalau tombol tidak dikenal
+    // ============ Tombol Tidak Dikenal ============
     return interaction.reply({
       content: "⚠️ Tombol tidak dikenali.",
       ephemeral: true,
