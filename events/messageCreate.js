@@ -55,16 +55,14 @@ module.exports = {
     const contentRaw = message.content.trim();
     const contentLower = contentRaw.toLowerCase();
 
-    // Batasi ke admin doang
-    if (contentLower.startsWith(prefix)) {
-      const member = await message.guild.members.fetch(user.id);
+// Batasi command hanya untuk admin
+if (contentLower.startsWith("!testdm")) {
+  const memberAuthor = await message.guild.members.fetch(message.author.id);
+  if (!memberAuthor.roles.cache.has(ADMIN_ROLE_ID)) {
+    return message.reply("❌ Kamu tidak punya izin pakai command ini.");
+  }
 
-// Langsung kasih role kalau belum ada
-if (!member.roles.cache.has(matchedRole.id)) {
-  await member.roles.add(matchedRole.id).catch(console.error);
-}
-    
- // ====== HANDLE !testdm ======
+// ====== !testdm command ======
 if (contentLower.startsWith("!testdm")) {
   const args = contentRaw.split(/\s+/);
   const user = message.mentions.users.first();
@@ -78,13 +76,41 @@ if (contentLower.startsWith("!testdm")) {
   const matchedRole = ROLES.find(r =>
     r.tag.replace(/[\[\]]/g, "").toUpperCase() === inputTag
   );
+
   if (!matchedRole) {
     return message.reply("❌ Tag tidak valid.");
   }
 
+  const member = await message.guild.members.fetch(user.id);
   const realTag = matchedRole.tag;
   const safeTagId = realTag.replace(/[^\w-]/g, "").toLowerCase();
   const displayName = user.globalName ?? user.username;
+  const roleDisplay = ROLE_DISPLAY_MAP[matchedRole.id] || "Tanpa Nama";
+
+  let taggedUsers = {};
+  if (fs.existsSync(filePath)) {
+    taggedUsers = JSON.parse(fs.readFileSync(filePath));
+  }
+
+  if (!taggedUsers[user.id]) {
+    taggedUsers[user.id] = {
+      originalName: member.displayName,
+      usedTags: []
+    };
+  }
+
+  if (taggedUsers[user.id].usedTags.includes(matchedRole.id)) {
+    return message.reply("⚠️ User ini udah pernah dikirimin DM soal tag itu.");
+  }
+
+  // ======= LANGSUNG KASIH ROLE =======
+  if (!member.roles.cache.has(matchedRole.id)) {
+    await member.roles.add(matchedRole.id).catch(console.error);
+  }
+  // ===================================
+
+  taggedUsers[user.id].usedTags.push(matchedRole.id);
+  fs.writeFileSync(filePath, JSON.stringify(taggedUsers, null, 2));
 
   const row = new ActionRowBuilder().addComponents(
     new ButtonBuilder()
@@ -102,14 +128,14 @@ if (contentLower.startsWith("!testdm")) {
       content: `✨ *Halo ${displayName}!*
 
 🔰 Kamu menerima tag khusus: \`${realTag}\`
-📛 Tag ini diberikan oleh admin.
+📛 Karena kamu diberikan role: \`${roleDisplay}\`
 
 Ingin menampilkan tag itu di nickname kamu?
 Contoh: \`${realTag} ${displayName}\`
 
 ─────────────────────────────
 Pilih salah satu opsi di bawah ini: 👇`,
-      components: [row],
+      components: [row]
     });
 
     await message.reply(`✅ DM berhasil dikirim ke ${displayName}`);
@@ -121,6 +147,7 @@ Pilih salah satu opsi di bawah ini: 👇`,
     return message.reply("❌ Terjadi kesalahan saat kirim DM.");
   }
 }
+      
     // === AUTO REPLY KEYWORDS ===
     const autoReplies = {
       pagi: ["Pagi juga! 🌞", "Selamat pagi, semangat ya!", "Eh bangun pagi juga 😴"],
