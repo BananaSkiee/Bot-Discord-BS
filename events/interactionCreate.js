@@ -39,7 +39,7 @@ module.exports = {
       saveTaggedUsers(taggedUsers);
 
       return interaction.reply({
-        content: "✅ Nama kamu dikembalikan ke semula.",
+        content: "✅ Nama kamu dikembalikan menjadi \`${username}\`",
         ephemeral: true,
       }).catch(console.error);
     }
@@ -101,7 +101,7 @@ if (
     saveTaggedUsers(taggedUsers);
 
     return interaction.reply({
-      content: `🧪 Nickname kamu sekarang: \`${realTag} ${username}\`\n🆗 Role diberikan juga.`,
+      content: `🧪 Nickname kamu sekarang: \`${realTag} ${username}\``,
       ephemeral: true,
     }).catch(console.error);
   }
@@ -113,7 +113,7 @@ if (
     saveTaggedUsers(taggedUsers);
 
     return interaction.reply({
-      content: "🧪 Nickname kamu dikembalikan ke semula. Role tetap aman.",
+      content: "🧪 Nickname kamu dikembalikan menjadi \`${username}\`",
       ephemeral: true,
     }).catch(console.error);
   }
