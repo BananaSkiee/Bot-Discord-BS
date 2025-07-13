@@ -52,6 +52,9 @@ module.exports = {
     if (message.author.bot) return;
 
     // ... semua command di sini, contoh !testdm ...
+
+  } // ✅ Ini penutup fungsi execute
+};  // ✅ Ini penutup module.exports
     const prefix = "!";
     const contentRaw = message.content.trim();
     const contentLower = contentRaw.toLowerCase();
