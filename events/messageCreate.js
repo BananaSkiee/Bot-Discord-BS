@@ -55,102 +55,113 @@ module.exports = {
     const contentRaw = message.content.trim();
     const contentLower = contentRaw.toLowerCase();
 
-    // Batasi hanya admin yang bisa pakai command
+    // Batasi ke admin doang
     if (contentLower.startsWith(prefix)) {
       const member = await message.guild.members.fetch(message.author.id);
       if (!member.roles.cache.has(ADMIN_ROLE_ID)) {
-        return message.reply("❌ Kamu tidak punya izin untuk menggunakan perintah ini.");
+        return message.reply("❌ Kamu tidak punya izin.");
       }
     }
 
-    // ====== !testdm command ======
+    // ======= HANDLE !testdm =======
     if (contentLower.startsWith("!testdm")) {
       const args = contentRaw.split(/\s+/);
       const user = message.mentions.users.first();
       const inputTagRaw = args.slice(2).join(" ").trim();
-      const inputTag = inputTagRaw.toUpperCase().replace(/\[|\]/g, "");
+      const inputTag = inputTagRaw.toUpperCase().replace(/[\[\]]/g, "");
 
       if (!user || !inputTag) {
         return message.reply("❌ Format salah. Contoh: `!testdm @user MOD`");
       }
 
-      const matchedRole = ROLES.find(r => r.tag.replace(/\[|\]/g, "") === inputTag);
+      const matchedRole = ROLES.find(r => r.tag.replace(/[\[\]]/g, "") === inputTag);
       if (!matchedRole) {
-        return message.reply("❌ Tag tidak dikenali. Gunakan tag dari daftar yang valid.");
+        return message.reply("❌ Tag tidak valid.");
       }
+
+      const member = await message.guild.members.fetch(user.id);
+      if (!member.roles.cache.has(matchedRole.id)) {
+        return message.reply("❌ User gak punya role itu.");
+      }
+
+      let taggedUsers = {};
+      if (fs.existsSync(filePath)) {
+        taggedUsers = JSON.parse(fs.readFileSync(filePath));
+      }
+
+      if (!taggedUsers[user.id]) {
+        taggedUsers[user.id] = {
+          originalName: member.displayName,
+          usedTags: []
+        };
+      }
+
+      if (taggedUsers[user.id].usedTags.includes(matchedRole.id)) {
+        return message.reply("⚠️ User ini udah pernah dikirimin DM soal tag itu.");
+      }
+
+      taggedUsers[user.id].usedTags.push(matchedRole.id);
+      fs.writeFileSync(filePath, JSON.stringify(taggedUsers, null, 2));
 
       const realTag = matchedRole.tag;
       const safeTagId = realTag.replace(/[^\w-]/g, "").toLowerCase();
+      const displayName = user.globalName ?? user.username;
+      const roleDisplay = ROLE_DISPLAY_MAP[matchedRole.id] || "Tanpa Nama";
 
       const row = new ActionRowBuilder().addComponents(
-  new ButtonBuilder()
-    .setCustomId(`test_use_tag_${matchedRole.id}_${safeTagId}`)
-    .setLabel("✅ Pakai Tag")
-    .setStyle(ButtonStyle.Success),
-  new ButtonBuilder()
-    .setCustomId(`test_remove_tag_${matchedRole.id}_${safeTagId}`)
-    .setLabel("❌ Hapus Tag")
-    .setStyle(ButtonStyle.Secondary)
+        new ButtonBuilder()
+          .setCustomId(`test_use_tag_${matchedRole.id}_${safeTagId}`)
+          .setLabel("✅ Pakai Tag ${realTag}")
+          .setStyle(ButtonStyle.Success),
+        new ButtonBuilder()
+          .setCustomId(`test_remove_tag_${matchedRole.id}_${safeTagId}`)
+          .setLabel("❌ Hapus Tag")
+          .setStyle(ButtonStyle.Secondary)
       );
 
       try {
-        const member = await message.guild.members.fetch(user.id);
-        const highestDisplayRole = member.roles.highest;
-        const roleDisplay = highestDisplayRole
-          ? ROLE_DISPLAY_MAP[highestDisplayRole.id] || "Tanpa Nama"
-          : "Tanpa Nama";
-
-        const displayName = user.globalName ?? user.username;
-
         await user.send({
-          content: `✨ *Salam hangat, ${displayName}.*
-          
-🔰 Kamu menerima tag khusus: \`${realTag}\`  
-📛 Diberikan karena kamu memiliki role: \`${roleDisplay}\`
+          content: `✨ *Halo ${displayName}!*
 
-Ingin menampilkan tag itu di nickname kamu?  
+🔰 Kamu menerima tag khusus: \`${realTag}\`
+📛 Karena kamu punya role: \`${roleDisplay}\`
+
+Ingin menampilkan tag itu di nickname kamu?
 Contoh: \`${realTag} ${displayName}\`
 
-───────────────────────────
-
-Silakan pilih opsi di bawah ini: 👇`,
-          components: [row],
+─────────────────────────────
+Pilih salah satu opsi di bawah ini: 👇`,
+          components: [row]
         });
 
         await message.reply(`✅ DM berhasil dikirim ke ${displayName}`);
       } catch (err) {
-        console.error("❌ Gagal:", err);
-
+        console.error("❌ Gagal kirim DM:", err);
         if (err.code === 50007) {
-          return message.reply("❌ Tidak bisa mengirim DM. User mungkin menonaktifkan DM dari server.");
+          return message.reply("❌ DM gagal. User matiin DM dari server.");
         }
-
-        if (err.code === 50013) {
-          return message.reply("❌ Bot tidak punya izin untuk memberi role. Cek urutan role dan permission.");
-        }
-
-        return message.reply("❌ Terjadi kesalahan saat proses pengiriman DM.");
+        return message.reply("❌ Terjadi kesalahan saat kirim DM.");
       }
     }
 
-    // ===== Auto Reply Keywords =====
+    // === AUTO REPLY KEYWORDS ===
     const autoReplies = {
-      pagi: ["Pagi juga! 🌞", "Selamat pagi, semangat ya hari ini!", "Eh, bangun pagi juga kamu 😴"],
-      siang: ["Siang juga! 🌤️", "Jangan lupa makan siang ya!", "Siang siang panas bener 🥵"],
-      sore: ["Sore juga! 🌇", "Selamat sore, udah capek belom?", "Sore gini enaknya jalan-jalan 🏃‍♂️"],
-      malam: ["Selamat malam! 🌙", "Malam juga, semangat istirahat ya!", "Udah makan malam belom?"],
-      halo: ["Halo halo! 👋", "Yo halo!", "Haiii! 😄"],
-      makasih: ["Sama-sama! 😊", "Sippp 👍", "Yok sama-sama~"],
-      ngantuk: ["Ngopi dulu gih! ☕", "Tidur sana jangan dipaksa 😴", "Ngantuk? Wajar, hidup berat 😆"],
+      pagi: ["Pagi juga! 🌞", "Selamat pagi, semangat ya!", "Eh bangun pagi juga 😴"],
+      siang: ["Siang juga! 🌤️", "Jangan lupa makan siang ya!", "Siang-siang panas bener 🥵"],
+      sore: ["Sore juga! 🌇", "Selamat sore, udah capek belum?", "Sore gini enaknya rebahan 😴"],
+      malam: ["Selamat malam! 🌙", "Malam juga, semangat istirahat ya!", "Udah makan malam belum?"],
+      halo: ["Halo halo! 👋", "Yo halo!", "Haiii 😄"],
+      makasih: ["Sama-sama 😊", "Sippp 👍", "Yok sama-sama~"],
+      ngantuk: ["Ngopi dulu gih ☕", "Tidur sana jangan dipaksa 😴", "Ngantuk? Wajar 😆"],
       gabut: ["Gabut? Ketik !gacha aja!", "Mau main tebak gambar? !tebak", "Chat bot aja kalo gabut 😁"],
-      hehehe: ["Hehe kenapa sih 🤭", "Ngakak sendiri ya? 😅", "Hehe iya iya 😏"],
-      anjir: ["Anjir parah sih 😳", "Anjir kenapa tuh?", "Wkwk anjir banget"],
+      hehehe: ["Hehe kenapa 🤭", "Ngakak sendiri ya? 😅", "Hehe iya iya 😏"],
+      anjir: ["Anjir parah 😳", "Anjir kenapa tuh?", "Wkwk anjir banget"],
       woi: ["WOI kenapaa 😤", "Sini gua dengerin", "Santai dong bang"],
       bang: ["Siap bang 👊", "Kenapa bang?", "Tenang bang, aman 😎"],
       cape: ["Sini aku pijetin 😌", "Rebahan dulu aja...", "Jangan lupa istirahat ya"],
-      bosen: ["Main Discord dulu 😆", "Bosen? Coba cari konten baru~", "Main game yuk!"],
+      bosen: ["Main Discord dulu 😆", "Bosen? Cari konten baru~", "Main game yuk!"],
       kangen: ["Kangen siapa tuh? 😏", "Sini pelukk 🤗", "Kangen tuh berat..."],
-      bye: ["👋 Bye bye! Jangan lupa balik lagi ya!", "Daaah~ hati-hati ya di jalan 😄", "Sampai ketemu lagi! 💫"],
+      bye: ["👋 Bye bye! Jangan lupa balik lagi ya!", "Daaah~ hati-hati ya 😄", "Sampai ketemu lagi 💫"],
     };
 
     for (const [keyword, replies] of Object.entries(autoReplies)) {
