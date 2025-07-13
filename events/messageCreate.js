@@ -51,10 +51,6 @@ module.exports = {
   async execute(message, client) {
     if (message.author.bot) return;
 
-    // ... semua command di sini, contoh !testdm ...
-
-  } // ✅ Ini penutup fungsi execute
-};  // ✅ Ini penutup module.exports
     const prefix = "!";
     const contentRaw = message.content.trim();
     const contentLower = contentRaw.toLowerCase();
@@ -66,6 +62,10 @@ module.exports = {
         return message.reply("❌ Kamu tidak punya izin untuk menggunakan perintah ini.");
       }
     }
+
+    // Tambahkan semua command lanjutan kamu di sini...
+  }
+};
 
     // ====== !testdm command ======
     if (contentLower.startsWith("!testdm")) {
