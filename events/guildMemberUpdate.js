@@ -74,15 +74,15 @@ module.exports = {
       await newMember.send({
         content: `✨ *Salam hangat, ${displayName}.*
         
-🔰 *Kamu menerima tag khusus:* \`${matchingRole.tag}\`  
-📛 *Diberikan karena kamu memiliki role:* \`${roleDisplay}\`
+🔰 Kamu menerima tag khusus: \`${matchingRole.tag}\`  
+📛 Diberikan karena kamu memiliki role: \`${roleDisplay}\`
 
-*Ingin menampilkan tag itu di nickname kamu?*  
-*Contoh:* \`${matchingRole.tag} ${displayName}\`
+Ingin menampilkan tag itu di nickname kamu?  
+Contoh: \`${matchingRole.tag} ${displayName}\`
 
 ───────────────────────────
 
-*Silakan pilih opsi di bawah ini:* 👇`,
+Silakan pilih opsi di bawah ini: 👇`,
         components: [row],
       });
 
