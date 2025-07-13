@@ -64,86 +64,63 @@ module.exports = {
     }
 
     // ======= HANDLE !testdm =======
-    if (contentLower.startsWith("!testdm")) {
-      const args = contentRaw.split(/\s+/);
-      const user = message.mentions.users.first();
-      const inputTagRaw = args.slice(2).join(" ").trim();
-      const inputTag = inputTagRaw.toUpperCase().replace(/[\[\]]/g, "");
+ // ====== HANDLE !testdm ======
+if (contentLower.startsWith("!testdm")) {
+  const args = contentRaw.split(/\s+/);
+  const user = message.mentions.users.first();
+  const inputTagRaw = args.slice(2).join(" ").trim();
+  const inputTag = inputTagRaw.toUpperCase().replace(/[\[\]]/g, "");
 
-      if (!user || !inputTag) {
-        return message.reply("❌ Format salah. Contoh: `!testdm @user MOD`");
-      }
+  if (!user || !inputTag) {
+    return message.reply("❌ Format salah. Contoh: `!testdm @user MOD`");
+  }
 
-      const matchedRole = ROLES.find(r => r.tag.replace(/[\[\]]/g, "") === inputTag);
-      if (!matchedRole) {
-        return message.reply("❌ Tag tidak valid.");
-      }
+  const matchedRole = ROLES.find(r =>
+    r.tag.replace(/[\[\]]/g, "").toUpperCase() === inputTag
+  );
+  if (!matchedRole) {
+    return message.reply("❌ Tag tidak valid.");
+  }
 
-      const member = await message.guild.members.fetch(user.id);
-      if (!member.roles.cache.has(matchedRole.id)) {
-        return message.reply("❌ User gak punya role itu.");
-      }
+  const realTag = matchedRole.tag;
+  const safeTagId = realTag.replace(/[^\w-]/g, "").toLowerCase();
+  const displayName = user.globalName ?? user.username;
 
-      let taggedUsers = {};
-      if (fs.existsSync(filePath)) {
-        taggedUsers = JSON.parse(fs.readFileSync(filePath));
-      }
+  const row = new ActionRowBuilder().addComponents(
+    new ButtonBuilder()
+      .setCustomId(`test_use_tag_${matchedRole.id}_${safeTagId}`)
+      .setLabel("✅ Pakai Tag")
+      .setStyle(ButtonStyle.Success),
+    new ButtonBuilder()
+      .setCustomId(`test_remove_tag_${matchedRole.id}_${safeTagId}`)
+      .setLabel("❌ Hapus Tag")
+      .setStyle(ButtonStyle.Secondary)
+  );
 
-      if (!taggedUsers[user.id]) {
-        taggedUsers[user.id] = {
-          originalName: member.displayName,
-          usedTags: []
-        };
-      }
-
-      if (taggedUsers[user.id].usedTags.includes(matchedRole.id)) {
-        return message.reply("⚠️ User ini udah pernah dikirimin DM soal tag itu.");
-      }
-
-      taggedUsers[user.id].usedTags.push(matchedRole.id);
-      fs.writeFileSync(filePath, JSON.stringify(taggedUsers, null, 2));
-
-      const realTag = matchedRole.tag;
-      const safeTagId = realTag.replace(/[^\w-]/g, "").toLowerCase();
-      const displayName = user.globalName ?? user.username;
-      const roleDisplay = ROLE_DISPLAY_MAP[matchedRole.id] || "Tanpa Nama";
-
-      const row = new ActionRowBuilder().addComponents(
-        new ButtonBuilder()
-          .setCustomId(`test_use_tag_${matchedRole.id}_${safeTagId}`)
-          .setLabel("✅ Pakai Tag ${realTag}")
-          .setStyle(ButtonStyle.Success),
-        new ButtonBuilder()
-          .setCustomId(`test_remove_tag_${matchedRole.id}_${safeTagId}`)
-          .setLabel("❌ Hapus Tag")
-          .setStyle(ButtonStyle.Secondary)
-      );
-
-      try {
-        await user.send({
-          content: `✨ *Halo ${displayName}!*
+  try {
+    await user.send({
+      content: `✨ *Halo ${displayName}!*
 
 🔰 Kamu menerima tag khusus: \`${realTag}\`
-📛 Karena kamu punya role: \`${roleDisplay}\`
+📛 Tag ini diberikan oleh admin.
 
 Ingin menampilkan tag itu di nickname kamu?
 Contoh: \`${realTag} ${displayName}\`
 
 ─────────────────────────────
 Pilih salah satu opsi di bawah ini: 👇`,
-          components: [row]
-        });
+      components: [row],
+    });
 
-        await message.reply(`✅ DM berhasil dikirim ke ${displayName}`);
-      } catch (err) {
-        console.error("❌ Gagal kirim DM:", err);
-        if (err.code === 50007) {
-          return message.reply("❌ DM gagal. User matiin DM dari server.");
-        }
-        return message.reply("❌ Terjadi kesalahan saat kirim DM.");
-      }
+    await message.reply(`✅ DM berhasil dikirim ke ${displayName}`);
+  } catch (err) {
+    console.error("❌ Gagal kirim DM:", err);
+    if (err.code === 50007) {
+      return message.reply("❌ DM gagal. User matiin DM dari server.");
     }
-
+    return message.reply("❌ Terjadi kesalahan saat kirim DM.");
+  }
+}
     // === AUTO REPLY KEYWORDS ===
     const autoReplies = {
       pagi: ["Pagi juga! 🌞", "Selamat pagi, semangat ya!", "Eh bangun pagi juga 😴"],
