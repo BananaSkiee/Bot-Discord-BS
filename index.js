@@ -6,7 +6,6 @@ const config = require("./config");
 
 const stickyHandler = require("./sticky");
 const updateOnline = require("./online");
-const handleNickname = require("./modules/nicknameTag");
 const autoGreeting = require("./modules/autoGreeting");
 
 const client = new Client({
@@ -51,7 +50,6 @@ client.once("ready", async () => {
   }, 90000);
 
   stickyHandler(client);
-  handleNickname(client); // Fitur DM tag nickname
   autoGreeting(client);   // 🔔 Ucapan pagi/siang/sore/malam otomatis
 });
 
