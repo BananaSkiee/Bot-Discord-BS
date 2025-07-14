@@ -18,13 +18,21 @@ module.exports = {
 if (interaction.customId === "close_ticket") {
   const channel = interaction.channel;
   if (channel.type !== ChannelType.GuildText) {
-    return interaction.reply({ content: "❌ Tidak bisa menutup tiket di sini.", ephemeral: true });
+    return interaction.reply({
+      content: "❌ Channel ini bukan channel tiket.",
+      ephemeral: true,
+    });
   }
 
-  await interaction.reply({ content: "🛠️ Ticket akan ditutup dalam 5 detik...", ephemeral: true });
+  await interaction.reply({
+    content: "🛠️ Ticket akan ditutup dalam 5 detik...",
+    ephemeral: true,
+  });
+
   setTimeout(() => {
     channel.delete().catch(console.error);
   }, 5000);
+  return;
 }
 
     // ========== DATA USER & SERVER ==========
