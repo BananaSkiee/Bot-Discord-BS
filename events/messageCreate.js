@@ -6,11 +6,10 @@ const {
   ButtonStyle,
 } = require("discord.js");
 
-const filePath = path.join(__dirname, "../data/taggedUsers.json");
-
-const ADMIN_ROLE_ID = "1352279577174605884";
-
 const handleHapusTag = require("../modules/hapusTagCommand");
+
+const filePath = path.join(__dirname, "../data/taggedUsers.json");
+const ADMIN_ROLE_ID = "1352279577174605884";
 
 const ROLES = [
   { id: "1352279577174605884", tag: "[OWNER]" },
@@ -57,81 +56,67 @@ module.exports = {
     const contentRaw = message.content.trim();
     const contentLower = contentRaw.toLowerCase();
 
-// ====== !testdm command ======
-if (contentLower.startsWith("!testdm")) {
-  const memberAuthor = await message.guild.members.fetch(message.author.id);
-  if (!memberAuthor.roles.cache.has(ADMIN_ROLE_ID)) {
-    return message.reply("❌ Kamu tidak punya izin pakai command ini.");
-  }
+    const memberAuthor = await message.guild.members.fetch(message.author.id).catch(() => null);
+    const isAdmin = memberAuthor?.roles.cache.has(ADMIN_ROLE_ID);
 
-  // ... isi !testdm lengkap di sini ...
+    // ====== !testdm command ======
+    if (contentLower.startsWith("!testdm")) {
+      if (!isAdmin) return message.reply("❌ Kamu tidak punya izin pakai command ini.");
 
-  return; // tambahkan return biar tidak lanjut ke bawah
-}
+      const args = contentRaw.split(/\s+/);
+      const user = message.mentions.users.first();
+      const inputTagRaw = args.slice(2).join(" ").trim();
+      const inputTag = inputTagRaw.toUpperCase().replace(/[\[\]]/g, "");
 
-// ====== !hapustag command ======
-if (contentLower.startsWith("!hapustag")) {
-  return handleHapusTag(message);
-}
-  
-  const args = contentRaw.split(/\s+/);
-  const user = message.mentions.users.first();
-  const inputTagRaw = args.slice(2).join(" ").trim();
-  const inputTag = inputTagRaw.toUpperCase().replace(/[\[\]]/g, "");
+      if (!user || !inputTag) {
+        return message.reply("❌ Format salah. Contoh: `!testdm @user MOD`");
+      }
 
-  if (!user || !inputTag) {
-    return message.reply("❌ Format salah. Contoh: `!testdm @user MOD`");
-  }
+      const matchedRole = ROLES.find(r =>
+        r.tag.replace(/[\[\]]/g, "").toUpperCase() === inputTag
+      );
 
-  const matchedRole = ROLES.find(r =>
-    r.tag.replace(/[\[\]]/g, "").toUpperCase() === inputTag
-  );
+      if (!matchedRole) return message.reply("❌ Tag tidak valid.");
 
-  if (!matchedRole) {
-    return message.reply("❌ Tag tidak valid.");
-  }
+      const member = await message.guild.members.fetch(user.id);
+      const realTag = matchedRole.tag;
+      const safeTagId = realTag.replace(/[^\w-]/g, "").toLowerCase();
+      const displayName = user.globalName ?? user.username;
+      const roleDisplay = ROLE_DISPLAY_MAP[matchedRole.id] || "Tanpa Nama";
 
-  const member = await message.guild.members.fetch(user.id);
-  const realTag = matchedRole.tag;
-  const safeTagId = realTag.replace(/[^\w-]/g, "").toLowerCase();
-  const displayName = user.globalName ?? user.username;
-  const roleDisplay = ROLE_DISPLAY_MAP[matchedRole.id] || "Tanpa Nama";
+      let taggedUsers = {};
+      if (fs.existsSync(filePath)) {
+        taggedUsers = JSON.parse(fs.readFileSync(filePath));
+      }
 
-  let taggedUsers = {};
-  if (fs.existsSync(filePath)) {
-    taggedUsers = JSON.parse(fs.readFileSync(filePath));
-  }
+      if (!taggedUsers[user.id]) {
+        taggedUsers[user.id] = {
+          originalName: member.displayName,
+          usedTags: []
+        };
+      }
 
-  if (!taggedUsers[user.id]) {
-    taggedUsers[user.id] = {
-      originalName: member.displayName,
-      usedTags: []
-    };
-  }
+      if (!member.roles.cache.has(matchedRole.id)) {
+        await member.roles.add(matchedRole.id).catch(console.error);
+      }
 
-  // ======= LANGSUNG KASIH ROLE =======
-  if (!member.roles.cache.has(matchedRole.id)) {
-    await member.roles.add(matchedRole.id).catch(console.error);
-  }
-  // ===================================
+      taggedUsers[user.id].usedTags.push(matchedRole.id);
+      fs.writeFileSync(filePath, JSON.stringify(taggedUsers, null, 2));
 
-  taggedUsers[user.id].usedTags.push(matchedRole.id);
-  fs.writeFileSync(filePath, JSON.stringify(taggedUsers, null, 2));
+      const row = new ActionRowBuilder().addComponents(
+        new ButtonBuilder()
+          .setCustomId(`test_use_tag_${matchedRole.id}_${safeTagId}`)
+          .setLabel(`✅ Pakai Tag ${realTag}`)
+          .setStyle(ButtonStyle.Success),
+        new ButtonBuilder()
+          .setCustomId(`test_remove_tag_${matchedRole.id}_${safeTagId}`)
+          .setLabel(`❌ Jangan Pakai Tag`)
+          .setStyle(ButtonStyle.Secondary)
+      );
 
-  const row = new ActionRowBuilder().addComponents(
-    new ButtonBuilder()
-      .setCustomId(`test_use_tag_${matchedRole.id}_${safeTagId}`)
-      .setLabel("Ya, pakai tag ${roleDisplay}")
-      .setStyle(ButtonStyle.Success),
-    new ButtonBuilder()
-      .setCustomId(`test_remove_tag_${matchedRole.id}_${safeTagId}`)
-      .setLabel("Tidak, tanpa tag ${roleDisplay}")
-      .setStyle(ButtonStyle.Secondary)
-  );
-
-  try {
-    await user.send({
-      content: `✨ *Selamat kepada ${displayName}!*
+      try {
+        await user.send({
+          content: `✨ *Selamat kepada ${displayName}!*
 
 🔰 Kamu menerima tag khusus: \`${realTag}\`
 📛 Diberikan karena kamu memiliki role: \`${roleDisplay}\`
@@ -141,20 +126,26 @@ Contoh: \`${realTag} ${displayName}\`
 
 ───────────────────────────
 Pilih salah opsi di bawah ini: 👇`,
-      components: [row]
-    });
+          components: [row]
+        });
 
-    await message.reply(`✅ DM berhasil dikirim ke ${displayName}`);
-  } catch (err) {
-    console.error("❌ Gagal kirim DM:", err);
-    if (err.code === 50007) {
-      return message.reply("❌ DM gagal. User matiin DM dari server.");
+        await message.reply(`✅ DM berhasil dikirim ke ${displayName}`);
+      } catch (err) {
+        console.error("❌ Gagal kirim DM:", err);
+        if (err.code === 50007) {
+          return message.reply("❌ DM gagal. User matiin DM dari server.");
+        }
+        return message.reply("❌ Terjadi kesalahan saat kirim DM.");
+      }
     }
-    return message.reply("❌ Terjadi kesalahan saat kirim DM.");
-  }
-}
-      
-    // === AUTO REPLY KEYWORDS ===
+
+    // ====== !hapustag command ======
+    if (contentLower.startsWith("!hapustag")) {
+      if (!isAdmin) return message.reply("❌ Kamu tidak punya izin pakai command ini.");
+      return handleHapusTag(message);
+    }
+
+    // ====== AUTO REPLY KEYWORDS ======
     const autoReplies = {
       pagi: ["Pagi juga! 🌞", "Selamat pagi, semangat ya!", "Eh bangun pagi juga 😴"],
       siang: ["Siang juga! 🌤️", "Jangan lupa makan siang ya!", "Siang-siang panas bener 🥵"],
@@ -164,14 +155,6 @@ Pilih salah opsi di bawah ini: 👇`,
       makasih: ["Sama-sama 😊", "Sippp 👍", "Yok sama-sama~"],
       ngantuk: ["Ngopi dulu gih ☕", "Tidur sana jangan dipaksa 😴", "Ngantuk? Wajar 😆"],
       gabut: ["Gabut? Ketik !gacha aja!", "Mau main tebak gambar? !tebak", "Chat bot aja kalo gabut 😁"],
-      hehehe: ["Hehe kenapa 🤭", "Ngakak sendiri ya? 😅", "Hehe iya iya 😏"],
-      anjir: ["Anjir parah 😳", "Anjir kenapa tuh?", "Wkwk anjir banget"],
-      woi: ["WOI kenapaa 😤", "Sini gua dengerin", "Santai dong bang"],
-      bang: ["Siap bang 👊", "Kenapa bang?", "Tenang bang, aman 😎"],
-      cape: ["Sini aku pijetin 😌", "Rebahan dulu aja...", "Jangan lupa istirahat ya"],
-      bosen: ["Main Discord dulu 😆", "Bosen? Cari konten baru~", "Main game yuk!"],
-      kangen: ["Kangen siapa tuh? 😏", "Sini pelukk 🤗", "Kangen tuh berat..."],
-      bye: ["👋 Bye bye! Jangan lupa balik lagi ya!", "Daaah~ hati-hati ya 😄", "Sampai ketemu lagi 💫"],
     };
 
     for (const [keyword, replies] of Object.entries(autoReplies)) {
