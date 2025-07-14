@@ -9,15 +9,21 @@ module.exports = {
     console.log(`🤖 Bot siap sebagai ${client.user.tag}`);
 
     const guild = client.guilds.cache.first();
-    if (!guild) return;
+    if (!guild) {
+      console.warn("⚠️ Guild tidak ditemukan.");
+      return;
+    }
 
-    await updateOnline(guild); // update saat pertama login
-
+    // ⏫ Auto Update Member Online VC
+    await updateOnline(guild); // Pertama kali saat bot online
     setInterval(() => {
-      updateOnline(guild); // update tiap 1 menit
-    }, 60000);
+      updateOnline(guild); // Update setiap 60 detik
+    }, 60_000);
 
+    // 📌 Sticky Message Handler
     stickyHandler(client);
+
+    // 👋 Auto Greeting System
     autoGreeting(client);
   },
 };
