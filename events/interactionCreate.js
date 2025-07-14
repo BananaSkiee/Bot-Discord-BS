@@ -1,5 +1,6 @@
 const fs = require("fs");
 const path = require("path");
+const { ChannelType } = require("discord.js");
 const { ROLES, guildId } = require("../config");
 const handleTicketInteraction = require("../modules/ticketSystem");
 
@@ -14,28 +15,6 @@ module.exports = {
   async execute(interaction) {
     if (!interaction.isButton()) return;
 
-    // ========== TOMBOL OPEN TICKET ==========
-if (interaction.customId === "close_ticket") {
-  const channel = interaction.channel;
-  if (channel.type !== ChannelType.GuildText) {
-    return interaction.reply({
-      content: "❌ Channel ini bukan channel tiket.",
-      ephemeral: true,
-    });
-  }
-
-  await interaction.reply({
-    content: "🛠️ Ticket akan ditutup dalam 5 detik...",
-    ephemeral: true,
-  });
-
-  setTimeout(() => {
-    channel.delete().catch(console.error);
-  }, 5000);
-  return;
-}
-
-    // ========== DATA USER & SERVER ==========
     const username = interaction.user.globalName ?? interaction.user.username;
     const guild = interaction.client.guilds.cache.get(guildId);
     if (!guild) return;
@@ -53,6 +32,33 @@ if (interaction.customId === "close_ticket") {
       taggedUsers = JSON.parse(fs.readFileSync(filePath, "utf8"));
     } catch {
       taggedUsers = {};
+    }
+
+    // ========== TOMBOL OPEN TICKET ==========
+    if (interaction.customId === "open_ticket") {
+      return handleTicketInteraction(interaction);
+    }
+
+    // ========== TOMBOL CLOSE TICKET ==========
+    if (interaction.customId === "close_ticket") {
+      const channel = interaction.channel;
+      if (channel.type !== ChannelType.GuildText) {
+        return interaction.reply({
+          content: "❌ Channel ini bukan channel tiket.",
+          ephemeral: true,
+        });
+      }
+
+      await interaction.reply({
+        content: "🛠️ Ticket akan ditutup dalam 5 detik...",
+        ephemeral: true,
+      });
+
+      setTimeout(() => {
+        channel.delete().catch(console.error);
+      }, 5000);
+
+      return;
     }
 
     // ========== TOMBOL ❌ UMUM ==========
@@ -93,9 +99,9 @@ if (interaction.customId === "close_ticket") {
       interaction.customId.startsWith("test_remove_tag_")
     ) {
       const parts = interaction.customId.split("_");
-      const action = parts[1]; // use atau remove
-      const roleId = parts[3]; // ID role
-      const safeTagId = parts.slice(4).join("_"); // tag aman dari customId
+      const action = parts[1]; // use / remove
+      const roleId = parts[3];
+      const safeTagId = parts.slice(4).join("_");
 
       const matched = ROLES.find(
         r =>
@@ -114,7 +120,6 @@ if (interaction.customId === "close_ticket") {
 
       if (action === "use") {
         await member.setNickname(`${realTag} ${username}`).catch(console.error);
-
         if (!member.roles.cache.has(matched.id)) {
           await member.roles.add(matched.id).catch(console.error);
         }
@@ -130,7 +135,6 @@ if (interaction.customId === "close_ticket") {
 
       if (action === "remove") {
         await member.setNickname(null).catch(console.error);
-
         taggedUsers[member.id] = false;
         saveTaggedUsers(taggedUsers);
 
