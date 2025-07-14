@@ -15,9 +15,17 @@ module.exports = {
     if (!interaction.isButton()) return;
 
     // ========== TOMBOL OPEN TICKET ==========
-    if (interaction.customId === "open_ticket") {
-      return handleTicketInteraction(interaction);
-    }
+if (interaction.customId === "close_ticket") {
+  const channel = interaction.channel;
+  if (channel.type !== ChannelType.GuildText) {
+    return interaction.reply({ content: "❌ Tidak bisa menutup tiket di sini.", ephemeral: true });
+  }
+
+  await interaction.reply({ content: "🛠️ Ticket akan ditutup dalam 5 detik...", ephemeral: true });
+  setTimeout(() => {
+    channel.delete().catch(console.error);
+  }, 5000);
+}
 
     // ========== DATA USER & SERVER ==========
     const username = interaction.user.globalName ?? interaction.user.username;
