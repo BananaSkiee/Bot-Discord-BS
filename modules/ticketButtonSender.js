@@ -1,6 +1,6 @@
 const { ChannelType, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require("discord.js");
 
-const TICKET_CHANNEL_ID = "1354077866895347772"; // Ganti dengan ID channel tiket kamu
+const TICKET_CHANNEL_ID = "1354077866895347772"; // ID channel tiket utama
 
 module.exports = async function sendTicketButton(client) {
   const ticketChannel = client.channels.cache.get(TICKET_CHANNEL_ID);
@@ -16,6 +16,7 @@ module.exports = async function sendTicketButton(client) {
     await msg.delete().catch(console.error);
   }
 
+  // Kirim ulang tombol open ticket
   const row = new ActionRowBuilder().addComponents(
     new ButtonBuilder()
       .setCustomId("open_ticket")
