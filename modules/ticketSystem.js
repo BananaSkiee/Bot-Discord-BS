@@ -1,28 +1,54 @@
-// modules/ticketSystem.js
+const { PermissionFlagsBits, ChannelType, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require("discord.js");
+
 module.exports = async function handleTicketInteraction(interaction) {
   const guild = interaction.guild;
   const user = interaction.user;
 
-  const channel = await guild.channels.create({
+  // Cek apakah user sudah punya tiket
+  const existing = guild.channels.cache.find(c =>
+    c.type === ChannelType.GuildText &&
+    c.name.startsWith("ticket-") &&
+    c.topic === user.id
+  );
+  if (existing) {
+    return interaction.reply({
+      content: `❗ Kamu sudah punya ticket: <#${existing.id}>`,
+      ephemeral: true,
+    });
+  }
+
+  // Buat channel baru
+  const ticketChannel = await guild.channels.create({
     name: `ticket-${user.username}`,
-    type: 0, // GUILD_TEXT
-    parent: null, // bisa diisi ID kategori
+    type: ChannelType.GuildText,
+    topic: user.id,
     permissionOverwrites: [
       {
-        id: guild.id,
-        deny: ["ViewChannel"],
+        id: guild.roles.everyone,
+        deny: [PermissionFlagsBits.ViewChannel],
       },
       {
         id: user.id,
-        allow: ["ViewChannel", "SendMessages", "ReadMessageHistory"],
+        allow: [PermissionFlagsBits.ViewChannel, PermissionFlagsBits.SendMessages],
       },
     ],
   });
 
-  await channel.send(`👋 Hai ${user}, silakan jelaskan masalahmu di sini.`);
+  // Kirim pesan sambutan + tombol Close Ticket
+  const row = new ActionRowBuilder().addComponents(
+    new ButtonBuilder()
+      .setCustomId("close_ticket")
+      .setLabel("❌ Close Ticket")
+      .setStyle(ButtonStyle.Danger)
+  );
+
+  await ticketChannel.send({
+    content: `🎟️ Halo <@${user.id}>, silakan jelaskan masalah kamu di sini.`,
+    components: [row],
+  });
 
   await interaction.reply({
-    content: `✅ Ticket dibuka: <#${channel.id}>`,
+    content: `✅ Ticket dibuat: <#${ticketChannel.id}>`,
     ephemeral: true,
   });
 };
