@@ -5,8 +5,8 @@ const {
   ChannelType,
 } = require("discord.js");
 
-const ARCHIVE_CATEGORY_ID = "1354119154042404926";
-const TICKET_CATEGORY_ID = "1354116735594266644";
+const TICKET_CATEGORY_ID = "1354116735594266644"; // Kategori untuk tiket aktif
+const ARCHIVE_CATEGORY_ID = "1354119154042404926"; // Kategori untuk tiket tertutup / arsip
 
 module.exports = async function handleTicketButtons(interaction) {
   const channel = interaction.channel;
@@ -20,7 +20,7 @@ module.exports = async function handleTicketButtons(interaction) {
     });
   }
 
-  // CLOSE TICKET
+  // CLOSE
   if (interaction.customId === "close_ticket") {
     await interaction.reply({
       content: "📦 Tiket akan ditutup dan diarsipkan dalam 5 detik...",
@@ -31,7 +31,6 @@ module.exports = async function handleTicketButtons(interaction) {
       try {
         await channel.setParent(ARCHIVE_CATEGORY_ID, { lockPermissions: false });
         await channel.setName(channel.name.replace("ticket-", "closed-"));
-
         await channel.permissionOverwrites.edit(userId, {
           ViewChannel: false,
           SendMessages: false,
@@ -53,7 +52,6 @@ module.exports = async function handleTicketButtons(interaction) {
           components: [row],
         });
 
-        // Hapus tombol sebelumnya (biar clean)
         const messages = await channel.messages.fetch({ limit: 10 });
         for (const msg of messages.values()) {
           if (msg.author.id === interaction.client.user.id && msg.components.length > 0) {
@@ -66,13 +64,12 @@ module.exports = async function handleTicketButtons(interaction) {
     }, 5000);
   }
 
-  // REOPEN TICKET
+  // REOPEN
   else if (interaction.customId === "reopen_ticket") {
     try {
       const member = await interaction.guild.members.fetch(userId);
       await channel.setParent(TICKET_CATEGORY_ID, { lockPermissions: false });
       await channel.setName(`ticket-${member.user.username.toLowerCase()}`);
-
       await channel.permissionOverwrites.edit(userId, {
         ViewChannel: true,
         SendMessages: true,
@@ -95,7 +92,6 @@ module.exports = async function handleTicketButtons(interaction) {
         components: [row],
       });
 
-      // Hapus tombol lama
       const messages = await channel.messages.fetch({ limit: 10 });
       for (const msg of messages.values()) {
         if (msg.author.id === interaction.client.user.id && msg.components.length > 0) {
@@ -107,7 +103,7 @@ module.exports = async function handleTicketButtons(interaction) {
     }
   }
 
-  // DELETE TICKET
+  // DELETE
   else if (interaction.customId === "delete_ticket") {
     await interaction.reply({
       content: "🗑️ Tiket akan dihapus...",
