@@ -42,6 +42,9 @@ module.exports = {
     // ========== CLOSE TICKET ==========
 if (interaction.customId === "close_ticket") {
   const channel = interaction.channel;
+  const username = interaction.user.username.toLowerCase();
+  const userId = interaction.user.id;
+  const archiveCategory = "1354119154042404926"; // ID kategori arsip
 
   if (channel.type !== ChannelType.GuildText) {
     return interaction.reply({
@@ -57,10 +60,11 @@ if (interaction.customId === "close_ticket") {
 
   setTimeout(async () => {
     try {
-      await channel.setParent("1354119154042404926", { lockPermissions: false });
+      // Pindahkan channel ke kategori arsip
+      await channel.setParent(archiveCategory, { lockPermissions: false });
       await channel.setName(`closed-${username}`);
 
-      // Hapus semua tombol lama (optional)
+      // Hapus tombol lama dari pesan sebelumnya (opsional)
       const messages = await channel.messages.fetch({ limit: 10 });
       for (const msg of messages.values()) {
         if (msg.author.id === interaction.client.user.id && msg.components.length > 0) {
@@ -68,7 +72,13 @@ if (interaction.customId === "close_ticket") {
         }
       }
 
-      // Kirim tombol baru setelah close
+      // Ubah permission: user tidak bisa lihat tiket lagi
+      await channel.permissionOverwrites.edit(userId, {
+        ViewChannel: false,
+        SendMessages: false,
+      });
+
+      // Kirim tombol kontrol
       const row = new ActionRowBuilder().addComponents(
         new ButtonBuilder()
           .setCustomId("reopen_ticket")
@@ -88,13 +98,15 @@ if (interaction.customId === "close_ticket") {
         content: "📦 Tiket ini telah diarsipkan. Gunakan tombol di bawah ini jika perlu.",
         components: [row],
       });
+
     } catch (err) {
-      console.error("❌ Gagal pindahkan channel:", err);
+      console.error("❌ Gagal tutup tiket:", err);
     }
   }, 5000);
 
   return;
-            }
+}
+            
 // ========== TOMBOL SALIN / EDIT ==========
 if (interaction.customId === "save_transcript") {
   const channel = interaction.channel;
