@@ -1,48 +1,32 @@
 const { ChannelType, PermissionFlagsBits } = require("discord.js");
 
-const TICKET_CATEGORY_ID = "1354116735594266644";      // Kategori tiket aktif
-const ARCHIVE_CATEGORY_ID = "1354119154042404926";     // Kategori tiket arsip
+const TICKET_CATEGORY_ID = "1354116735594266644"; // Kategori aktif
+const ARCHIVE_CATEGORY_ID = "1354119154042404926"; // Kategori arsip
 
 module.exports = async function handleTicketInteraction(interaction) {
   const user = interaction.user;
   const guild = interaction.guild;
+  const username = user.username.toLowerCase();
 
-  // Cek apakah user sudah punya channel tiket
   const existingChannel = guild.channels.cache.find(
-    c =>
-      c.name === `ticket-${user.username.toLowerCase()}` &&
-      c.type === ChannelType.GuildText
+    c => c.name === `ticket-${username}` && c.type === ChannelType.GuildText
   );
 
   if (existingChannel) {
     return interaction.reply({
-      content: "❌ Kamu sudah punya tiket terbuka: <#" + existingChannel.id + ">",
+      content: `❌ Kamu sudah punya tiket terbuka: <#${existingChannel.id}>`,
       ephemeral: true,
     });
   }
 
-  // Buat channel tiket baru
   const ticketChannel = await guild.channels.create({
-    name: `ticket-${user.username.toLowerCase()}`,
+    name: `ticket-${username}`,
     type: ChannelType.GuildText,
     parent: TICKET_CATEGORY_ID,
     permissionOverwrites: [
-      {
-        id: guild.roles.everyone.id,
-        deny: [PermissionFlagsBits.ViewChannel],
-      },
-      {
-        id: user.id,
-        allow: [PermissionFlagsBits.ViewChannel, PermissionFlagsBits.SendMessages],
-      },
-      {
-        id: interaction.client.user.id,
-        allow: [
-          PermissionFlagsBits.ViewChannel,
-          PermissionFlagsBits.SendMessages,
-          PermissionFlagsBits.ManageChannels,
-        ],
-      },
+      { id: guild.roles.everyone.id, deny: [PermissionFlagsBits.ViewChannel] },
+      { id: user.id, allow: [PermissionFlagsBits.ViewChannel, PermissionFlagsBits.SendMessages] },
+      { id: interaction.client.user.id, allow: [PermissionFlagsBits.ViewChannel, PermissionFlagsBits.SendMessages, PermissionFlagsBits.ManageChannels] },
     ],
   });
 
