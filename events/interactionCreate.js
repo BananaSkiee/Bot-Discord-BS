@@ -43,21 +43,21 @@ module.exports = {
 if (interaction.customId === "close_ticket") {
   const channel = interaction.channel;
 
-  const nameParts = channel.name.split("-");
-  const username = nameParts.slice(1).join("-");
-  const member = interaction.guild.members.cache.find(
-    m => m.user.username.toLowerCase() === username
+  // Cari pemilik tiket dari permission (selain bot dan everyone)
+  const userOverwrite = channel.permissionOverwrites.cache.find(
+    ow => ow.type === 1 &&
+      ow.id !== interaction.client.user.id &&
+      ow.id !== interaction.guild.roles.everyone.id
   );
 
-  if (!member) {
+  if (!userOverwrite) {
     return interaction.reply({
-      content: "❌ Gagal menemukan pemilik tiket.",
+      content: "❌ Tidak ditemukan pemilik tiket.",
       ephemeral: true,
     });
   }
 
-  const userId = member.user.id;
-  const archiveCategory = "1354119154042404926";
+  const userId = userOverwrite.id;
 
   await interaction.reply({
     content: "🛠️ Tiket akan ditutup dan diarsipkan dalam 5 detik...",
@@ -66,22 +66,26 @@ if (interaction.customId === "close_ticket") {
 
   setTimeout(async () => {
     try {
-      await channel.setParent(archiveCategory, { lockPermissions: false });
-      await channel.setName(`closed-${username}`);
+      const archiveCategory = "1354119154042404926";
 
-      // Hilangkan tombol-tombol lama
+      await channel.setParent(archiveCategory, { lockPermissions: false });
+
+      const newName = channel.name.startsWith("ticket-")
+        ? channel.name.replace("ticket-", "closed-")
+        : `closed-${channel.name}`;
+      await channel.setName(newName);
+
+      await channel.permissionOverwrites.edit(userId, {
+        ViewChannel: false,
+        SendMessages: false,
+      });
+
       const messages = await channel.messages.fetch({ limit: 10 });
       for (const msg of messages.values()) {
         if (msg.author.id === interaction.client.user.id && msg.components.length > 0) {
           await msg.edit({ components: [] }).catch(() => {});
         }
       }
-
-      // Set user tidak bisa lihat lagi
-      await channel.permissionOverwrites.edit(userId, {
-        ViewChannel: false,
-        SendMessages: false,
-      });
 
       const row = new ActionRowBuilder().addComponents(
         new ButtonBuilder()
@@ -108,8 +112,8 @@ if (interaction.customId === "close_ticket") {
   }, 5000);
 
   return;
-}
-            
+}            
+    
 // ========== TOMBOL SALIN / EDIT ==========
 if (interaction.customId === "save_transcript") {
   const channel = interaction.channel;
@@ -175,38 +179,47 @@ if (interaction.customId === "save_transcript") {
     }
 
     // ========== REOPEN TICKET ==========
-if (interaction.customId === "reopen_ticket") {
+    if (interaction.customId === "reopen_ticket") {
   const channel = interaction.channel;
 
-  const nameParts = channel.name.split("-");
-  const username = nameParts.slice(1).join("-");
-  const member = interaction.guild.members.cache.find(
-    m => m.user.username.toLowerCase() === username
+  const userOverwrite = channel.permissionOverwrites.cache.find(
+    ow => ow.type === 1 &&
+      ow.id !== interaction.client.user.id &&
+      ow.id !== interaction.guild.roles.everyone.id
   );
 
-  if (!member) {
+  if (!userOverwrite) {
     return interaction.reply({
-      content: "❌ Gagal menemukan pemilik tiket.",
+      content: "❌ Tidak ditemukan pemilik tiket.",
       ephemeral: true,
     });
   }
 
-  const userId = member.user.id;
-  const activeCategory = "1354116735594266644";
+  const userId = userOverwrite.id;
+  const member = await interaction.guild.members.fetch(userId).catch(() => null);
+
+  if (!member) {
+    return interaction.reply({
+      content: "❌ Gagal mengambil data member.",
+      ephemeral: true,
+    });
+  }
+
+  const fixedName = `ticket-${member.user.username.toLowerCase()}`;
 
   await interaction.deferReply({ ephemeral: true });
 
   try {
-    await channel.setParent(activeCategory, { lockPermissions: false });
-    await channel.setName(`ticket-${username}`);
+    const activeCategory = "1354116735594266644";
 
-    // Beri akses kembali ke user
+    await channel.setParent(activeCategory, { lockPermissions: false });
+    await channel.setName(fixedName);
+
     await channel.permissionOverwrites.edit(userId, {
       ViewChannel: true,
       SendMessages: true,
     });
 
-    // Hapus tombol lama
     const messages = await channel.messages.fetch({ limit: 10 });
     for (const msg of messages.values()) {
       if (msg.author.id === interaction.client.user.id && msg.components.length > 0) {
@@ -237,7 +250,7 @@ if (interaction.customId === "reopen_ticket") {
   }
 
   return;
-}
+      }
     
     // ========== REMOVE TAG ==========
     if (interaction.customId === "remove_tag") {
