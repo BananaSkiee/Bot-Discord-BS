@@ -30,6 +30,9 @@ module.exports = async function handleTicketInteraction(interaction) {
     ],
   });
 
+  // ✅ Simpan ID pemilik ke topic
+  await ticketChannel.setTopic(`user:${user.id}`);
+
   const row = new ActionRowBuilder().addComponents(
     new ButtonBuilder()
       .setCustomId("close_ticket")
