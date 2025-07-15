@@ -34,7 +34,41 @@ module.exports = {
       taggedUsers = {};
     }
 
+// ========== TOMBOL OPEN TICKET ==========
+if (interaction.customId === "open_ticket") {
+  return handleTicketInteraction(interaction);
+}
 
+// ========== TOMBOL CLOSE TICKET ==========
+if (interaction.customId === "close_ticket") {
+  const channel = interaction.channel;
+  const username = interaction.user.username.toLowerCase();
+  const ARCHIVE_CATEGORY_ID = "1354119154042404926";
+
+  if (channel.type !== ChannelType.GuildText) {
+    return interaction.reply({
+      content: "❌ Channel ini bukan channel tiket.",
+      ephemeral: true,
+    });
+  }
+
+  await interaction.reply({
+    content: "🛠️ Ticket akan ditutup dan diarsipkan dalam 5 detik...",
+    ephemeral: true,
+  });
+
+  setTimeout(async () => {
+    try {
+      await channel.setParent(ARCHIVE_CATEGORY_ID, { lockPermissions: false });
+      await channel.setName(`closed-${username}`);
+      await channel.send("📦 Tiket ini telah diarsipkan. Terima kasih telah menghubungi support.");
+    } catch (err) {
+      console.error("❌ Gagal pindahkan channel:", err);
+    }
+  }, 5000);
+
+  return;
+}
 
     // ========== TOMBOL ❌ UMUM ==========
     if (interaction.customId === "remove_tag") {
