@@ -39,94 +39,97 @@ module.exports = {
       return handleTicketInteraction(interaction);
     }
 
-    // ========== CLOSE TICKET ==========
-    if (interaction.customId === "close_ticket") {
-      const channel = interaction.channel;
+// ========== CLOSE TICKET ==========
+if (interaction.customId === "close_ticket") {
+  const channel = interaction.channel;
 
-      // Cari pemilik tiket dari permission (selain bot dan everyone)
-      const userOverwrite = channel.permissionOverwrites.cache.find(
-        ow => ow.type === 1 &&
-          ow.id !== interaction.client.user.id &&
-          ow.id !== interaction.guild.roles.everyone.id
-      );
+  // Cari pemilik tiket dari permission (selain bot dan everyone)
+  const userOverwrite = channel.permissionOverwrites.cache.find(
+    ow =>
+      ow.type === 1 &&
+      ow.id !== interaction.client.user.id &&
+      ow.id !== interaction.guild.roles.everyone.id
+  );
 
-      if (!userOverwrite) {
-        return interaction.reply({
-          content: "❌ Tidak ditemukan pemilik tiket.",
-          ephemeral: true,
-        });
-      }
+  if (!userOverwrite) {
+    return interaction.reply({
+      content: "❌ Tidak ditemukan pemilik tiket.",
+      ephemeral: true,
+    });
+  }
 
-      const userId = userOverwrite.id;
+  const userId = userOverwrite.id;
 
-      await interaction.reply({
-        content: "🛠️ Tiket akan ditutup dan diarsipkan dalam 5 detik...",
-        ephemeral: true,
+  await interaction.reply({
+    content: "🛠️ Tiket akan ditutup dan diarsipkan dalam 5 detik...",
+    ephemeral: true,
+  });
+
+  setTimeout(async () => {
+    try {
+      const archiveCategory = "1354119154042404926";
+
+      // Pindah ke kategori arsip
+      await channel.setParent(archiveCategory, { lockPermissions: false });
+
+      // Rename channel
+      const newName = channel.name.startsWith("ticket-")
+        ? channel.name.replace("ticket-", "closed-")
+        : `closed-${channel.name}`;
+      await channel.setName(newName);
+
+      // Pastikan bot punya akses
+      await channel.permissionOverwrites.edit(interaction.client.user.id, {
+        ViewChannel: true,
+        SendMessages: true,
       });
 
-      setTimeout(async () => {
-        try {
-          const archiveCategory = "1354119154042404926"; // ID kategori arsip
+      // Buat tombol kontrol
+      const row = new ActionRowBuilder().addComponents(
+        new ButtonBuilder()
+          .setCustomId("reopen_ticket")
+          .setLabel("🔓 Open Ticket")
+          .setStyle(ButtonStyle.Success),
+        new ButtonBuilder()
+          .setCustomId("delete_ticket")
+          .setLabel("🗑️ Delete Ticket")
+          .setStyle(ButtonStyle.Danger),
+        new ButtonBuilder()
+          .setCustomId("save_transcript")
+          .setLabel("📋 Salin atau Edit")
+          .setStyle(ButtonStyle.Secondary)
+      );
 
-          // Pindahkan ke kategori arsip
-          await channel.setParent(archiveCategory, { lockPermissions: false });
+      // Kirim tombol dan simpan pesan baru
+      const tombolBaru = await channel.send({
+        content: "📦 Tiket telah diarsipkan.",
+        components: [row],
+      });
 
-          // Rename channel
-          const newName = channel.name.startsWith("ticket-")
-            ? channel.name.replace("ticket-", "closed-")
-            : `closed-${channel.name}`;
-          await channel.setName(newName);
+      // Blokir akses user
+      await channel.permissionOverwrites.edit(userId, {
+        ViewChannel: false,
+        SendMessages: false,
+      });
 
-          // Pastikan bot punya akses ke channel
-          await channel.permissionOverwrites.edit(interaction.client.user.id, {
-            ViewChannel: true,
-            SendMessages: true,
-          });
-
-          // Buat tombol kontrol
-          const row = new ActionRowBuilder().addComponents(
-            new ButtonBuilder()
-              .setCustomId("reopen_ticket")
-              .setLabel("🔓 Open Ticket")
-              .setStyle(ButtonStyle.Success),
-            new ButtonBuilder()
-              .setCustomId("delete_ticket")
-              .setLabel("🗑️ Delete Ticket")
-              .setStyle(ButtonStyle.Danger),
-            new ButtonBuilder()
-              .setCustomId("save_transcript")
-              .setLabel("📋 Salin atau Edit")
-              .setStyle(ButtonStyle.Secondary)
-          );
-
-          // Kirim tombol dulu
-          await channel.send({
-            content: "📦 Tiket telah diarsipkan.",
-            components: [row],
-          });
-
-          // Blokir akses user
-          await channel.permissionOverwrites.edit(userId, {
-            ViewChannel: false,
-            SendMessages: false,
-          });
-
-          // Bersihkan tombol-tombol sebelumnya
-          const messages = await channel.messages.fetch({ limit: 10 });
-          for (const msg of messages.values()) {
-            if (msg.author.id === interaction.client.user.id && msg.components.length > 0) {
-              await msg.edit({ components: [] }).catch(() => {});
-            }
-          }
-
-        } catch (err) {
-          console.error("❌ Gagal mengarsipkan tiket:", err);
+      // Hapus tombol lama kecuali yang baru
+      const messages = await channel.messages.fetch({ limit: 10 });
+      for (const msg of messages.values()) {
+        if (
+          msg.id !== tombolBaru.id &&
+          msg.author.id === interaction.client.user.id &&
+          msg.components.length > 0
+        ) {
+          await msg.edit({ components: [] }).catch(() => {});
         }
-      }, 5000);
-
-      return;
+      }
+    } catch (err) {
+      console.error("❌ Gagal mengarsipkan tiket:", err);
     }
+  }, 5000);
 
+  return;
+}
     // ========== TOMBOL SALIN / EDIT ==========
     if (interaction.customId === "save_transcript") {
       const channel = interaction.channel;
