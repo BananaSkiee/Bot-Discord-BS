@@ -4,6 +4,9 @@ module.exports = {
   voiceChannelId: "1366854862608007329",
   logChannelId: "1393011303492092035",
 
+  openTicketCategoryId: "1354116735594266644",    // Tiket Terbuka
+  closedTicketCategoryId: "1354119154042404926",  // Tiket Tertutup
+
   ROLES: [
     { id: "1352279577174605884", tag: "[OWNER]" },
     { id: "1352282368043389069", tag: "[ADMIN]" },
