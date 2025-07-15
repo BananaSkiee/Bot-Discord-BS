@@ -1,29 +1,38 @@
-const { ChannelType, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require("discord.js");
+const { ActionRowBuilder, ButtonBuilder, ButtonStyle } = require("discord.js");
 
-const TICKET_CHANNEL_ID = "1354077866895347772"; // Ganti sesuai channel tiket utama
+const PANEL_CHANNEL_ID = "1354077866895347772"; // ← Ganti dengan channel ID tempat panel tiket dikirim
 
 module.exports = async function sendTicketButton(client) {
-  const ticketChannel = client.channels.cache.get(TICKET_CHANNEL_ID);
+  try {
+    const channel = await client.channels.fetch(PANEL_CHANNEL_ID);
+    if (!channel) return console.warn("❌ Channel tiket tidak ditemukan.");
 
-  if (!ticketChannel || ticketChannel.type !== ChannelType.GuildText) {
-    return console.warn("❌ Channel tiket tidak ditemukan atau bukan teks.");
+    const messages = await channel.messages.fetch({ limit: 10 });
+    const sudahAdaPanel = messages.some(msg =>
+      msg.author.id === client.user.id &&
+      msg.components.length > 0 &&
+      msg.components[0].components.some(btn => btn.customId === "open_ticket")
+    );
+
+    if (sudahAdaPanel) {
+      console.log("✅ Panel tiket sudah ada. Tidak dikirim ulang.");
+      return;
+    }
+
+    const row = new ActionRowBuilder().addComponents(
+      new ButtonBuilder()
+        .setCustomId("open_ticket")
+        .setLabel("🎫 Buka Tiket")
+        .setStyle(ButtonStyle.Primary)
+    );
+
+    await channel.send({
+      content: "📩 Klik tombol di bawah untuk membuka tiket bantuan.",
+      components: [row],
+    });
+
+    console.log("✅ Panel tiket berhasil dikirim.");
+  } catch (err) {
+    console.error("❌ Gagal kirim panel tiket:", err);
   }
-
-  const messages = await ticketChannel.messages.fetch({ limit: 20 }).catch(() => null);
-  const botMessages = messages?.filter(msg => msg.author.id === client.user.id);
-  for (const msg of botMessages.values()) {
-    await msg.delete().catch(console.error);
-  }
-
-  const row = new ActionRowBuilder().addComponents(
-    new ButtonBuilder()
-      .setCustomId("open_ticket") // 👈 penting banget ID ini harus cocok
-      .setLabel("🎫 Open Ticket")
-      .setStyle(ButtonStyle.Primary)
-  );
-
-  await ticketChannel.send({
-    content: "🛠️ Klik tombol di bawah untuk membuka tiket bantuan.",
-    components: [row],
-  });
 };
