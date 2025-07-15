@@ -173,15 +173,63 @@ if (interaction.customId === "save_transcript") {
 
     // ========== REOPEN TICKET ==========
     if (interaction.customId === "reopen_ticket") {
-      try {
-        await interaction.channel.setParent("1354116735594266644"); // Kategori aktif
-        await interaction.channel.setName(`ticket-${username}`);
-        await interaction.channel.send("🔓 Tiket dibuka kembali.");
-        await interaction.reply({ content: "✅ Tiket berhasil dibuka ulang.", ephemeral: true });
-      } catch (err) {
-        console.error(err);
+  const channel = interaction.channel;
+
+  const nameParts = channel.name.split("-");
+  const usernameFromName = nameParts.slice(1).join("-");
+  const member = guild.members.cache.find(m =>
+    m.user.username.toLowerCase() === usernameFromName
+  );
+
+  if (!member) {
+    return interaction.reply({
+      content: "❌ Gagal menemukan pemilik tiket.",
+      ephemeral: true,
+    });
+  }
+
+  const userId = member.user.id;
+  const fixedName = `ticket-${usernameFromName}`;
+
+  try {
+    await interaction.deferReply({ ephemeral: true });
+
+    await channel.setParent("1354116735594266644"); // Kategori aktif
+    await channel.setName(fixedName);
+
+    await channel.permissionOverwrites.edit(userId, {
+      ViewChannel: true,
+      SendMessages: true,
+    });
+
+    // Hapus tombol lama (reopen/delete/save)
+    const messages = await channel.messages.fetch({ limit: 10 });
+    for (const msg of messages.values()) {
+      if (msg.author.id === interaction.client.user.id && msg.components.length > 0) {
+        await msg.edit({ components: [] }).catch(() => {});
       }
-      return;
+    }
+
+    // Tambahkan tombol close kembali
+    const row = new ActionRowBuilder().addComponents(
+      new ButtonBuilder()
+        .setCustomId("close_ticket")
+        .setLabel("❌ Close Ticket")
+        .setStyle(ButtonStyle.Danger)
+    );
+
+    await channel.send({
+      content: `🔓 Tiket dibuka kembali oleh <@${interaction.user.id}>.`,
+      components: [row],
+    });
+
+    await interaction.editReply({ content: "✅ Tiket berhasil dibuka ulang." });
+  } catch (err) {
+    console.error("❌ Gagal buka ulang tiket:", err);
+    await interaction.editReply({ content: "❌ Terjadi kesalahan saat membuka ulang tiket." });
+  }
+
+  return;
     }
 
     // ========== REMOVE TAG ==========
