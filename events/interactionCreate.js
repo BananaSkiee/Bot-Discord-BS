@@ -34,43 +34,40 @@ module.exports = {
       taggedUsers = {};
     }
 
-// ========== TOMBOL OPEN TICKET ==========
-if (interaction.customId === "open_ticket") {
-  return handleTicketInteraction(interaction);
-}
-
-// ========== TOMBOL CLOSE TICKET ==========
-if (interaction.customId === "close_ticket") {
-  const channel = interaction.channel;
-  const username = interaction.user.username.toLowerCase();
-  const ARCHIVE_CATEGORY_ID = "1354119154042404926";
-
-  if (channel.type !== ChannelType.GuildText) {
-    return interaction.reply({
-      content: "❌ Channel ini bukan channel tiket.",
-      ephemeral: true,
-    });
-  }
-
-  await interaction.reply({
-    content: "🛠️ Ticket akan ditutup dan diarsipkan dalam 5 detik...",
-    ephemeral: true,
-  });
-
-  setTimeout(async () => {
-    try {
-      await channel.setParent(ARCHIVE_CATEGORY_ID, { lockPermissions: false });
-      await channel.setName(`closed-${username}`);
-      await channel.send("📦 Tiket ini telah diarsipkan. Terima kasih telah menghubungi support.");
-    } catch (err) {
-      console.error("❌ Gagal pindahkan channel:", err);
+    // ====================== TICKET ======================
+    if (interaction.customId === "open_ticket") {
+      return handleTicketInteraction(interaction);
     }
-  }, 5000);
 
-  return;
-}
+    if (interaction.customId === "close_ticket") {
+      const channel = interaction.channel;
 
-    // ========== TOMBOL ❌ UMUM ==========
+      if (channel.type !== ChannelType.GuildText) {
+        return interaction.reply({
+          content: "❌ Ini bukan channel tiket.",
+          ephemeral: true,
+        });
+      }
+
+      await interaction.reply({
+        content: "📦 Ticket akan ditutup dan diarsipkan dalam 5 detik...",
+        ephemeral: true,
+      });
+
+      setTimeout(async () => {
+        try {
+          await channel.setParent("1354119154042404926", { lockPermissions: false });
+          await channel.setName(`closed-${username}`);
+          await channel.send(`📦 Ticket Closed by <@${interaction.user.id}>`);
+        } catch (err) {
+          console.error("❌ Gagal mengarsipkan:", err);
+        }
+      }, 5000);
+
+      return;
+    }
+
+    // ====================== TAG NICKNAME ======================
     if (interaction.customId === "remove_tag") {
       await member.setNickname(null).catch(console.error);
       taggedUsers[member.id] = false;
@@ -82,7 +79,6 @@ if (interaction.customId === "close_ticket") {
       }).catch(console.error);
     }
 
-    // ========== TOMBOL ✅ UMUM ==========
     if (interaction.customId === "use_tag") {
       const role = ROLES.find(r => member.roles.cache.has(r.id));
       if (!role) {
@@ -102,7 +98,6 @@ if (interaction.customId === "close_ticket") {
       }).catch(console.error);
     }
 
-    // ========== TOMBOL TEST ✅ / ❌ ==========
     if (
       interaction.customId.startsWith("test_use_tag_") ||
       interaction.customId.startsWith("test_remove_tag_")
@@ -148,7 +143,7 @@ if (interaction.customId === "close_ticket") {
         saveTaggedUsers(taggedUsers);
 
         return interaction.reply({
-          content: `🧪 Nickname kamu dikembalikan menjadi \`${username}\``,
+          content: `🧪 Nama kamu dikembalikan menjadi \`${username}\``,
           ephemeral: true,
         }).catch(console.error);
       }
