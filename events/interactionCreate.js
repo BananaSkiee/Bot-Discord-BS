@@ -40,53 +40,61 @@ module.exports = {
     }
 
     // ========== CLOSE TICKET ==========
-    if (interaction.customId === "close_ticket") {
-      const channel = interaction.channel;
+if (interaction.customId === "close_ticket") {
+  const channel = interaction.channel;
 
-      if (channel.type !== ChannelType.GuildText) {
-        return interaction.reply({
-          content: "❌ Channel ini bukan channel tiket.",
-          ephemeral: true,
-        });
+  if (channel.type !== ChannelType.GuildText) {
+    return interaction.reply({
+      content: "❌ Channel ini bukan channel tiket.",
+      ephemeral: true,
+    });
+  }
+
+  await interaction.reply({
+    content: "🛠️ Ticket akan ditutup dan diarsipkan dalam 5 detik...",
+    ephemeral: true,
+  });
+
+  setTimeout(async () => {
+    try {
+      await channel.setParent("1354119154042404926", { lockPermissions: false });
+      await channel.setName(`closed-${username}`);
+
+      // Hapus semua tombol lama (optional)
+      const messages = await channel.messages.fetch({ limit: 10 });
+      for (const msg of messages.values()) {
+        if (msg.author.id === interaction.client.user.id && msg.components.length > 0) {
+          await msg.edit({ components: [] }).catch(() => {});
+        }
       }
 
-      await interaction.reply({
-        content: "🛠️ Ticket akan ditutup dan diarsipkan dalam 5 detik...",
-        ephemeral: true,
+      // Kirim tombol baru setelah close
+      const row = new ActionRowBuilder().addComponents(
+        new ButtonBuilder()
+          .setCustomId("reopen_ticket")
+          .setLabel("🔓 Open Ticket")
+          .setStyle(ButtonStyle.Success),
+        new ButtonBuilder()
+          .setCustomId("delete_ticket")
+          .setLabel("🗑️ Delete Ticket")
+          .setStyle(ButtonStyle.Danger),
+        new ButtonBuilder()
+          .setCustomId("save_transcript")
+          .setLabel("📋 Salin atau Edit")
+          .setStyle(ButtonStyle.Secondary)
+      );
+
+      await channel.send({
+        content: "📦 Tiket ini telah diarsipkan. Gunakan tombol di bawah ini jika perlu.",
+        components: [row],
       });
-
-      setTimeout(async () => {
-        try {
-          await channel.setParent("1354119154042404926", { lockPermissions: false }); // archive category
-          await channel.setName(`closed-${username}`);
-
-          const row = new ActionRowBuilder().addComponents(
-            new ButtonBuilder()
-              .setCustomId("reopen_ticket")
-              .setLabel("🔓 Open Ticket")
-              .setStyle(ButtonStyle.Success),
-            new ButtonBuilder()
-              .setCustomId("delete_ticket")
-              .setLabel("🗑️ Delete Ticket")
-              .setStyle(ButtonStyle.Danger),
-            new ButtonBuilder()
-              .setCustomId("save_transcript")
-              .setLabel("📋 Salin atau Edit")
-              .setStyle(ButtonStyle.Secondary)
-          );
-
-          await channel.send({
-            content: "📦 Tiket ini telah diarsipkan. Gunakan tombol di bawah ini jika perlu.",
-            components: [row],
-          });
-        } catch (err) {
-          console.error("❌ Gagal pindahkan channel:", err);
-        }
-      }, 5000);
-
-      return;
+    } catch (err) {
+      console.error("❌ Gagal pindahkan channel:", err);
     }
+  }, 5000);
 
+  return;
+            }
 // ========== TOMBOL SALIN / EDIT ==========
 if (interaction.customId === "save_transcript") {
   const channel = interaction.channel;
