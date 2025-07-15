@@ -45,13 +45,23 @@ module.exports = {
 if (interaction.customId === "close_ticket") {
   const channel = interaction.channel;
 
-  // Ambil user ID dari topic channel
-  const match = (channel.topic || "").match(/user:(\d+)/);
-  const userId = match?.[1];
+  // Ambil user ID dari topic (utama)
+  let match = (channel.topic || "").match(/user:(\d+)/);
+  let userId = match?.[1];
+
+  // Jika tidak ada topic, fallback ke permission overwrite (cadangan)
+  if (!userId) {
+    const fallback = channel.permissionOverwrites.cache.find(
+      ow => ow.type === 1 && // type 1 = user
+        ow.id !== interaction.client.user.id &&
+        ow.id !== interaction.guild.roles.everyone.id
+    );
+    userId = fallback?.id;
+  }
 
   if (!userId) {
     return interaction.reply({
-      content: "❌ Tidak ditemukan pemilik tiket (topic tidak valid).",
+      content: "❌ Tidak ditemukan pemilik tiket (topic & permission invalid).",
       ephemeral: true,
     });
   }
@@ -65,22 +75,18 @@ if (interaction.customId === "close_ticket") {
     try {
       const archiveCategory = "1354119154042404926";
 
-      // Pindahkan ke kategori arsip
       await channel.setParent(archiveCategory, { lockPermissions: false });
 
-      // Rename channel
       const newName = channel.name.startsWith("ticket-")
         ? channel.name.replace("ticket-", "closed-")
         : `closed-${channel.name}`;
       await channel.setName(newName);
 
-      // Pastikan bot bisa akses
       await channel.permissionOverwrites.edit(interaction.client.user.id, {
         ViewChannel: true,
         SendMessages: true,
       });
 
-      // Tambahkan tombol kontrol
       const row = new ActionRowBuilder().addComponents(
         new ButtonBuilder()
           .setCustomId("reopen_ticket")
@@ -96,19 +102,16 @@ if (interaction.customId === "close_ticket") {
           .setStyle(ButtonStyle.Secondary)
       );
 
-      // Kirim tombol baru
       const tombolBaru = await channel.send({
         content: "📦 Tiket telah diarsipkan.",
         components: [row],
       });
 
-      // Nonaktifkan akses user
       await channel.permissionOverwrites.edit(userId, {
         ViewChannel: false,
         SendMessages: false,
       });
 
-      // Bersihkan tombol lama
       const messages = await channel.messages.fetch({ limit: 10 });
       for (const msg of messages.values()) {
         if (
