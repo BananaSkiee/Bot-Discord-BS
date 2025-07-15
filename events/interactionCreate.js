@@ -1,11 +1,16 @@
 const fs = require("fs");
 const path = require("path");
-const { ChannelType, AttachmentBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require("discord.js");
+const {
+  ChannelType,
+  AttachmentBuilder,
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+} = require("discord.js");
 const { ROLES, guildId, LOG_CHANNEL_ID } = require("../config");
 const handleTicketInteraction = require("../modules/ticketSystem");
 
 const filePath = path.join(__dirname, "../data/taggedUsers.json");
-
 function saveTaggedUsers(data) {
   fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
 }
@@ -21,10 +26,7 @@ module.exports = {
 
     const member = await guild.members.fetch(interaction.user.id).catch(() => null);
     if (!member) {
-      return interaction.reply({
-        content: "❌ Gagal ambil datamu dari server.",
-        ephemeral: true,
-      }).catch(console.error);
+      return interaction.reply({ content: "❌ Gagal ambil datamu dari server.", ephemeral: true }).catch(console.error);
     }
 
     let taggedUsers = {};
@@ -39,140 +41,93 @@ module.exports = {
       return handleTicketInteraction(interaction);
     }
 
-// ========== CLOSE TICKET ==========
-if (interaction.customId === "close_ticket") {
-  const channel = interaction.channel;
+    // ========== CLOSE TICKET ==========
+    if (interaction.customId === "close_ticket") {
+      const channel = interaction.channel;
+      const match = (channel.topic || "").match(/user:(\d+)/);
+      const userId = match?.[1];
 
-  // Cari pemilik tiket dari permission (selain bot dan everyone)
-  const userOverwrite = channel.permissionOverwrites.cache.find(
-    ow =>
-      ow.type === 1 &&
-      ow.id !== interaction.client.user.id &&
-      ow.id !== interaction.guild.roles.everyone.id
-  );
-
-  if (!userOverwrite) {
-    return interaction.reply({
-      content: "❌ Tidak ditemukan pemilik tiket.",
-      ephemeral: true,
-    });
-  }
-
-  const userId = userOverwrite.id;
-
-  await interaction.reply({
-    content: "🛠️ Tiket akan ditutup dan diarsipkan dalam 5 detik...",
-    ephemeral: true,
-  });
-
-  setTimeout(async () => {
-    try {
-      const archiveCategory = "1354119154042404926";
-
-      // Pindah ke kategori arsip
-      await channel.setParent(archiveCategory, { lockPermissions: false });
-
-      // Rename channel
-      const newName = channel.name.startsWith("ticket-")
-        ? channel.name.replace("ticket-", "closed-")
-        : `closed-${channel.name}`;
-      await channel.setName(newName);
-
-      // Pastikan bot punya akses
-      await channel.permissionOverwrites.edit(interaction.client.user.id, {
-        ViewChannel: true,
-        SendMessages: true,
-      });
-
-      // Buat tombol kontrol
-      const row = new ActionRowBuilder().addComponents(
-        new ButtonBuilder()
-          .setCustomId("reopen_ticket")
-          .setLabel("🔓 Open Ticket")
-          .setStyle(ButtonStyle.Success),
-        new ButtonBuilder()
-          .setCustomId("delete_ticket")
-          .setLabel("🗑️ Delete Ticket")
-          .setStyle(ButtonStyle.Danger),
-        new ButtonBuilder()
-          .setCustomId("save_transcript")
-          .setLabel("📋 Salin atau Edit")
-          .setStyle(ButtonStyle.Secondary)
-      );
-
-      // Kirim tombol dan simpan pesan baru
-      const tombolBaru = await channel.send({
-        content: "📦 Tiket telah diarsipkan.",
-        components: [row],
-      });
-
-      // Blokir akses user
-      await channel.permissionOverwrites.edit(userId, {
-        ViewChannel: false,
-        SendMessages: false,
-      });
-
-      // Hapus tombol lama kecuali yang baru
-      const messages = await channel.messages.fetch({ limit: 10 });
-      for (const msg of messages.values()) {
-        if (
-          msg.id !== tombolBaru.id &&
-          msg.author.id === interaction.client.user.id &&
-          msg.components.length > 0
-        ) {
-          await msg.edit({ components: [] }).catch(() => {});
-        }
+      if (!userId) {
+        return interaction.reply({ content: "❌ Tidak ditemukan pemilik tiket.", ephemeral: true });
       }
-    } catch (err) {
-      console.error("❌ Gagal mengarsipkan tiket:", err);
-    }
-  }, 5000);
 
-  return;
-}
-    // ========== TOMBOL SALIN / EDIT ==========
+      await interaction.reply({
+        content: "🛠️ Tiket akan ditutup dan diarsipkan dalam 5 detik...",
+        ephemeral: true,
+      });
+
+      setTimeout(async () => {
+        try {
+          const archiveCategory = "1354119154042404926";
+          await channel.setParent(archiveCategory, { lockPermissions: false });
+
+          const newName = channel.name.startsWith("ticket-")
+            ? channel.name.replace("ticket-", "closed-")
+            : `closed-${channel.name}`;
+          await channel.setName(newName);
+
+          await channel.permissionOverwrites.edit(interaction.client.user.id, {
+            ViewChannel: true,
+            SendMessages: true,
+          });
+
+          const row = new ActionRowBuilder().addComponents(
+            new ButtonBuilder().setCustomId("reopen_ticket").setLabel("🔓 Open Ticket").setStyle(ButtonStyle.Success),
+            new ButtonBuilder().setCustomId("delete_ticket").setLabel("🗑️ Delete Ticket").setStyle(ButtonStyle.Danger),
+            new ButtonBuilder().setCustomId("save_transcript").setLabel("📋 Salin atau Edit").setStyle(ButtonStyle.Secondary)
+          );
+
+          const tombolBaru = await channel.send({ content: "📦 Tiket telah diarsipkan.", components: [row] });
+
+          await channel.permissionOverwrites.edit(userId, {
+            ViewChannel: false,
+            SendMessages: false,
+          });
+
+          const messages = await channel.messages.fetch({ limit: 10 });
+          for (const msg of messages.values()) {
+            if (msg.id !== tombolBaru.id && msg.author.id === interaction.client.user.id && msg.components.length > 0) {
+              await msg.edit({ components: [] }).catch(() => {});
+            }
+          }
+        } catch (err) {
+          console.error("❌ Gagal mengarsipkan tiket:", err);
+        }
+      }, 5000);
+
+      return;
+    }
+
+    // ========== SAVE TRANSCRIPT ==========
     if (interaction.customId === "save_transcript") {
       const channel = interaction.channel;
       const logChannel = interaction.client.channels.cache.get(LOG_CHANNEL_ID);
 
       if (!logChannel || !logChannel.isTextBased()) {
-        return interaction.reply({
-          content: "❌ Gagal menemukan channel log.",
-          ephemeral: true,
-        });
+        return interaction.reply({ content: "❌ Gagal menemukan channel log.", ephemeral: true });
       }
 
       await interaction.deferReply({ ephemeral: true });
 
-      let allMessages = [];
-      let lastId;
-
+      let allMessages = [], lastId;
       while (true) {
-        const options = { limit: 100 };
-        if (lastId) options.before = lastId;
-
-        const messages = await channel.messages.fetch(options);
+        const messages = await channel.messages.fetch({ limit: 100, ...(lastId && { before: lastId }) });
         if (messages.size === 0) break;
-
         allMessages.push(...messages.map(m => m));
         lastId = messages.last().id;
         if (messages.size < 100) break;
       }
 
       const sorted = allMessages.sort((a, b) => a.createdTimestamp - b.createdTimestamp);
-
-      let transcript = `📄 Transkrip Tiket: #${channel.name} (${channel.id})\nServer: ${channel.guild.name}\n\n`;
+      let transcript = `📄 Transkrip Tiket: #${channel.name}\nServer: ${channel.guild.name}\n\n`;
 
       for (const msg of sorted) {
         const time = msg.createdAt.toLocaleString("id-ID");
         const author = `${msg.author?.tag || "Unknown"}`;
         let content = msg.cleanContent || "";
-
         if (msg.attachments.size > 0) {
-          const attachments = msg.attachments.map(a => a.url).join(", ");
-          content += ` [Attachment: ${attachments}]`;
+          content += ` [Attachment: ${msg.attachments.map(a => a.url).join(", ")}]`;
         }
-
         if (!content.trim()) content = "[Tidak ada isi]";
         transcript += `[${time}] ${author}: ${content}\n`;
       }
@@ -180,14 +135,8 @@ if (interaction.customId === "close_ticket") {
       const buffer = Buffer.from(transcript, "utf-8");
       const fileName = `transcript-${channel.name}.txt`;
 
-      await logChannel.send({
-        content: `📩 Transkrip tiket dari <#${channel.id}>`,
-        files: [{ attachment: buffer, name: fileName }],
-      });
-
-      return interaction.editReply({
-        content: "✅ Transkrip berhasil dikirim ke channel log.",
-      });
+      await logChannel.send({ content: `📩 Transkrip tiket dari <#${channel.id}>`, files: [{ attachment: buffer, name: fileName }] });
+      return interaction.editReply({ content: "✅ Transkrip berhasil dikirim ke channel log." });
     }
 
     // ========== DELETE TICKET ==========
@@ -198,37 +147,23 @@ if (interaction.customId === "close_ticket") {
     // ========== REOPEN TICKET ==========
     if (interaction.customId === "reopen_ticket") {
       const channel = interaction.channel;
+      const match = (channel.topic || "").match(/user:(\d+)/);
+      const userId = match?.[1];
 
-      const userOverwrite = channel.permissionOverwrites.cache.find(
-        ow => ow.type === 1 &&
-          ow.id !== interaction.client.user.id &&
-          ow.id !== interaction.guild.roles.everyone.id
-      );
-
-      if (!userOverwrite) {
-        return interaction.reply({
-          content: "❌ Tidak ditemukan pemilik tiket.",
-          ephemeral: true,
-        });
+      if (!userId) {
+        return interaction.reply({ content: "❌ Tidak ditemukan pemilik tiket.", ephemeral: true });
       }
 
-      const userId = userOverwrite.id;
-      const member = await interaction.guild.members.fetch(userId).catch(() => null);
-
-      if (!member) {
-        return interaction.reply({
-          content: "❌ Gagal mengambil data member.",
-          ephemeral: true,
-        });
+      const user = await guild.members.fetch(userId).catch(() => null);
+      if (!user) {
+        return interaction.reply({ content: "❌ Tidak bisa mengambil data user.", ephemeral: true });
       }
 
-      const fixedName = `ticket-${member.user.username.toLowerCase()}`;
-
+      const fixedName = `ticket-${user.user.username.toLowerCase()}`;
       await interaction.deferReply({ ephemeral: true });
 
       try {
-        const activeCategory = "1354116735594266644"; // ID kategori aktif
-
+        const activeCategory = "1354116735594266644";
         await channel.setParent(activeCategory, { lockPermissions: false });
         await channel.setName(fixedName);
 
@@ -245,25 +180,14 @@ if (interaction.customId === "close_ticket") {
         }
 
         const row = new ActionRowBuilder().addComponents(
-          new ButtonBuilder()
-            .setCustomId("close_ticket")
-            .setLabel("❌ Close Ticket")
-            .setStyle(ButtonStyle.Danger)
+          new ButtonBuilder().setCustomId("close_ticket").setLabel("❌ Close Ticket").setStyle(ButtonStyle.Danger)
         );
 
-        await channel.send({
-          content: `🔓 Tiket dibuka kembali oleh <@${interaction.user.id}>.`,
-          components: [row],
-        });
-
-        await interaction.editReply({
-          content: "✅ Tiket berhasil dibuka ulang.",
-        });
+        await channel.send({ content: `🔓 Tiket dibuka kembali oleh <@${interaction.user.id}>.`, components: [row] });
+        await interaction.editReply({ content: "✅ Tiket berhasil dibuka ulang." });
       } catch (err) {
-        console.error("❌ Gagal membuka ulang tiket:", err);
-        await interaction.editReply({
-          content: "❌ Terjadi kesalahan saat membuka tiket kembali.",
-        });
+        console.error("❌ Gagal reopen tiket:", err);
+        await interaction.editReply({ content: "❌ Terjadi kesalahan saat membuka tiket kembali." });
       }
 
       return;
@@ -274,31 +198,20 @@ if (interaction.customId === "close_ticket") {
       await member.setNickname(null).catch(console.error);
       taggedUsers[member.id] = false;
       saveTaggedUsers(taggedUsers);
-
-      return interaction.reply({
-        content: `✅ Nama kamu dikembalikan menjadi \`${username}\``,
-        ephemeral: true,
-      }).catch(console.error);
+      return interaction.reply({ content: `✅ Nama kamu dikembalikan menjadi \`${username}\``, ephemeral: true }).catch(console.error);
     }
 
     // ========== USE TAG ==========
     if (interaction.customId === "use_tag") {
       const role = ROLES.find(r => member.roles.cache.has(r.id));
       if (!role) {
-        return interaction.reply({
-          content: "❌ Kamu tidak punya role yang cocok untuk tag ini.",
-          ephemeral: true,
-        }).catch(console.error);
+        return interaction.reply({ content: "❌ Kamu tidak punya role yang cocok untuk tag ini.", ephemeral: true }).catch(console.error);
       }
 
       await member.setNickname(`${role.tag} ${username}`).catch(console.error);
       taggedUsers[member.id] = true;
       saveTaggedUsers(taggedUsers);
-
-      return interaction.reply({
-        content: `✅ Nama kamu sekarang: \`${role.tag} ${username}\``,
-        ephemeral: true,
-      }).catch(console.error);
+      return interaction.reply({ content: `✅ Nama kamu sekarang: \`${role.tag} ${username}\``, ephemeral: true }).catch(console.error);
     }
 
     // ========== TEST BUTTON ==========
@@ -311,52 +224,31 @@ if (interaction.customId === "close_ticket") {
       const roleId = parts[3];
       const safeTagId = parts.slice(4).join("_");
 
-      const matched = ROLES.find(
-        r =>
-          r.id === roleId &&
-          r.tag.replace(/[^\w-]/g, "").toLowerCase() === safeTagId
-      );
-
+      const matched = ROLES.find(r => r.id === roleId && r.tag.replace(/[^\w-]/g, "").toLowerCase() === safeTagId);
       if (!matched) {
-        return interaction.reply({
-          content: "❌ Tag tidak ditemukan atau tidak valid.",
-          ephemeral: true,
-        }).catch(console.error);
+        return interaction.reply({ content: "❌ Tag tidak ditemukan atau tidak valid.", ephemeral: true }).catch(console.error);
       }
 
       const realTag = matched.tag;
-
       if (action === "use") {
         await member.setNickname(`${realTag} ${username}`).catch(console.error);
         if (!member.roles.cache.has(matched.id)) {
           await member.roles.add(matched.id).catch(console.error);
         }
-
         taggedUsers[member.id] = true;
         saveTaggedUsers(taggedUsers);
-
-        return interaction.reply({
-          content: `🧪 Nickname kamu sekarang: \`${realTag} ${username}\``,
-          ephemeral: true,
-        }).catch(console.error);
+        return interaction.reply({ content: `🧪 Nickname kamu sekarang: \`${realTag} ${username}\``, ephemeral: true }).catch(console.error);
       }
 
       if (action === "remove") {
         await member.setNickname(null).catch(console.error);
         taggedUsers[member.id] = false;
         saveTaggedUsers(taggedUsers);
-
-        return interaction.reply({
-          content: `🧪 Nickname kamu dikembalikan menjadi \`${username}\``,
-          ephemeral: true,
-        }).catch(console.error);
+        return interaction.reply({ content: `🧪 Nickname kamu dikembalikan menjadi \`${username}\``, ephemeral: true }).catch(console.error);
       }
     }
 
     // ========== UNKNOWN ==========
-    return interaction.reply({
-      content: "⚠️ Tombol tidak dikenali.",
-      ephemeral: true,
-    }).catch(console.error);
+    return interaction.reply({ content: "⚠️ Tombol tidak dikenali.", ephemeral: true }).catch(console.error);
   }
 };
