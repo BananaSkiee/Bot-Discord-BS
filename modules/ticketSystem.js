@@ -30,23 +30,17 @@ module.exports = async function handleTicketInteraction(interaction) {
     ],
   });
 
-  await ticketChannel.send({
-  content: `🎫 Halo <@${user.id}>! Silakan jelaskan masalah kamu di sini.\nGunakan tombol di bawah ini untuk menutup atau menyimpan tiket.`,
-  components: [
-    {
-      type: 1,
-      components: [
-        {
-          type: 2,
-          style: 4,
-          custom_id: "close_ticket",
-          label: "❌ Close Ticket",
-        },
-        {
-          type: 2,
-          style: 2,
-          custom_id: "save_transcript",
-          label: "📄 Salin / Edit",
+const row = new ActionRowBuilder().addComponents(
+  new ButtonBuilder()
+    .setCustomId("close_ticket")
+    .setLabel("❌ Close Ticket")
+    .setStyle(ButtonStyle.Danger)
+);
+
+await ticketChannel.send({
+  content: `🎫 Halo <@${user.id}>! Silakan jelaskan masalah kamu di sini.\nKlik tombol di bawah ini untuk menutup tiket jika sudah selesai.`,
+  components: [row],
+});
         },
       ],
     },
