@@ -1,4 +1,6 @@
-// events/interactionCreate.js
+).catch(console.error);
+  }
+};
 const fs = require("fs");
 const path = require("path");
 const { ROLES, guildId } = require("../config");
@@ -39,6 +41,8 @@ module.exports = {
     // ========== TICKET BUTTON HANDLER ==========
     const ticketCustomIds = [
       "close_ticket",
+      "confirm_close_ticket",
+      "cancel_close_ticket",
       "reopen_ticket",
       "delete_ticket",
       "save_transcript"
@@ -53,20 +57,29 @@ module.exports = {
       await member.setNickname(null).catch(console.error);
       taggedUsers[member.id] = false;
       saveTaggedUsers(taggedUsers);
-      return interaction.reply({ content: `✅ Nama kamu dikembalikan menjadi \`${username}\``, ephemeral: true }).catch(console.error);
+      return interaction.reply({
+        content: `✅ Nama kamu dikembalikan menjadi \`${username}\``,
+        ephemeral: true
+      }).catch(console.error);
     }
 
     // ========== USE TAG ==========
     if (interaction.customId === "use_tag") {
       const role = ROLES.find(r => member.roles.cache.has(r.id));
       if (!role) {
-        return interaction.reply({ content: "❌ Kamu tidak punya role yang cocok untuk tag ini.", ephemeral: true }).catch(console.error);
+        return interaction.reply({
+          content: "❌ Kamu tidak punya role yang cocok untuk tag ini.",
+          ephemeral: true
+        }).catch(console.error);
       }
 
       await member.setNickname(`${role.tag} ${username}`).catch(console.error);
       taggedUsers[member.id] = true;
       saveTaggedUsers(taggedUsers);
-      return interaction.reply({ content: `✅ Nama kamu sekarang: \`${role.tag} ${username}\``, ephemeral: true }).catch(console.error);
+      return interaction.reply({
+        content: `✅ Nama kamu sekarang: \`${role.tag} ${username}\``,
+        ephemeral: true
+      }).catch(console.error);
     }
 
     // ========== TEST BUTTON ==========
