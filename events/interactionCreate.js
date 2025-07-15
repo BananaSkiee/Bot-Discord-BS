@@ -75,37 +75,40 @@ if (interaction.customId === "close_ticket") {
         : `closed-${channel.name}`;
       await channel.setName(newName);
 
-      await channel.permissionOverwrites.edit(userId, {
-        ViewChannel: false,
-        SendMessages: false,
-      });
+const row = new ActionRowBuilder().addComponents(
+  new ButtonBuilder()
+    .setCustomId("reopen_ticket")
+    .setLabel("🔓 Open Ticket")
+    .setStyle(ButtonStyle.Success),
+  new ButtonBuilder()
+    .setCustomId("delete_ticket")
+    .setLabel("🗑️ Delete Ticket")
+    .setStyle(ButtonStyle.Danger),
+  new ButtonBuilder()
+    .setCustomId("save_transcript")
+    .setLabel("📋 Salin atau Edit")
+    .setStyle(ButtonStyle.Secondary)
+);
 
-      const messages = await channel.messages.fetch({ limit: 10 });
-      for (const msg of messages.values()) {
-        if (msg.author.id === interaction.client.user.id && msg.components.length > 0) {
-          await msg.edit({ components: [] }).catch(() => {});
-        }
-      }
+// Kirim tombol dulu (biar bisa terkirim sebelum user diblock)
+await channel.send({
+  content: "📦 Tiket telah diarsipkan.",
+  components: [row],
+});
 
-      const row = new ActionRowBuilder().addComponents(
-        new ButtonBuilder()
-          .setCustomId("reopen_ticket")
-          .setLabel("🔓 Open Ticket")
-          .setStyle(ButtonStyle.Success),
-        new ButtonBuilder()
-          .setCustomId("delete_ticket")
-          .setLabel("🗑️ Delete Ticket")
-          .setStyle(ButtonStyle.Danger),
-        new ButtonBuilder()
-          .setCustomId("save_transcript")
-          .setLabel("📋 Salin atau Edit")
-          .setStyle(ButtonStyle.Secondary)
-      );
+// Baru setelah itu hapus akses user
+await channel.permissionOverwrites.edit(userId, {
+  ViewChannel: false,
+  SendMessages: false,
+});
 
-      await channel.send({
-        content: "📦 Tiket telah diarsipkan.",
-        components: [row],
-      });
+// Hapus tombol-tombol sebelumnya
+const messages = await channel.messages.fetch({ limit: 10 });
+for (const msg of messages.values()) {
+  if (msg.author.id === interaction.client.user.id && msg.components.length > 0) {
+    await msg.edit({ components: [] }).catch(() => {});
+  }
+}
     } catch (err) {
       console.error("❌ Gagal mengarsipkan tiket:", err);
     }
