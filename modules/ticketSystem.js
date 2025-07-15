@@ -1,4 +1,4 @@
-const { ChannelType, PermissionFlagsBits } = require("discord.js");
+const { ChannelType, PermissionFlagsBits, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require("discord.js");
 
 const TICKET_CATEGORY_ID = "1354116735594266644"; // Kategori aktif
 const ARCHIVE_CATEGORY_ID = "1354119154042404926"; // Kategori arsip
@@ -30,22 +30,17 @@ module.exports = async function handleTicketInteraction(interaction) {
     ],
   });
 
-const row = new ActionRowBuilder().addComponents(
-  new ButtonBuilder()
-    .setCustomId("close_ticket")
-    .setLabel("❌ Close Ticket")
-    .setStyle(ButtonStyle.Danger)
-);
+  const row = new ActionRowBuilder().addComponents(
+    new ButtonBuilder()
+      .setCustomId("close_ticket")
+      .setLabel("❌ Close Ticket")
+      .setStyle(ButtonStyle.Danger)
+  );
 
-await ticketChannel.send({
-  content: `🎫 Halo <@${user.id}>! Silakan jelaskan masalah kamu di sini.\nKlik tombol di bawah ini untuk menutup tiket jika sudah selesai.`,
-  components: [row],
-});
-        },
-      ],
-    },
-  ],
-});
+  await ticketChannel.send({
+    content: `🎫 Halo <@${user.id}>! Silakan jelaskan masalah kamu di sini.\nKlik tombol di bawah ini untuk menutup tiket jika sudah selesai.`,
+    components: [row],
+  });
 
   await interaction.reply({
     content: `✅ Tiket kamu telah dibuka di: <#${ticketChannel.id}>`,
