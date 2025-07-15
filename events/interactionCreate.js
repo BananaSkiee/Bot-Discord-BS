@@ -87,39 +87,65 @@ module.exports = {
       return;
     }
 
-    // ========== SAVE TRANSCRIPT ==========
-    if (interaction.customId === "save_transcript") {
-      const logChannel = interaction.guild.channels.cache.get(LOG_CHANNEL_ID);
-      if (!logChannel) {
-        return interaction.reply({
-          content: "❌ Channel log tidak ditemukan.",
-          ephemeral: true,
-        });
-      }
+// ========== TOMBOL SALIN / EDIT ==========
+if (interaction.customId === "save_transcript") {
+  const channel = interaction.channel;
+  const logChannel = interaction.client.channels.cache.get("1394478754297811034");
 
-      const messages = await interaction.channel.messages.fetch({ limit: 100 });
-      const sorted = messages.sort((a, b) => a.createdTimestamp - b.createdTimestamp);
-      const content = sorted
-        .map(msg => `[${msg.createdAt.toISOString()}] ${msg.author.tag}: ${msg.content}`)
-        .join("\n");
+  if (!logChannel || !logChannel.isTextBased()) {
+    return interaction.reply({
+      content: "❌ Gagal menemukan channel log.",
+      ephemeral: true,
+    });
+  }
 
-      const transcriptFileName = `transcript-${interaction.channel.name}.txt`;
-      const transcriptPath = path.join(__dirname, "../data", transcriptFileName);
-      fs.writeFileSync(transcriptPath, content);
+  await interaction.deferReply({ ephemeral: true });
 
-      const attachment = new AttachmentBuilder(transcriptPath);
+  let allMessages = [];
+  let lastId;
 
-      await logChannel.send({
-        content: `📋 Transcript dari <#${interaction.channel.id}> oleh <@${interaction.user.id}>`,
-        files: [attachment],
-      });
+  while (true) {
+    const options = { limit: 100 };
+    if (lastId) options.before = lastId;
 
-      return interaction.reply({
-        content: "✅ Transcript berhasil disalin dan dikirim ke log.",
-        ephemeral: true,
-      });
+    const messages = await channel.messages.fetch(options);
+    if (messages.size === 0) break;
+
+    allMessages.push(...messages.map(m => m));
+    lastId = messages.last().id;
+    if (messages.size < 100) break;
+  }
+
+  const sorted = allMessages.sort((a, b) => a.createdTimestamp - b.createdTimestamp);
+
+  let transcript = `📄 Transkrip Tiket: #${channel.name} (${channel.id})\nServer: ${channel.guild.name}\n\n`;
+
+  for (const msg of sorted) {
+    const time = msg.createdAt.toLocaleString("id-ID");
+    const author = `${msg.author?.tag || "Unknown"}`;
+    let content = msg.cleanContent || "";
+
+    if (msg.attachments.size > 0) {
+      const attachments = msg.attachments.map(a => a.url).join(", ");
+      content += ` [Attachment: ${attachments}]`;
     }
 
+    if (!content.trim()) content = "[Tidak ada isi]";
+    transcript += `[${time}] ${author}: ${content}\n`;
+  }
+
+  const buffer = Buffer.from(transcript, "utf-8");
+  const fileName = `transcript-${channel.name}.txt`;
+
+  await logChannel.send({
+    content: `📩 Transkrip tiket dari <#${channel.id}>`,
+    files: [{ attachment: buffer, name: fileName }],
+  });
+
+  return interaction.editReply({
+    content: "✅ Transkrip berhasil dikirim ke channel log.",
+  });
+}
     // ========== DELETE TICKET ==========
     if (interaction.customId === "delete_ticket") {
       return interaction.channel.delete().catch(console.error);
@@ -229,3 +255,4 @@ module.exports = {
     }).catch(console.error);
   },
 };
+        
