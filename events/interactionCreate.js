@@ -355,6 +355,6 @@ if (interaction.customId === "save_transcript") {
       content: "⚠️ Tombol tidak dikenali.",
       ephemeral: true,
     }).catch(console.error);
-  },
+  }
 };
         
