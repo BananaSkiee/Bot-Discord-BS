@@ -1,6 +1,4 @@
-).catch(console.error);
-  }
-};
+// events/interactionCreate.js
 const fs = require("fs");
 const path = require("path");
 const { ROLES, guildId } = require("../config");
@@ -8,6 +6,7 @@ const handleTicketInteraction = require("../modules/ticketSystem");
 const handleTicketButtons = require("../modules/ticketButtons");
 
 const filePath = path.join(__dirname, "../data/taggedUsers.json");
+
 function saveTaggedUsers(data) {
   fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
 }
@@ -23,7 +22,10 @@ module.exports = {
 
     const member = await guild.members.fetch(interaction.user.id).catch(() => null);
     if (!member) {
-      return interaction.reply({ content: "❌ Gagal ambil datamu dari server.", ephemeral: true }).catch(console.error);
+      return interaction.reply({
+        content: "❌ Gagal ambil datamu dari server.",
+        ephemeral: true,
+      }).catch(console.error);
     }
 
     let taggedUsers = {};
@@ -41,11 +43,11 @@ module.exports = {
     // ========== TICKET BUTTON HANDLER ==========
     const ticketCustomIds = [
       "close_ticket",
-      "confirm_close_ticket",
-      "cancel_close_ticket",
       "reopen_ticket",
       "delete_ticket",
-      "save_transcript"
+      "save_transcript",
+      "confirm_close_ticket",
+      "cancel_close_ticket"
     ];
 
     if (ticketCustomIds.includes(interaction.customId)) {
@@ -59,7 +61,7 @@ module.exports = {
       saveTaggedUsers(taggedUsers);
       return interaction.reply({
         content: `✅ Nama kamu dikembalikan menjadi \`${username}\``,
-        ephemeral: true
+        ephemeral: true,
       }).catch(console.error);
     }
 
@@ -69,7 +71,7 @@ module.exports = {
       if (!role) {
         return interaction.reply({
           content: "❌ Kamu tidak punya role yang cocok untuk tag ini.",
-          ephemeral: true
+          ephemeral: true,
         }).catch(console.error);
       }
 
@@ -78,7 +80,7 @@ module.exports = {
       saveTaggedUsers(taggedUsers);
       return interaction.reply({
         content: `✅ Nama kamu sekarang: \`${role.tag} ${username}\``,
-        ephemeral: true
+        ephemeral: true,
       }).catch(console.error);
     }
 
@@ -92,9 +94,15 @@ module.exports = {
       const roleId = parts[3];
       const safeTagId = parts.slice(4).join("_");
 
-      const matched = ROLES.find(r => r.id === roleId && r.tag.replace(/[^\w-]/g, "").toLowerCase() === safeTagId);
+      const matched = ROLES.find(
+        r => r.id === roleId && r.tag.replace(/[^\w-]/g, "").toLowerCase() === safeTagId
+      );
+
       if (!matched) {
-        return interaction.reply({ content: "❌ Tag tidak ditemukan atau tidak valid.", ephemeral: true }).catch(console.error);
+        return interaction.reply({
+          content: "❌ Tag tidak ditemukan atau tidak valid.",
+          ephemeral: true,
+        }).catch(console.error);
       }
 
       const realTag = matched.tag;
@@ -105,18 +113,27 @@ module.exports = {
         }
         taggedUsers[member.id] = true;
         saveTaggedUsers(taggedUsers);
-        return interaction.reply({ content: `🧪 Nickname kamu sekarang: \`${realTag} ${username}\``, ephemeral: true }).catch(console.error);
+        return interaction.reply({
+          content: `🧪 Nickname kamu sekarang: \`${realTag} ${username}\``,
+          ephemeral: true,
+        }).catch(console.error);
       }
 
       if (action === "remove") {
         await member.setNickname(null).catch(console.error);
         taggedUsers[member.id] = false;
         saveTaggedUsers(taggedUsers);
-        return interaction.reply({ content: `🧪 Nickname kamu dikembalikan menjadi \`${username}\``, ephemeral: true }).catch(console.error);
+        return interaction.reply({
+          content: `🧪 Nickname kamu dikembalikan menjadi \`${username}\``,
+          ephemeral: true,
+        }).catch(console.error);
       }
     }
 
     // ========== UNKNOWN ==========
-    return interaction.reply({ content: "⚠️ Tombol tidak dikenali.", ephemeral: true }).catch(console.error);
+    return interaction.reply({
+      content: "⚠️ Tombol tidak dikenali.",
+      ephemeral: true,
+    }).catch(console.error);
   }
 };
