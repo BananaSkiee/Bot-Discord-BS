@@ -42,29 +42,34 @@ module.exports = {
     // ========== CLOSE TICKET ==========
 if (interaction.customId === "close_ticket") {
   const channel = interaction.channel;
-  const username = interaction.user.username.toLowerCase();
-  const userId = interaction.user.id;
-  const archiveCategory = "1354119154042404926"; // ID kategori arsip
 
-  if (channel.type !== ChannelType.GuildText) {
+  const nameParts = channel.name.split("-");
+  const username = nameParts.slice(1).join("-");
+  const member = interaction.guild.members.cache.find(
+    m => m.user.username.toLowerCase() === username
+  );
+
+  if (!member) {
     return interaction.reply({
-      content: "❌ Channel ini bukan channel tiket.",
+      content: "❌ Gagal menemukan pemilik tiket.",
       ephemeral: true,
     });
   }
 
+  const userId = member.user.id;
+  const archiveCategory = "1354119154042404926";
+
   await interaction.reply({
-    content: "🛠️ Ticket akan ditutup dan diarsipkan dalam 5 detik...",
+    content: "🛠️ Tiket akan ditutup dan diarsipkan dalam 5 detik...",
     ephemeral: true,
   });
 
   setTimeout(async () => {
     try {
-      // Pindahkan channel ke kategori arsip
       await channel.setParent(archiveCategory, { lockPermissions: false });
       await channel.setName(`closed-${username}`);
 
-      // Hapus tombol lama dari pesan sebelumnya (opsional)
+      // Hilangkan tombol-tombol lama
       const messages = await channel.messages.fetch({ limit: 10 });
       for (const msg of messages.values()) {
         if (msg.author.id === interaction.client.user.id && msg.components.length > 0) {
@@ -72,13 +77,12 @@ if (interaction.customId === "close_ticket") {
         }
       }
 
-      // Ubah permission: user tidak bisa lihat tiket lagi
+      // Set user tidak bisa lihat lagi
       await channel.permissionOverwrites.edit(userId, {
         ViewChannel: false,
         SendMessages: false,
       });
 
-      // Kirim tombol kontrol
       const row = new ActionRowBuilder().addComponents(
         new ButtonBuilder()
           .setCustomId("reopen_ticket")
@@ -95,12 +99,11 @@ if (interaction.customId === "close_ticket") {
       );
 
       await channel.send({
-        content: "📦 Tiket ini telah diarsipkan. Gunakan tombol di bawah ini jika perlu.",
+        content: "📦 Tiket telah diarsipkan.",
         components: [row],
       });
-
     } catch (err) {
-      console.error("❌ Gagal tutup tiket:", err);
+      console.error("❌ Gagal mengarsipkan tiket:", err);
     }
   }, 5000);
 
@@ -172,13 +175,13 @@ if (interaction.customId === "save_transcript") {
     }
 
     // ========== REOPEN TICKET ==========
-    if (interaction.customId === "reopen_ticket") {
+if (interaction.customId === "reopen_ticket") {
   const channel = interaction.channel;
 
   const nameParts = channel.name.split("-");
-  const usernameFromName = nameParts.slice(1).join("-");
-  const member = guild.members.cache.find(m =>
-    m.user.username.toLowerCase() === usernameFromName
+  const username = nameParts.slice(1).join("-");
+  const member = interaction.guild.members.cache.find(
+    m => m.user.username.toLowerCase() === username
   );
 
   if (!member) {
@@ -189,20 +192,21 @@ if (interaction.customId === "save_transcript") {
   }
 
   const userId = member.user.id;
-  const fixedName = `ticket-${usernameFromName}`;
+  const activeCategory = "1354116735594266644";
+
+  await interaction.deferReply({ ephemeral: true });
 
   try {
-    await interaction.deferReply({ ephemeral: true });
+    await channel.setParent(activeCategory, { lockPermissions: false });
+    await channel.setName(`ticket-${username}`);
 
-    await channel.setParent("1354116735594266644"); // Kategori aktif
-    await channel.setName(fixedName);
-
+    // Beri akses kembali ke user
     await channel.permissionOverwrites.edit(userId, {
       ViewChannel: true,
       SendMessages: true,
     });
 
-    // Hapus tombol lama (reopen/delete/save)
+    // Hapus tombol lama
     const messages = await channel.messages.fetch({ limit: 10 });
     for (const msg of messages.values()) {
       if (msg.author.id === interaction.client.user.id && msg.components.length > 0) {
@@ -210,7 +214,6 @@ if (interaction.customId === "save_transcript") {
       }
     }
 
-    // Tambahkan tombol close kembali
     const row = new ActionRowBuilder().addComponents(
       new ButtonBuilder()
         .setCustomId("close_ticket")
@@ -223,15 +226,19 @@ if (interaction.customId === "save_transcript") {
       components: [row],
     });
 
-    await interaction.editReply({ content: "✅ Tiket berhasil dibuka ulang." });
+    await interaction.editReply({
+      content: "✅ Tiket berhasil dibuka ulang.",
+    });
   } catch (err) {
-    console.error("❌ Gagal buka ulang tiket:", err);
-    await interaction.editReply({ content: "❌ Terjadi kesalahan saat membuka ulang tiket." });
+    console.error("❌ Gagal membuka ulang tiket:", err);
+    await interaction.editReply({
+      content: "❌ Terjadi kesalahan saat membuka tiket kembali.",
+    });
   }
 
   return;
-    }
-
+}
+    
     // ========== REMOVE TAG ==========
     if (interaction.customId === "remove_tag") {
       await member.setNickname(null).catch(console.error);
