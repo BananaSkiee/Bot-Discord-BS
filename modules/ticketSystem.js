@@ -12,12 +12,7 @@ module.exports = async function handleTicketInteraction(interaction) {
     c => c.name === `ticket-${username}` && c.type === ChannelType.GuildText
   );
 
-  if (existingChannel) {
-    return interaction.reply({
-      content: `❌ Kamu sudah punya tiket terbuka: <#${existingChannel.id}>`,
-      ephemeral: true,
-    });
-  }
+
 
   const ticketChannel = await guild.channels.create({
     name: `ticket-${username}`,
