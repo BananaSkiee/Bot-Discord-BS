@@ -1,14 +1,9 @@
+// events/interactionCreate.js
 const fs = require("fs");
 const path = require("path");
-const {
-  ChannelType,
-  AttachmentBuilder,
-  ActionRowBuilder,
-  ButtonBuilder,
-  ButtonStyle,
-} = require("discord.js");
-const { ROLES, guildId, LOG_CHANNEL_ID } = require("../config");
+const { ROLES, guildId } = require("../config");
 const handleTicketInteraction = require("../modules/ticketSystem");
+const handleTicketButtons = require("../modules/ticketButtons");
 
 const filePath = path.join(__dirname, "../data/taggedUsers.json");
 function saveTaggedUsers(data) {
@@ -40,148 +35,17 @@ module.exports = {
     if (interaction.customId === "open_ticket") {
       return handleTicketInteraction(interaction);
     }
-    
-// ========== CLOSE TICKET ==========
-if (interaction.customId === "close_ticket") {
-  const channel = interaction.channel;
 
-  // Ambil user ID dari topic (utama)
-  let match = (channel.topic || "").match(/user:(\d+)/);
-  let userId = match?.[1];
+    // ========== TICKET BUTTON HANDLER ==========
+    const ticketCustomIds = [
+      "close_ticket",
+      "reopen_ticket",
+      "delete_ticket",
+      "save_transcript"
+    ];
 
-  // Jika tidak ada topic, fallback ke permission overwrite (cadangan)
-  if (!userId) {
-    const fallback = channel.permissionOverwrites.cache.find(
-      ow => ow.type === 1 && // type 1 = user
-        ow.id !== interaction.client.user.id &&
-        ow.id !== interaction.guild.roles.everyone.id
-    );
-    userId = fallback?.id;
-  }
-
-  if (!userId) {
-    return interaction.reply({
-      content: "❌ Tidak ditemukan pemilik tiket (topic & permission invalid).",
-      ephemeral: true,
-    });
-  }
-
-  await interaction.reply({
-    content: "🛠️ Tiket akan ditutup dan diarsipkan dalam 5 detik...",
-    ephemeral: true,
-  });
-
-  setTimeout(async () => {
-    try {
-      const archiveCategory = "1354119154042404926";
-
-      await channel.setParent(archiveCategory, { lockPermissions: false });
-
-      const newName = channel.name.startsWith("ticket-")
-        ? channel.name.replace("ticket-", "closed-")
-        : `closed-${channel.name}`;
-      await channel.setName(newName);
-
-      await channel.permissionOverwrites.edit(interaction.client.user.id, {
-        ViewChannel: true,
-        SendMessages: true,
-      });
-
-      const row = new ActionRowBuilder().addComponents(
-        new ButtonBuilder()
-          .setCustomId("reopen_ticket")
-          .setLabel("🔓 Open Ticket")
-          .setStyle(ButtonStyle.Success),
-        new ButtonBuilder()
-          .setCustomId("delete_ticket")
-          .setLabel("🗑️ Delete Ticket")
-          .setStyle(ButtonStyle.Danger),
-        new ButtonBuilder()
-          .setCustomId("save_transcript")
-          .setLabel("📋 Salin atau Edit")
-          .setStyle(ButtonStyle.Secondary)
-      );
-
-      const tombolBaru = await channel.send({
-        content: "📦 Tiket telah diarsipkan.",
-        components: [row],
-      });
-
-      await channel.permissionOverwrites.edit(userId, {
-        ViewChannel: false,
-        SendMessages: false,
-      });
-
-      const messages = await channel.messages.fetch({ limit: 10 });
-      for (const msg of messages.values()) {
-        if (
-          msg.id !== tombolBaru.id &&
-          msg.author.id === interaction.client.user.id &&
-          msg.components.length > 0
-        ) {
-          await msg.edit({ components: [] }).catch(() => {});
-        }
-      }
-    } catch (err) {
-      console.error("❌ Gagal mengarsipkan tiket:", err);
-    }
-  }, 5000);
-
-  return;
-}
-
-    // ========== DELETE TICKET ==========
-    if (interaction.customId === "delete_ticket") {
-      return interaction.channel.delete().catch(console.error);
-    }
-
-    // ========== REOPEN TICKET ==========
-    if (interaction.customId === "reopen_ticket") {
-      const channel = interaction.channel;
-      const match = (channel.topic || "").match(/user:(\d+)/);
-      const userId = match?.[1];
-
-      if (!userId) {
-        return interaction.reply({ content: "❌ Tidak ditemukan pemilik tiket.", ephemeral: true });
-      }
-
-      const user = await guild.members.fetch(userId).catch(() => null);
-      if (!user) {
-        return interaction.reply({ content: "❌ Tidak bisa mengambil data user.", ephemeral: true });
-      }
-
-      const fixedName = `ticket-${user.user.username.toLowerCase()}`;
-      await interaction.deferReply({ ephemeral: true });
-
-      try {
-        const activeCategory = "1354116735594266644";
-        await channel.setParent(activeCategory, { lockPermissions: false });
-        await channel.setName(fixedName);
-
-        await channel.permissionOverwrites.edit(userId, {
-          ViewChannel: true,
-          SendMessages: true,
-        });
-
-        const messages = await channel.messages.fetch({ limit: 10 });
-        for (const msg of messages.values()) {
-          if (msg.author.id === interaction.client.user.id && msg.components.length > 0) {
-            await msg.edit({ components: [] }).catch(() => {});
-          }
-        }
-
-        const row = new ActionRowBuilder().addComponents(
-          new ButtonBuilder().setCustomId("close_ticket").setLabel("❌ Close Ticket").setStyle(ButtonStyle.Danger)
-        );
-
-        await channel.send({ content: `🔓 Tiket dibuka kembali oleh <@${interaction.user.id}>.`, components: [row] });
-        await interaction.editReply({ content: "✅ Tiket berhasil dibuka ulang." });
-      } catch (err) {
-        console.error("❌ Gagal reopen tiket:", err);
-        await interaction.editReply({ content: "❌ Terjadi kesalahan saat membuka tiket kembali." });
-      }
-
-      return;
+    if (ticketCustomIds.includes(interaction.customId)) {
+      return handleTicketButtons(interaction);
     }
 
     // ========== REMOVE TAG ==========
