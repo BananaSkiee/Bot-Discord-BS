@@ -41,9 +41,10 @@ module.exports = {
 
     // ========== CLOSE TICKET ==========
 if (interaction.customId === "close_ticket") {
+if (interaction.customId === "close_ticket") {
   const channel = interaction.channel;
 
-  // Cari user pemilik tiket dari permission overwrites (bukan bot & bukan everyone)
+  // Cari pemilik tiket dari permission (selain bot dan everyone)
   const userOverwrite = channel.permissionOverwrites.cache.find(
     ow => ow.type === 1 &&
       ow.id !== interaction.client.user.id &&
@@ -68,16 +69,22 @@ if (interaction.customId === "close_ticket") {
     try {
       const archiveCategory = "1354119154042404926";
 
-      // Pindahkan dulu ke kategori arsip
+      // Pindahkan ke kategori arsip
       await channel.setParent(archiveCategory, { lockPermissions: false });
 
-      // Ganti nama
+      // Rename channel
       const newName = channel.name.startsWith("ticket-")
         ? channel.name.replace("ticket-", "closed-")
         : `closed-${channel.name}`;
       await channel.setName(newName);
 
-      // Tombol kontrol
+      // Pastikan bot punya akses ke channel
+      await channel.permissionOverwrites.edit(interaction.client.user.id, {
+        ViewChannel: true,
+        SendMessages: true,
+      });
+
+      // Buat tombol kontrol
       const row = new ActionRowBuilder().addComponents(
         new ButtonBuilder()
           .setCustomId("reopen_ticket")
@@ -99,13 +106,13 @@ if (interaction.customId === "close_ticket") {
         components: [row],
       });
 
-      // Baru HAPUS permission user (biar bisa terima tombol dulu)
+      // Blokir akses user
       await channel.permissionOverwrites.edit(userId, {
         ViewChannel: false,
         SendMessages: false,
       });
 
-      // Hapus tombol lama
+      // Bersihkan tombol-tombol sebelumnya
       const messages = await channel.messages.fetch({ limit: 10 });
       for (const msg of messages.values()) {
         if (msg.author.id === interaction.client.user.id && msg.components.length > 0) {
@@ -119,7 +126,7 @@ if (interaction.customId === "close_ticket") {
   }, 5000);
 
   return;
-}
+           }
     
 // ========== TOMBOL SALIN / EDIT ==========
 if (interaction.customId === "save_transcript") {
