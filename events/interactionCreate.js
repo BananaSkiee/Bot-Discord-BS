@@ -42,17 +42,17 @@ module.exports = {
 
     // ========== TICKET BUTTON HANDLER ==========
     const ticketCustomIds = [
-      "close_ticket",
-      "reopen_ticket",
-      "delete_ticket",
-      "save_transcript",
-      "confirm_close_ticket",
-      "cancel_close_ticket"
-    ];
+  "close_ticket",
+  "confirm_close_ticket",
+  "cancel_close_ticket",
+  "reopen_ticket",
+  "delete_ticket",
+  "save_transcript"
+];
 
-    if (ticketCustomIds.includes(interaction.customId)) {
-      return handleTicketButtons(interaction);
-    }
+if (ticketCustomIds.includes(interaction.customId)) {
+  return handleTicketButtons(interaction);
+}
 
     // ========== REMOVE TAG ==========
     if (interaction.customId === "remove_tag") {
