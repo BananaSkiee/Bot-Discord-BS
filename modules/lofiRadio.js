@@ -7,7 +7,7 @@ const {
 } = require("@discordjs/voice");
 
 const VC_ID = "1355194643754778644"; // Ganti sesuai ID VC kamu
-const STREAM_URL = "https://reyfm.stream37.radiohost.de/reyfm-lofi_mp3-128?upd-meta=0&upd-scheme=https&_art=dD0xNzUyNjg2NTc3JmQ9NGVlZDFhY2U1MmQ5ZDhhNmQwZTE";
+const STREAM_URL = "https://reyfm.stream37.radiohost.de/reyfm-lofi_mp3-128";
 
 module.exports = (client) => {
   client.once("ready", async () => {
