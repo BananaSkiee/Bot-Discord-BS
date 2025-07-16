@@ -5,55 +5,49 @@ const {
   AudioPlayerStatus,
   NoSubscriberBehavior,
 } = require("@discordjs/voice");
-const ytdl = require("ytdl-core");
 
-const VC_ID = "1355194643754778644"; // ✅ ID VC kamu
-const Lofi_URL = "https://www.youtube.com/watch?v=jfKfPfyJRdk"; // ✅ Lofi Girl Live
+const VC_ID = "1355194643754778644"; // Ganti sesuai ID VC kamu
+const STREAM_URL = "https://reyfm.stream37.radiohost.de/reyfm-lofi_mp3-128?upd-meta=0&upd-scheme=https&_art=dD0xNzUyNjg2NTc3JmQ9NGVlZDFhY2U1MmQ5ZDhhNmQwZTE";
 
-module.exports = async (client) => {
-  try {
-    const channel = await client.channels.fetch(VC_ID);
-    if (!channel || channel.type !== 2) {
-      console.log("❌ Voice Channel tidak ditemukan atau bukan tipe voice.");
-      return;
+module.exports = (client) => {
+  client.once("ready", async () => {
+    try {
+      const channel = await client.channels.fetch(VC_ID);
+      if (!channel || channel.type !== 2) {
+        return console.error("❌ Voice channel tidak ditemukan atau bukan VC.");
+      }
+
+      const connection = joinVoiceChannel({
+        channelId: channel.id,
+        guildId: channel.guild.id,
+        adapterCreator: channel.guild.voiceAdapterCreator,
+        selfDeaf: false,
+      });
+
+      const player = createAudioPlayer({
+        behaviors: {
+          noSubscriber: NoSubscriberBehavior.Play,
+        },
+      });
+
+      const resource = createAudioResource(STREAM_URL);
+      player.play(resource);
+      connection.subscribe(player);
+
+      player.on(AudioPlayerStatus.Playing, () => {
+        console.log("🎶 Lofi ReyFM sedang diputar!");
+      });
+
+      player.on("error", (err) => {
+        console.error("❌ Error audio:", err.message);
+      });
+
+      player.on(AudioPlayerStatus.Idle, () => {
+        console.log("🔁 Stream idle, coba restart...");
+        player.play(createAudioResource(STREAM_URL));
+      });
+    } catch (err) {
+      console.error("❌ Gagal join VC atau memutar audio:", err.message);
     }
-
-    const connection = joinVoiceChannel({
-      channelId: channel.id,
-      guildId: channel.guild.id,
-      adapterCreator: channel.guild.voiceAdapterCreator,
-      selfDeaf: false,
-    });
-
-    const stream = ytdl(Lofi_URL, {
-      filter: "audioonly",
-      quality: "highestaudio",
-      highWaterMark: 1 << 25,
-    });
-
-    const resource = createAudioResource(stream);
-    const player = createAudioPlayer({
-      behaviors: {
-        noSubscriber: NoSubscriberBehavior.Play,
-      },
-    });
-
-    player.play(resource);
-    connection.subscribe(player);
-
-    player.on(AudioPlayerStatus.Playing, () => {
-      console.log("🎵 Lofi radio mulai diputar di voice channel.");
-    });
-
-    player.on("error", (error) => {
-      console.error("❌ Error audio player:", error.message);
-    });
-
-    player.on(AudioPlayerStatus.Idle, () => {
-      console.log("🔁 Restarting stream...");
-      module.exports(client); // restart kalau stream selesai
-    });
-  } catch (err) {
-    console.error("❌ Gagal join VC atau stream:", err.message);
-  }
+  });
 };
