@@ -8,7 +8,7 @@ const stickyHandler = require("./sticky");
 const updateOnline = require("./online");
 const autoGreeting = require("./modules/autoGreeting");
 const updateTimeChannel = require("./modules/updateTimeChannel"); // ⏰ Update waktu VC
-// const autoCounterText = require("./modules/autoCounterText"); ❌ Sudah tidak dipakai
+const createVoice = require("./modules/astro/createVoice");
 
 const client = new Client({
   intents: [
@@ -64,6 +64,10 @@ client.on("messageCreate", async (message) => {
 // 🚨 Tangani error global
 process.on("unhandledRejection", (err) => {
   console.error("🚨 Unhandled Error:", err);
+});
+
+client.on("voiceStateUpdate", (oldState, newState) => {
+  createVoice(client, oldState, newState);
 });
 
 // 🕒 Update waktu di voice channel
