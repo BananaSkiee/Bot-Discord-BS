@@ -120,10 +120,18 @@ module.exports = async function handleTicketButtons(interaction) {
     );
   }
 
-  if (interaction.customId === "save_transcript") {
-    return interaction.reply({
-      content: "📋 Fitur salin/edit transcript belum tersedia.",
-      ephemeral: true,
+if (interaction.customId === "save_transcript") {
+  const logChannelId = "1394478754297811034";
+  const logChannel = interaction.guild.channels.cache.get(logChannelId);
+
+  if (logChannel) {
+    await logChannel.send({
+      content: `📝 Transcript (sementara) dari <#${channel.id}> oleh <@${interaction.user.id}>`
     });
   }
-};
+
+  return interaction.reply({
+    content: "📋 Data tiket dikirim ke channel log.",
+    ephemeral: true,
+  });
+}
