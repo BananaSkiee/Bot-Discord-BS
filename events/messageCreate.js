@@ -57,24 +57,32 @@ module.exports = {
     const member = await message.guild.members.fetch(message.author.id).catch(() => null);
     const isAdmin = member?.roles.cache.has(ADMIN_ROLE_ID);
 
-    // ===== JOIN VOICE =====
-    if (content.startsWith("!join")) {
-      const voiceChannel = message.member.voice.channel;
-      if (!voiceChannel) return message.reply("❌ Join voice channel dulu.");
+const { joinVoiceChannel, getVoiceConnection } = require("@discordjs/voice");
 
-      try {
-        joinVoiceChannel({
-          channelId: voiceChannel.id,
-          guildId: voiceChannel.guild.id,
-          adapterCreator: voiceChannel.guild.voiceAdapterCreator,
-          selfDeaf: false,
-        });
-        return message.reply(`✅ Bot join ke VC **${voiceChannel.name}**`);
-      } catch (err) {
-        console.error("❌ Gagal join VC:", err);
-        return message.reply("❌ Error join VC.");
-      }
-    }
+// ===== JOIN VOICE =====
+if (content.startsWith("!join")) {
+  const voiceChannel = message.member.voice.channel;
+  if (!voiceChannel) return message.reply("❌ Join voice channel dulu.");
+
+  try {
+    // Cek apakah ada koneksi lama (misalnya waktu bot dikeluarin dari VC)
+    const oldConnection = getVoiceConnection(message.guild.id);
+    if (oldConnection) oldConnection.destroy();
+
+    // Join VC
+    joinVoiceChannel({
+      channelId: voiceChannel.id,
+      guildId: voiceChannel.guild.id,
+      adapterCreator: voiceChannel.guild.voiceAdapterCreator,
+      selfDeaf: false,
+    });
+
+    return message.reply(`✅ Bot join ke VC **${voiceChannel.name}**`);
+  } catch (err) {
+    console.error("❌ Gagal join VC:", err);
+    return message.reply("❌ Bot gagal join VC. Coba cek permission atau restart bot.");
+  }
+}
 
     // ===== TEST DM =====
     if (content.startsWith("!testdm")) {
