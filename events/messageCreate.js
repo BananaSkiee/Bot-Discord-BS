@@ -6,6 +6,7 @@ const {
   ButtonStyle,
 } = require("discord.js");
 
+const countValidator = require("../modules/countValidator");
 const handleHapusTag = require("../modules/hapusTagCommand");
 
 const filePath = path.join(__dirname, "../data/taggedUsers.json");
@@ -50,7 +51,10 @@ const ROLE_DISPLAY_MAP = {
 module.exports = {
   name: "messageCreate",
   async execute(message, client) {
-    if (message.author.bot) return;
+if (message.author.bot) return;
+
+// 🧮 Validasi pesan di channel counting angka
+await countValidator(message);
 
     const prefix = "!";
     const contentRaw = message.content.trim();
