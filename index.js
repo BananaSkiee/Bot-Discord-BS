@@ -9,6 +9,7 @@ const updateOnline = require("./online");
 const autoGreeting = require("./modules/autoGreeting");
 const updateTimeChannel = require("./modules/updateTimeChannel"); // ⏰ Update waktu VC
 // const autoCounterText = require("./modules/autoCounterText"); ❌ Sudah tidak dipakai
+const lofiRadio = require("./modules/lofiRadio");
 
 const client = new Client({
   intents: [
@@ -68,6 +69,8 @@ process.on("unhandledRejection", (err) => {
 
 // 🕒 Update waktu di voice channel
 updateTimeChannel(client);
+
+lofiRadio(client);
 
 // 🔐 Login ke bot
 client.login(config.token);
