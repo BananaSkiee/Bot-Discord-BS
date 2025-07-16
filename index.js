@@ -8,7 +8,7 @@ const stickyHandler = require("./sticky");
 const updateOnline = require("./online");
 const autoGreeting = require("./modules/autoGreeting");
 const updateTimeChannel = require("./modules/updateTimeChannel"); // ⏰ Update waktu VC
-const createVoice = require("./modules/astro/createVoice");
+const createVoice = require("./astro/createVoice");
 
 const client = new Client({
   intents: [
