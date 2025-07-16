@@ -5,7 +5,7 @@ const cron = require("node-cron");
 moment.tz.setDefault("Asia/Jakarta");
 
 // Ganti dengan ID voice channel kamu
-const CHANNEL_ID = "ISI_CHANNEL_ID_KAMU";
+const CHANNEL_ID = "1360303391175217343";
 
 module.exports = (client) => {
   cron.schedule("* * * * *", async () => {
