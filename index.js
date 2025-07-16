@@ -7,7 +7,8 @@ const config = require("./config");
 const stickyHandler = require("./sticky");
 const updateOnline = require("./online");
 const autoGreeting = require("./modules/autoGreeting");
-const updateTimeChannel = require("./modules/updateTimeChannel"); // ⏰ Update waktu di VC
+const updateTimeChannel = require("./modules/updateTimeChannel"); // ⏰ Update waktu VC
+const autoCounterText = require("./modules/autoCounterText"); // 🧮 Counter ke text channel
 
 const client = new Client({
   intents: [
@@ -65,8 +66,11 @@ process.on("unhandledRejection", (err) => {
   console.error("🚨 Unhandled Error:", err);
 });
 
-// 🕒 Jalankan update waktu ke voice channel
+// 🕒 Update waktu di voice channel
 updateTimeChannel(client);
+
+// 🧮 Jalankan auto counter ke text channel
+autoCounterText(client);
 
 // 🔐 Login ke bot
 client.login(config.token);
