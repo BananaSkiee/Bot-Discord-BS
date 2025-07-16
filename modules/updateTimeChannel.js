@@ -1,28 +1,42 @@
 const moment = require("moment-timezone");
 const cron = require("node-cron");
 
-// Set zona waktu ke Asia/Jakarta
-moment.tz.setDefault("Asia/Jakarta");
+// ID voice channel kamu
+const CHANNEL_ID = "1360303391175217343"; // GANTI YAAA!
 
-// Ganti dengan ID voice channel kamu
-const CHANNEL_ID = "1360303391175217343";
+// Mapping hari ke Bahasa Indonesia
+const hariIndonesia = {
+  Sunday: "Minggu",
+  Monday: "Senin",
+  Tuesday: "Selasa",
+  Wednesday: "Rabu",
+  Thursday: "Kamis",
+  Friday: "Jumat",
+  Saturday: "Sabtu",
+};
 
 module.exports = (client) => {
   cron.schedule("* * * * *", async () => {
     try {
-      const now = moment();
-      const hari = now.format("dddd"); // Senin, Selasa, dst
-      const tanggal = now.format("D MMMM YYYY"); // 16 Juli 2025
-      const jam = now.format("HH:mm"); // 21:45
-
-      const namaBaru = `🕒 ${hari}, ${tanggal} | ${jam} WIB`;
-
       const channel = await client.channels.fetch(CHANNEL_ID);
-      if (!channel) return;
+      if (!channel || !channel.setName) return;
 
-      await channel.setName(namaBaru);
-    } catch (err) {
-      console.error("Gagal update nama channel waktu:", err);
+      const now = moment().tz("Asia/Jakarta");
+
+      const hariEN = now.format("dddd");
+      const hariID = hariIndonesia[hariEN] || hariEN;
+
+      const tanggal = now.format("D MMMM"); // Contoh: 16 Juli
+      const jam = now.format("HH:mm");
+
+      const namaBaru = `🕒 ${hariID}, ${tanggal} | ${jam} WIB`;
+
+      if (channel.name !== namaBaru) {
+        await channel.setName(namaBaru);
+        console.log(`✅ Nama channel diupdate: ${namaBaru}`);
+      }
+    } catch (error) {
+      console.error("❌ Gagal update voice channel waktu:", error.message);
     }
   });
 };
