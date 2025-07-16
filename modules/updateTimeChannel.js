@@ -29,7 +29,7 @@ module.exports = (client) => {
       const tanggal = now.format("D MMMM"); // Contoh: 16 Juli
       const jam = now.format("HH:mm");
 
-      const namaBaru = `🕒 ${hariID}, ${tanggal} | ${jam} WIB`;
+      const namaBaru = `「 ${hariID}, ${tanggal} | ${jam} Jam 」`;
 
       if (channel.name !== namaBaru) {
         await channel.setName(namaBaru);
