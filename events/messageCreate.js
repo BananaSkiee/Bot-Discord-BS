@@ -1,10 +1,7 @@
 const fs = require("fs");
 const path = require("path");
-const {
-  ActionRowBuilder,
-  ButtonBuilder,
-  ButtonStyle,
-} = require("discord.js");
+const { ActionRowBuilder, ButtonBuilder, ButtonStyle } = require("discord.js");
+const { joinVoiceChannel } = require("@discordjs/voice");
 
 const countValidator = require("../modules/countValidator");
 const handleHapusTag = require("../modules/hapusTagCommand");
@@ -51,42 +48,55 @@ const ROLE_DISPLAY_MAP = {
 module.exports = {
   name: "messageCreate",
   async execute(message, client) {
-if (message.author.bot) return;
+    if (message.author.bot) return;
 
-// 🧮 Validasi pesan di channel counting angka
-await countValidator(message);
+    await countValidator(message);
 
     const prefix = "!";
-    const contentRaw = message.content.trim();
-    const contentLower = contentRaw.toLowerCase();
+    const content = message.content.trim().toLowerCase();
+    const member = await message.guild.members.fetch(message.author.id).catch(() => null);
+    const isAdmin = member?.roles.cache.has(ADMIN_ROLE_ID);
 
-    const memberAuthor = await message.guild.members.fetch(message.author.id).catch(() => null);
-    const isAdmin = memberAuthor?.roles.cache.has(ADMIN_ROLE_ID);
+    // ===== JOIN VOICE =====
+    if (content.startsWith("!join")) {
+      const voiceChannel = message.member.voice.channel;
+      if (!voiceChannel) return message.reply("❌ Join voice channel dulu.");
 
-    // ====== !testdm command ======
-    if (contentLower.startsWith("!testdm")) {
-      if (!isAdmin) return message.reply("❌ Kamu tidak punya izin pakai command ini.");
+      try {
+        joinVoiceChannel({
+          channelId: voiceChannel.id,
+          guildId: voiceChannel.guild.id,
+          adapterCreator: voiceChannel.guild.voiceAdapterCreator,
+          selfDeaf: false,
+        });
+        return message.reply(`✅ Bot join ke VC **${voiceChannel.name}**`);
+      } catch (err) {
+        console.error("❌ Gagal join VC:", err);
+        return message.reply("❌ Error join VC.");
+      }
+    }
 
-      const args = contentRaw.split(/\s+/);
+    // ===== TEST DM =====
+    if (content.startsWith("!testdm")) {
+      if (!isAdmin) return message.reply("❌ Gak punya izin.");
+
+      const args = message.content.trim().split(/\s+/);
       const user = message.mentions.users.first();
       const inputTagRaw = args.slice(2).join(" ").trim();
       const inputTag = inputTagRaw.toUpperCase().replace(/[\[\]]/g, "");
 
-      if (!user || !inputTag) {
-        return message.reply("❌ Format salah. Contoh: `!testdm @user MOD`");
-      }
+      if (!user || !inputTag) return message.reply("❌ Contoh: `!testdm @user MOD`");
 
       const matchedRole = ROLES.find(r =>
         r.tag.replace(/[\[\]]/g, "").toUpperCase() === inputTag
       );
-
       if (!matchedRole) return message.reply("❌ Tag tidak valid.");
 
-      const member = await message.guild.members.fetch(user.id);
       const realTag = matchedRole.tag;
       const safeTagId = realTag.replace(/[^\w-]/g, "").toLowerCase();
       const displayName = user.globalName ?? user.username;
       const roleDisplay = ROLE_DISPLAY_MAP[matchedRole.id] || "Tanpa Nama";
+      const member = await message.guild.members.fetch(user.id);
 
       let taggedUsers = {};
       if (fs.existsSync(filePath)) {
@@ -120,36 +130,23 @@ await countValidator(message);
 
       try {
         await user.send({
-          content: `✨ *Selamat kepada ${displayName}!*
-
-🔰 Kamu menerima tag khusus: \`${realTag}\`
-📛 Diberikan karena kamu memiliki role: \`${roleDisplay}\`
-
-Ingin menampilkan tag itu di nickname kamu?
-Contoh: \`${realTag} ${displayName}\`
-
-───────────────────────────
-Pilih salah opsi di bawah ini: 👇`,
+          content: `✨ *Selamat ${displayName}!*\n\n🔰 Kamu dapat tag: \`${realTag}\`\n📛 Role: \`${roleDisplay}\`\n\nIngin pakai tag ini di nickname?\n\n👇 Pilih tombol di bawah:`,
           components: [row]
         });
-
-        await message.reply(`✅ DM berhasil dikirim ke ${displayName}`);
+        await message.reply(`✅ DM terkirim ke ${displayName}`);
       } catch (err) {
         console.error("❌ Gagal kirim DM:", err);
-        if (err.code === 50007) {
-          return message.reply("❌ DM gagal. User matiin DM dari server.");
-        }
-        return message.reply("❌ Terjadi kesalahan saat kirim DM.");
+        return message.reply("❌ Gagal kirim DM. Cek setting user.");
       }
     }
 
-    // ====== !hapustag command ======
-    if (contentLower.startsWith("!hapustag")) {
-      if (!isAdmin) return message.reply("❌ Kamu tidak punya izin pakai command ini.");
+    // ===== HAPUS TAG =====
+    if (content.startsWith("!hapustag")) {
+      if (!isAdmin) return message.reply("❌ Gak punya izin.");
       return handleHapusTag(message);
     }
 
-    // ====== AUTO REPLY KEYWORDS ======
+    // ===== AUTO REPLY =====
     const autoReplies = {
       pagi: ["Pagi juga! 🌞", "Selamat pagi, semangat ya!", "Eh bangun pagi juga 😴"],
       siang: ["Siang juga! 🌤️", "Jangan lupa makan siang ya!", "Siang-siang panas bener 🥵"],
@@ -162,7 +159,7 @@ Pilih salah opsi di bawah ini: 👇`,
     };
 
     for (const [keyword, replies] of Object.entries(autoReplies)) {
-      if (contentLower.includes(keyword)) {
+      if (content.includes(keyword)) {
         const reply = replies[Math.floor(Math.random() * replies.length)];
         return message.reply(reply).catch(console.error);
       }
