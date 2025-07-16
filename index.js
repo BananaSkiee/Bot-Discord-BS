@@ -8,7 +8,7 @@ const stickyHandler = require("./sticky");
 const updateOnline = require("./online");
 const autoGreeting = require("./modules/autoGreeting");
 const updateTimeChannel = require("./modules/updateTimeChannel"); // ⏰ Update waktu VC
-const autoCounterText = require("./modules/autoCounterText"); // 🧮 Counter ke text channel
+// const autoCounterText = require("./modules/autoCounterText"); ❌ Sudah tidak dipakai
 
 const client = new Client({
   intents: [
@@ -68,9 +68,6 @@ process.on("unhandledRejection", (err) => {
 
 // 🕒 Update waktu di voice channel
 updateTimeChannel(client);
-
-// 🧮 Jalankan auto counter ke text channel
-autoCounterText(client);
 
 // 🔐 Login ke bot
 client.login(config.token);
