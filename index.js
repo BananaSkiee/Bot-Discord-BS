@@ -7,6 +7,7 @@ const config = require("./config");
 const stickyHandler = require("./sticky");
 const updateOnline = require("./online");
 const autoGreeting = require("./modules/autoGreeting");
+const updateTimeChannel = require("./modules/updateTimeChannel"); // ⏰ Update waktu di VC
 
 const client = new Client({
   intents: [
@@ -53,16 +54,19 @@ client.on("interactionCreate", async (interaction) => {
   }
 });
 
-// 💬 Auto-reply atau command biasa
+// 💬 Auto-reply manual
 client.on("messageCreate", async (message) => {
   if (message.author.bot) return;
-  // Tambahkan auto-reply manual di sini
+  // Tambahkan auto-reply jika perlu
 });
 
 // 🚨 Tangani error global
 process.on("unhandledRejection", (err) => {
   console.error("🚨 Unhandled Error:", err);
 });
+
+// 🕒 Jalankan update waktu ke voice channel
+updateTimeChannel(client);
 
 // 🔐 Login ke bot
 client.login(config.token);
