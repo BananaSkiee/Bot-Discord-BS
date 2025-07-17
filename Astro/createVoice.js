@@ -7,7 +7,7 @@ const {
   ButtonStyle,
 } = require("discord.js");
 
-const settingVoiceChannelId = "1357721146409357572"; // <-- GANTI
+const settingVoiceChannelId = "1395293477595643995"; // <-- GANTI
 
 module.exports = async (client, oldState, newState) => {
   const user = newState.member;
