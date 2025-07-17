@@ -34,7 +34,7 @@ console.log("🌐 Web server hidup di port 3000");
 
 // 📂 Load events dari folder /events
 fs.readdirSync("./events").forEach((file) => {
-const event = require(./events/${file});
+const event = require(`./events/${file}`);
 if (event.once) {
 client.once(event.name, (...args) => event.execute(...args, client));
 } else {
