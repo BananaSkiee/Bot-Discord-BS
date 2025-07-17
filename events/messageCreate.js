@@ -50,26 +50,8 @@ module.exports = {
   name: "messageCreate",
   async execute(message, client) {
     if (message.author.bot) {
-  // Auto translate game chat (bot-to-human)
-  if (/[a-z]{3,}/i.test(message.content)) {
-    const translated = await gameTranslate(message.content);
-    if (!translated || translated.toLowerCase() === message.content.toLowerCase()) return;
-
-    const row = new ActionRowBuilder().addComponents(
-      new ButtonBuilder()
-        .setCustomId(`translate_ok_${message.id}`)
-        .setLabel("✅ Oke (hapus)")
-        .setStyle(ButtonStyle.Secondary)
-    );
-
-    const sent = await message.channel.send({
-      content: `**Terjemahan:**\n> ${translated}`,
-      components: [row],
-      reply: { messageReference: message.id }
-    });
-
-    setTimeout(() => sent.delete().catch(() => {}), 5 * 60 * 1000); // 5 menit
-  }
+  // Auto translate game chat (bot-to-human
+    await gameTranslate(message, client);
 
   return;
     }
@@ -198,3 +180,4 @@ if (content.startsWith("!join")) {
     }
   },
 };
+    
