@@ -1,7 +1,7 @@
 const { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder } = require("discord.js");
 
 module.exports = async (client, voiceChannel) => {
-  const controlChannelId = "1356706671220494498"; // ganti ID-nya
+  const controlChannelId = ""; // ganti ID-nya
 
   const embed = new EmbedBuilder()
     .setTitle("🎛️ Voice Channel Controls")
