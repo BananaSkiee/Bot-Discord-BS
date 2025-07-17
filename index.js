@@ -4,12 +4,13 @@ const fs = require("fs");
 const express = require("express");
 const config = require("./config");
 
+// 🧠 Custom modules
 const stickyHandler = require("./sticky");
 const updateOnline = require("./online");
 const autoGreeting = require("./modules/autoGreeting");
-const updateTimeChannel = require("./modules/updateTimeChannel"); // ⏰ Update waktu VC
-const createVoice = require("./Astro/createVoice"); // Pastikan folder bernama "Astro"
-const buttonHandler = require("./astro/buttonHandler");
+const updateTimeChannel = require("./modules/updateTimeChannel");
+const createVoice = require("./Astro/createVoice");
+const buttonHandler = require("./Astro/buttonHandler");
 
 const client = new Client({
   intents: [
@@ -24,14 +25,14 @@ const client = new Client({
 
 client.commands = new Collection();
 
-// 🌐 Web server untuk Railway
+// 🌐 Web server (Railway)
 const app = express();
-app.get("/", (_, res) => res.send("Bot Akira aktif"));
+app.get("/", (_, res) => res.send("✅ Bot Akira aktif"));
 app.listen(process.env.PORT || 3000, () => {
-  console.log("🌐 Web server hidup");
+  console.log("🌐 Web server hidup di port 3000");
 });
 
-// 📦 Load event dari folder events/
+// 📂 Load events dari folder /events
 fs.readdirSync("./events").forEach((file) => {
   const event = require(`./events/${file}`);
   if (event.once) {
@@ -41,49 +42,48 @@ fs.readdirSync("./events").forEach((file) => {
   }
 });
 
-// 📦 Load command dari folder commands/
+// 📂 Load slash commands dari folder /commands
 const commandFiles = fs
   .readdirSync("./commands")
   .filter((file) => file.endsWith(".js"));
+
 for (const file of commandFiles) {
   const command = require(`./commands/${file}`);
   client.commands.set(command.data.name, command);
 }
 
-// 💬 Handle slash command
+// 🟩 Slash Commands + 🟦 Button Handler
 client.on("interactionCreate", async (interaction) => {
-  // 🟦 Handle BUTTON INTERACTION
-  if (interaction.isButton()) {
-    return buttonHandler(interaction, client);
-  }
-
-  // 🟩 Handle SLASH COMMAND
-  if (!interaction.isChatInputCommand()) return;
-  const command = client.commands.get(interaction.commandName);
-  if (!command) return;
   try {
+    // Tombol
+    if (interaction.isButton()) {
+      return buttonHandler(interaction, client);
+    }
+
+    // Slash command
+    if (!interaction.isChatInputCommand()) return;
+
+    const command = client.commands.get(interaction.commandName);
+    if (!command) return;
+
     await command.execute(interaction, client);
   } catch (error) {
-    console.error(error);
-    await interaction.reply({
-      content: "❌ Terjadi error saat menjalankan perintah.",
-      ephemeral: true,
-    });
+    console.error("❌ Interaction Error:", error);
+    if (interaction.replied || interaction.deferred) {
+      await interaction.followUp({
+        content: "❌ Terjadi error saat menjalankan perintah.",
+        ephemeral: true,
+      });
+    } else {
+      await interaction.reply({
+        content: "❌ Terjadi error saat menjalankan perintah.",
+        ephemeral: true,
+      });
+    }
   }
 });
 
-  try {
-    await command.execute(interaction, client);
-  } catch (error) {
-    console.error("❌ Slash Command Error:", error);
-    await interaction.reply({
-      content: "❌ Terjadi error saat menjalankan perintah.",
-      ephemeral: true,
-    });
-  }
-});
-
-// 💬 Handle message-based command (!prefix)
+// 💬 Command pakai prefix (!)
 client.on("messageCreate", async (message) => {
   if (message.author.bot || !message.content.startsWith("!")) return;
 
@@ -91,7 +91,6 @@ client.on("messageCreate", async (message) => {
   const commandName = args.shift().toLowerCase();
 
   try {
-    // Tambahkan perintah manual di sini
     if (commandName === "ping") {
       return message.channel.send("🏓 Pong!");
     }
@@ -100,45 +99,41 @@ client.on("messageCreate", async (message) => {
       return message.author.send("📩 Ini adalah test DM dari Akira.");
     }
 
-    // Tambahkan lagi sesuai kebutuhan
+    // Tambah command manual lain di sini
   } catch (err) {
     console.error("❌ Message Command Error:", err);
   }
 });
 
-// 🛠 Auto sticky message handler
+// 📌 Sticky Message Handler
 client.on("messageCreate", async (message) => {
   if (message.author.bot) return;
-  stickyHandler(client, message); // sticky.js harus pakai `module.exports = function(client, message)`
+  stickyHandler(client, message);
 });
 
-// 🚀 Auto Greeting
+// 🚀 Auto Greeting ketika user join
 client.on("guildMemberAdd", async (member) => {
-  autoGreeting(client, member); // modules/autoGreeting.js
+  autoGreeting(client, member);
 });
 
-// 🔁 Update VC Online Count
-client.on("presenceUpdate", (oldPresence, newPresence) => {
-  updateOnline(client);
-});
-client.on("voiceStateUpdate", () => {
-  updateOnline(client);
-});
+// 🔁 Update jumlah user online di VC
+client.on("presenceUpdate", () => updateOnline(client));
+client.on("voiceStateUpdate", () => updateOnline(client));
 
-// 🛰️ Auto Voice Channel (ASTRO)
+// 🛰️ Auto Create Voice Channel (Astro)
 client.on("voiceStateUpdate", (oldState, newState) => {
   createVoice(client, oldState, newState);
 });
 
-// 🕒 Update VC waktu tiap 30 detik
+// ⏱ Update waktu di voice channel tiap 30 detik
 setInterval(() => {
   updateTimeChannel(client);
 }, 30 * 1000);
 
-// ⚠️ Global Error Handler
+// 🧯 Global Error Handler
 process.on("unhandledRejection", (err) => {
   console.error("🚨 Unhandled Error:", err);
 });
 
-// 🔐 Login
+// 🔐 Login bot
 client.login(config.token);
