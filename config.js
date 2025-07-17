@@ -4,8 +4,14 @@ module.exports = {
   voiceChannelId: "1366854862608007329",
   logChannelId: "1393011303492092035",
 
-  openTicketCategoryId: "1354116735594266644",    // Tiket Terbuka
-  closedTicketCategoryId: "1354119154042404926",  // Tiket Tertutup
+  openTicketCategoryId: "1354116735594266644",
+  closedTicketCategoryId: "1354119154042404926",
+
+  // Daftar bot yang boleh diterjemahkan
+  TRANSLATABLE_BOT_IDS: [
+    "123456789012345678", // Ganti dengan ID bot 1
+    "356065937318871041", // Ganti dengan ID bot 2, dst
+  ],
 
   ROLES: [
     { id: "1352279577174605884", tag: "[OWNER]" },
