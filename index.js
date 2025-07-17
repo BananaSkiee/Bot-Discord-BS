@@ -42,16 +42,6 @@ fs.readdirSync("./events").forEach((file) => {
   }
 });
 
-// 📂 Load slash commands dari folder /commands
-const commandFiles = fs
-  .readdirSync("./commands")
-  .filter((file) => file.endsWith(".js"));
-
-for (const file of commandFiles) {
-  const command = require(`./commands/${file}`);
-  client.commands.set(command.data.name, command);
-}
-
 // 🟩 Slash Commands + 🟦 Button Handler
 client.on("interactionCreate", async (interaction) => {
   try {
