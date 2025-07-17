@@ -4,7 +4,7 @@ const path = require("path");
 const { ROLES, guildId } = require("../config");
 const handleTicketInteraction = require("../modules/ticketSystem");
 const handleTicketButtons = require("../modules/ticketButtons");
-const handleAstroButtons = require("../astro/buttonHandler.js");
+const handleAstroButton = require('../Astro/buttonHandler.js');
 
 const filePath = path.join(__dirname, "../data/taggedUsers.json");
 
