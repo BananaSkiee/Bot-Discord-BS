@@ -9,7 +9,7 @@ const stickyHandler = require("./sticky");
 const updateOnline = require("./online");
 const autoGreeting = require("./modules/autoGreeting");
 const updateTimeChannel = require("./modules/updateTimeChannel");
-const createVoice = require("./Astro/createVoice");
+const createVoice = require("./astro/createVoice");
 const buttonHandler = require("./astro/buttonHandler");
 
 const client = new Client({
