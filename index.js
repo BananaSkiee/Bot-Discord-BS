@@ -135,5 +135,7 @@ process.on("unhandledRejection", (err) => {
   console.error("🚨 Unhandled Error:", err);
 });
 
+require("./astro/voiceControlButtons")(client);
+
 // 🔐 Login bot
 client.login(config.token);
