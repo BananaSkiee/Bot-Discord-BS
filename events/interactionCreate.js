@@ -4,7 +4,6 @@ const path = require("path");
 const { ROLES, guildId } = require("../config");
 const handleTicketInteraction = require("../modules/ticketSystem");
 const handleTicketButtons = require("../modules/ticketButtons");
-const handleAstroButtons = require("../astro/buttonHandler");
 
 const filePath = path.join(__dirname, "../data/taggedUsers.json");
 
@@ -130,14 +129,6 @@ if (ticketCustomIds.includes(interaction.customId)) {
         }).catch(console.error);
       }
     }
-
-    // ========== ASTRO VC BUTTONS ==========
-try {
-  const astroResult = await handleAstroButtons(interaction.client, interaction);
-  if (astroResult === true) return;
-} catch (err) {
-  console.error("❌ Error handleAstroButtons:", err);
-}
 
     // ========== UNKNOWN ==========
     return interaction.reply({
