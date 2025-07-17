@@ -42,17 +42,16 @@ module.exports = {
 
     // ========== TICKET BUTTON HANDLER ==========
     const ticketCustomIds = [
-  "close_ticket",
-  "confirm_close_ticket",
-  "cancel_close_ticket",
-  "reopen_ticket",
-  "delete_ticket",
-  "save_transcript"
-];
-
-if (ticketCustomIds.includes(interaction.customId)) {
-  return handleTicketButtons(interaction);
-}
+      "close_ticket",
+      "confirm_close_ticket",
+      "cancel_close_ticket",
+      "reopen_ticket",
+      "delete_ticket",
+      "save_transcript"
+    ];
+    if (ticketCustomIds.includes(interaction.customId)) {
+      return handleTicketButtons(interaction);
+    }
 
     // ========== REMOVE TAG ==========
     if (interaction.customId === "remove_tag") {
@@ -130,15 +129,15 @@ if (ticketCustomIds.includes(interaction.customId)) {
       }
     }
 
-// ========== TRANSLATE BUTTON ==========
-if (interaction.customId.startsWith("translate_ok_")) {
-  try {
-    await interaction.message.delete();
-  } catch (err) {
-    console.error("Gagal hapus pesan:", err);
-  }
-  return;
-}
+    // ========== TRANSLATE BUTTON ==========
+    if (interaction.customId === "translate_ok") {
+      try {
+        await interaction.message.delete();
+      } catch (err) {
+        console.error("Gagal hapus pesan:", err);
+      }
+      return;
+    }
 
     // ========== UNKNOWN ==========
     return interaction.reply({
