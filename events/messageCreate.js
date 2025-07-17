@@ -5,6 +5,7 @@ const { joinVoiceChannel } = require("@discordjs/voice");
 
 const countValidator = require("../modules/countValidator");
 const handleHapusTag = require("../modules/hapusTagCommand");
+const gameTranslate = require("../modules/gameTranslate");
 
 const filePath = path.join(__dirname, "../data/taggedUsers.json");
 const ADMIN_ROLE_ID = "1352279577174605884";
@@ -48,7 +49,30 @@ const ROLE_DISPLAY_MAP = {
 module.exports = {
   name: "messageCreate",
   async execute(message, client) {
-    if (message.author.bot) return;
+    if (message.author.bot) {
+  // Auto translate game chat (bot-to-human)
+  if (/[a-z]{3,}/i.test(message.content)) {
+    const translated = await gameTranslate(message.content);
+    if (!translated || translated.toLowerCase() === message.content.toLowerCase()) return;
+
+    const row = new ActionRowBuilder().addComponents(
+      new ButtonBuilder()
+        .setCustomId(`translate_ok_${message.id}`)
+        .setLabel("✅ Oke (hapus)")
+        .setStyle(ButtonStyle.Secondary)
+    );
+
+    const sent = await message.channel.send({
+      content: `**Terjemahan:**\n> ${translated}`,
+      components: [row],
+      reply: { messageReference: message.id }
+    });
+
+    setTimeout(() => sent.delete().catch(() => {}), 5 * 60 * 1000); // 5 menit
+  }
+
+  return;
+    }
 
     await countValidator(message);
 
