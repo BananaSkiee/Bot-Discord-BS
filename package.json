@@ -14,6 +14,7 @@
     "moment-timezone": "^0.5.43",
     "node-cron": "^3.0.3",
     "@discordjs/voice": "^0.15.0",
-    "ytdl-core": "^4.11.4"
+    "ytdl-core": "^4.11.4",
+    "google-translate-api": "^2.3.0"
   }
 }
