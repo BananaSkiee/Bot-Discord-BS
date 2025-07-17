@@ -9,6 +9,7 @@ const updateOnline = require("./online");
 const autoGreeting = require("./modules/autoGreeting");
 const updateTimeChannel = require("./modules/updateTimeChannel"); // ⏰ Update waktu VC
 const createVoice = require("./Astro/createVoice"); // Pastikan folder bernama "Astro"
+const buttonHandler = require("./astro/buttonHandler");
 
 const client = new Client({
   intents: [
@@ -51,10 +52,25 @@ for (const file of commandFiles) {
 
 // 💬 Handle slash command
 client.on("interactionCreate", async (interaction) => {
-  if (!interaction.isChatInputCommand()) return;
+  // 🟦 Handle BUTTON INTERACTION
+  if (interaction.isButton()) {
+    return buttonHandler(interaction, client);
+  }
 
+  // 🟩 Handle SLASH COMMAND
+  if (!interaction.isChatInputCommand()) return;
   const command = client.commands.get(interaction.commandName);
   if (!command) return;
+  try {
+    await command.execute(interaction, client);
+  } catch (error) {
+    console.error(error);
+    await interaction.reply({
+      content: "❌ Terjadi error saat menjalankan perintah.",
+      ephemeral: true,
+    });
+  }
+});
 
   try {
     await command.execute(interaction, client);
