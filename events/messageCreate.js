@@ -5,7 +5,7 @@ const { joinVoiceChannel } = require("@discordjs/voice");
 
 const countValidator = require("../modules/countValidator");
 const handleHapusTag = require("../modules/hapusTagCommand");
-const vcTools = require("../astro/vcToolsHandler");
+const vcTools = require("../astro/vcTools");
 
 const filePath = path.join(__dirname, "../data/taggedUsers.json");
 const ADMIN_ROLE_ID = "1352279577174605884";
