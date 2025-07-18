@@ -5,6 +5,7 @@ const { joinVoiceChannel } = require("@discordjs/voice");
 
 const countValidator = require("../modules/countValidator");
 const handleHapusTag = require("../modules/hapusTagCommand");
+const vcTools = require("../modules/vcToolsHandler");
 
 const filePath = path.join(__dirname, "../data/taggedUsers.json");
 const ADMIN_ROLE_ID = "1352279577174605884";
@@ -60,6 +61,10 @@ module.exports = {
     const isAdmin = member?.roles.cache.has(ADMIN_ROLE_ID);
 
 const { joinVoiceChannel, getVoiceConnection } = require("@discordjs/voice");
+
+if (message.content === "!vcTools") {
+  vcTools.execute(message);
+}
 
 // ===== JOIN VOICE =====
 if (content.startsWith("!join")) {
