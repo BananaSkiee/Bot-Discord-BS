@@ -4,7 +4,7 @@ const updateOnline = require("../online");
 const stickyHandler = require("../sticky");
 const autoGreeting = require("../modules/autoGreeting");
 const sendTicketButton = require("../modules/ticketButtonSender");
-const sendVcToolsPanel = require("../modules/vcTools");
+const sendVcToolsPanel = require("../astro/vcTools");
 
 const CHANNEL_ID = "1356706671220494498"; // Ganti ID sesuai channel panel VC
 
