@@ -129,16 +129,6 @@ module.exports = {
       }
     }
 
-// ========== TRANSLATE BUTTON ==========
-if (interaction.customId.startsWith("translate_ok_")) {
-  try {
-    await interaction.message.delete();
-  } catch (err) {
-    console.error("Gagal hapus pesan:", err);
-  }
-  return;
-}
-
     // ========== UNKNOWN ==========
     return interaction.reply({
       content: "⚠️ Tombol tidak dikenali.",
