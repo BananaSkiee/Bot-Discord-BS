@@ -1,36 +1,33 @@
+// modules/vcTools.js
 const { ActionRowBuilder, ButtonBuilder, ButtonStyle } = require("discord.js");
 
-module.exports = async (client, channel) => {
-  const buttons = [
-    { id: "lock", label: "🔒 Lock", style: ButtonStyle.Secondary },
-    { id: "unlock", label: "🔓 Unlock", style: ButtonStyle.Secondary },
-    { id: "rename", label: "✏️ Rename", style: ButtonStyle.Secondary },
-    { id: "limit", label: "👥 Limit", style: ButtonStyle.Secondary },
-    { id: "mute", label: "🔇 Mute", style: ButtonStyle.Secondary },
-    { id: "unmute", label: "🔊 Unmute", style: ButtonStyle.Secondary },
-    { id: "deafen", label: "🙉 Deafen", style: ButtonStyle.Secondary },
-    { id: "undeafen", label: "👂 Undeafen", style: ButtonStyle.Secondary },
-    { id: "hide", label: "🙈 Hide", style: ButtonStyle.Secondary },
-    { id: "unhide", label: "👁️ Unhide", style: ButtonStyle.Secondary },
-    { id: "kick", label: "🥾 Kick", style: ButtonStyle.Secondary },
-    { id: "invite", label: "🔗 Invite", style: ButtonStyle.Secondary },
-    { id: "bitrate", label: "🎚️ Bitrate", style: ButtonStyle.Secondary },
-    { id: "clone", label: "📋 Clone", style: ButtonStyle.Secondary },
-    { id: "delete", label: "🗑️ Delete", style: ButtonStyle.Danger },
-    { id: "owner", label: "👑 Owner", style: ButtonStyle.Primary },
+module.exports = async function sendVcToolsPanel(channel) {
+  const rows = [
+    new ActionRowBuilder().addComponents(
+      new ButtonBuilder().setCustomId("vc_lock").setLabel("🔒 Lock").setStyle(ButtonStyle.Secondary),
+      new ButtonBuilder().setCustomId("vc_unlock").setLabel("🔓 Unlock").setStyle(ButtonStyle.Secondary),
+      new ButtonBuilder().setCustomId("vc_hide").setLabel("🙈 Hide").setStyle(ButtonStyle.Secondary),
+      new ButtonBuilder().setCustomId("vc_unhide").setLabel("👁️ Unhide").setStyle(ButtonStyle.Secondary),
+    ),
+    new ActionRowBuilder().addComponents(
+      new ButtonBuilder().setCustomId("vc_muteall").setLabel("🔇 Mute All").setStyle(ButtonStyle.Secondary),
+      new ButtonBuilder().setCustomId("vc_unmuteall").setLabel("🔊 Unmute All").setStyle(ButtonStyle.Secondary),
+      new ButtonBuilder().setCustomId("vc_disconnectall").setLabel("❌ Kick All").setStyle(ButtonStyle.Secondary),
+      new ButtonBuilder().setCustomId("vc_lockmic").setLabel("⛔ Lock Mic").setStyle(ButtonStyle.Secondary),
+    ),
+    new ActionRowBuilder().addComponents(
+      new ButtonBuilder().setCustomId("vc_unlockmic").setLabel("🔓 Unlock Mic").setStyle(ButtonStyle.Secondary),
+      new ButtonBuilder().setCustomId("vc_lockspeak").setLabel("📵 Lock Speak").setStyle(ButtonStyle.Secondary),
+      new ButtonBuilder().setCustomId("vc_unlockspeak").setLabel("📢 Unlock Speak").setStyle(ButtonStyle.Secondary),
+      new ButtonBuilder().setCustomId("vc_rename").setLabel("🔁 Rename").setStyle(ButtonStyle.Secondary),
+    ),
+    new ActionRowBuilder().addComponents(
+      new ButtonBuilder().setCustomId("vc_clearperms").setLabel("🧼 Clear Perms").setStyle(ButtonStyle.Secondary),
+      new ButtonBuilder().setCustomId("vc_claim").setLabel("👥 Claim").setStyle(ButtonStyle.Secondary),
+      new ButtonBuilder().setCustomId("vc_bitrate").setLabel("🏷️ Bitrate").setStyle(ButtonStyle.Secondary),
+      new ButtonBuilder().setCustomId("vc_close").setLabel("🛑 Close").setStyle(ButtonStyle.Danger),
+    )
   ];
-
-  const rows = [];
-  for (let i = 0; i < buttons.length; i += 5) {
-    rows.push(new ActionRowBuilder().addComponents(
-      buttons.slice(i, i + 5).map(btn =>
-        new ButtonBuilder()
-          .setCustomId(btn.id)
-          .setLabel(btn.label)
-          .setStyle(btn.style)
-      )
-    ));
-  }
 
   await channel.send({
     content: "**🎛️ VC Tools Panel**",
