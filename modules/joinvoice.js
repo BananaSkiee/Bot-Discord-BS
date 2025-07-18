@@ -2,10 +2,10 @@ const { joinVoiceChannel } = require("@discordjs/voice");
 
 module.exports = async (client) => {
   const guild = await client.guilds.fetch(process.env.GUILD_ID);
-  const channel = guild.channels.cache.get(process.env.VC_ID);
+  const channel = guild.channels.cache.get(process.env.VOICE_CHANNEL_ID);
 
   if (!channel || channel.type !== 2) {
-    return console.error("❌ Voice channel tidak ditemukan atau bukan voice channel biasa.");
+    return console.error("❌ Voice channel tidak ditemukan atau bukan voice channel.");
   }
 
   joinVoiceChannel({
@@ -15,5 +15,5 @@ module.exports = async (client) => {
     selfDeaf: false,
   });
 
-  console.log(`🔊 Akira telah join ke voice channel: ${channel.name}`);
+  console.log(`🔊 Akira telah join ke VC: ${channel.name}`);
 };
