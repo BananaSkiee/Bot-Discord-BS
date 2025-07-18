@@ -9,8 +9,6 @@ const stickyHandler = require("./sticky");
 const updateOnline = require("./online");
 const autoGreeting = require("./modules/autoGreeting");
 const updateTimeChannel = require("./modules/updateTimeChannel");
-const createVoice = require("./astro/createVoice");
-const buttonHandler = require("./astro/buttonHandler");
 
 const client = new Client({
 intents: [
@@ -112,10 +110,6 @@ autoGreeting(client, member);
 client.on("presenceUpdate", () => updateOnline(client));
 client.on("voiceStateUpdate", () => updateOnline(client));
 
-// 🛰️ Auto Create Voice Channel (Astro)
-client.on("voiceStateUpdate", (oldState, newState) => {
-createVoice(client, oldState, newState);
-});
 
 // ⏱ Update waktu di voice channel tiap 30 detik
 setInterval(() => {
@@ -126,8 +120,6 @@ updateTimeChannel(client);
 process.on("unhandledRejection", (err) => {
 console.error("🚨 Unhandled Error:", err);
 });
-
-require("./astro/voiceControlButtons")(client);
 
 // 🔐 Login bot
 client.login(config.token);
