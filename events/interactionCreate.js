@@ -4,6 +4,7 @@ const path = require("path");
 const { ROLES, guildId } = require("../config");
 const handleTicketInteraction = require("../modules/ticketSystem");
 const handleTicketButtons = require("../modules/ticketButtons");
+const handleVcTools = require("../modules/vcToolsHandler");
 
 const filePath = path.join(__dirname, "../data/taggedUsers.json");
 
@@ -35,6 +36,25 @@ module.exports = {
       taggedUsers = {};
     }
 
+// ========== VC TOOLS ==========
+const vcToolIds = [
+  "mute_all", "unmute_all", "lock_vc", "unlock_vc", "kick_all",
+  "move_afk", "deafen_all", "undeafen_all", "disconnect_all",
+  "start_recording", "stop_recording", "lock_mic", "unlock_mic",
+  "hide_vc", "unhide_vc", "allow_ss", "block_ss",
+  "bitrate_high", "bitrate_low", "refresh_panel",
+
+  // custom vc prefix (dari vcTools.js)
+  "vc_lock", "vc_unlock", "vc_hide", "vc_unhide",
+  "vc_muteall", "vc_unmuteall", "vc_disconnectall",
+  "vc_lockmic", "vc_unlockmic", "vc_lockspeak", "vc_unlockspeak",
+  "vc_rename", "vc_clearperms", "vc_claim", "vc_bitrate", "vc_close"
+];
+
+if (vcToolIds.includes(interaction.customId)) {
+  return handleVcTools(interaction);
+}
+    
     // ========== OPEN TICKET ==========
     if (interaction.customId === "open_ticket") {
       return handleTicketInteraction(interaction);
