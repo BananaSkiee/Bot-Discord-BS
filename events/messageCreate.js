@@ -5,7 +5,6 @@ const { joinVoiceChannel } = require("@discordjs/voice");
 
 const countValidator = require("../modules/countValidator");
 const handleHapusTag = require("../modules/hapusTagCommand");
-const gameTranslate = require("../modules/gameTranslate");
 
 const filePath = path.join(__dirname, "../data/taggedUsers.json");
 const ADMIN_ROLE_ID = "1352279577174605884";
@@ -50,9 +49,6 @@ module.exports = {
   name: "messageCreate",
   async execute(message, client) {
     if (message.author.bot) {
-  // Auto translate game chat (bot-to-human
-    await gameTranslate(message, client);
-
   return;
     }
 
