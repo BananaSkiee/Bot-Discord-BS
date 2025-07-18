@@ -1,41 +1,34 @@
 const translate = require("@vitalets/google-translate-api");
 
-const languageMap = {
-  ing: "en", en: "en",
-  ind: "id", id: "id",
-  jpn: "ja", ja: "ja",
-  kor: "ko", ko: "ko",
-  fr: "fr",
-  de: "de",
-  es: "es",
-  ru: "ru",
-  zh: "zh",
-  ar: "ar",
-  it: "it",
-  pt: "pt",
+const LANG_CODES = {
+  ind: "id", // Indonesia
+  ing: "en", // Inggris
+  jpn: "ja", // Jepang
+  kor: "ko", // Korea
+  ara: "ar", // Arab
+  rus: "ru", // Rusia
+  spa: "es", // Spanyol
+  ger: "de", // Jerman
+  fra: "fr", // Perancis
+  ita: "it", // Italia
+  chn: "zh-CN", // Mandarin
 };
 
-module.exports = async (message) => {
-  if (message.author.bot) return;
+module.exports = async function handleTranslate(message) {
+  const prefixMatch = message.content.match(/^(\w{3})!(.+)/);
+  if (!prefixMatch) return;
 
-  const prefixRegex = /^(\w{2,4})!(.+)/i;
-  const match = message.content.match(prefixRegex);
-
-  if (!match) return;
-
-  const code = match[1].toLowerCase();
-  const text = match[2].trim();
-
-  const lang = languageMap[code];
-  if (!lang) {
-    return message.reply(`❌ Kode bahasa \`${code}\` tidak dikenali.`);
+  const [_, targetLangCmd, text] = prefixMatch;
+  const targetLang = LANG_CODES[targetLangCmd.toLowerCase()];
+  if (!targetLang) {
+    return message.reply("❌ Bahasa tidak dikenali. Contoh: `ing!apa kabar`");
   }
 
   try {
-    const result = await translate(text, { to: lang });
-    await message.reply(`🌐 (${code.toUpperCase()}) ${result.text}`);
-  } catch (err) {
-    console.error("❌ Translate error:", err);
-    await message.reply("❌ Gagal menerjemahkan.");
+    const result = await translate(text.trim(), { to: targetLang });
+    return message.reply(`🌐 **Terjemahan (${targetLangCmd}):**\n${result.text}`);
+  } catch (error) {
+    console.error("Terjadi kesalahan saat translate:", error);
+    return message.reply("❌ Gagal menerjemahkan pesan.");
   }
 };
