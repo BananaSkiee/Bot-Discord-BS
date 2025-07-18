@@ -5,7 +5,7 @@ const {
   Events,
 } = require("discord.js");
 
-const CHANNEL_ID = ""; // Channel target
+const CHANNEL_ID = "1394478754297811034"; // Channel target
 
 module.exports = (client) => {
   client.once(Events.ClientReady, async () => {
