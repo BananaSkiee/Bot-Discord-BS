@@ -9,7 +9,7 @@ module.exports = {
 
   // Daftar bot yang boleh diterjemahkan
   TRANSLATABLE_BOT_IDS: [
-    "123456789012345678", // Ganti dengan ID bot 1
+    "715906723982082139", // Ganti dengan ID bot 1
     "356065937318871041", // Ganti dengan ID bot 2, dst
   ],
 
