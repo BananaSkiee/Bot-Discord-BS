@@ -1,7 +1,8 @@
 const fs = require("fs");
 const path = require("path");
+const translate = require("@vitalets/google-translate-api");
 const { ActionRowBuilder, ButtonBuilder, ButtonStyle } = require("discord.js");
-const { joinVoiceChannel } = require("@discordjs/voice");
+const { joinVoiceChannel, getVoiceConnection } = require("@discordjs/voice");
 
 const countValidator = require("../modules/countValidator");
 const handleHapusTag = require("../modules/hapusTagCommand");
@@ -49,53 +50,82 @@ const ROLE_DISPLAY_MAP = {
 module.exports = {
   name: "messageCreate",
   async execute(message, client) {
-    if (message.author.bot) {
-  return;
-    }
+    if (message.author.bot || !message.guild) return;
 
-    await countValidator(message);
+    const content = message.content.trim();
+    const contentLower = content.toLowerCase();
 
-    const prefix = "!";
-    const content = message.content.trim().toLowerCase();
     const member = await message.guild.members.fetch(message.author.id).catch(() => null);
     const isAdmin = member?.roles.cache.has(ADMIN_ROLE_ID);
 
-const { joinVoiceChannel, getVoiceConnection } = require("@discordjs/voice");
+    // ⛔ Cek apakah user coba pakai command lain (!...) selain yang bebas
+    const allowedEveryone = ["ing!", "ind!"];
+    const startsWithCmd = content.startsWith("!");
+    const isAllowed = allowedEveryone.some(cmd => contentLower.startsWith(cmd));
 
-if (message.content === "!vcTools") {
-  vcTools.execute(message);
-}
+    if (startsWithCmd && !isAllowed && !isAdmin) {
+      return message.reply("❌ Kamu tidak punya akses pakai command ini.");
+    }
 
-// ===== JOIN VOICE =====
-if (content.startsWith("!join")) {
-  const voiceChannel = message.member.voice.channel;
-  if (!voiceChannel) return message.reply("❌ Join voice channel dulu.");
+    // ✅ Mulai lanjut proses
+    await countValidator(message);
 
-  try {
-    // Cek apakah ada koneksi lama (misalnya waktu bot dikeluarin dari VC)
-    const oldConnection = getVoiceConnection(message.guild.id);
-    if (oldConnection) oldConnection.destroy();
+    // ===== TRANSLATE COMMAND =====
+    if (contentLower.startsWith("ing!")) {
+      const text = content.slice(4).trim();
+      if (!text) return message.reply("❌ Masukkan teks yang ingin diterjemahkan.");
+      try {
+        const res = await translate(text, { to: "en" });
+        return message.reply(`🇬🇧 ${res.text}`);
+      } catch (err) {
+        console.error("❌ Translate Error:", err);
+        return message.reply("❌ Gagal menerjemahkan ke Inggris.");
+      }
+    }
 
-    // Join VC
-    joinVoiceChannel({
-      channelId: voiceChannel.id,
-      guildId: voiceChannel.guild.id,
-      adapterCreator: voiceChannel.guild.voiceAdapterCreator,
-      selfDeaf: false,
-    });
+    if (contentLower.startsWith("ind!")) {
+      const text = content.slice(4).trim();
+      if (!text) return message.reply("❌ Masukkan teks yang ingin diterjemahkan.");
+      try {
+        const res = await translate(text, { to: "id" });
+        return message.reply(`🇮🇩 ${res.text}`);
+      } catch (err) {
+        console.error("❌ Translate Error:", err);
+        return message.reply("❌ Gagal menerjemahkan ke Indonesia.");
+      }
+    }
 
-    return message.reply(`✅ Bot join ke VC **${voiceChannel.name}**`);
-  } catch (err) {
-    console.error("❌ Gagal join VC:", err);
-    return message.reply("❌ Bot gagal join VC. Coba cek permission atau restart bot.");
-  }
-}
+    // ===== JOIN VC =====
+    if (contentLower === "!join") {
+      const voiceChannel = message.member.voice.channel;
+      if (!voiceChannel) return message.reply("❌ Join voice channel dulu.");
+
+      try {
+        const oldConnection = getVoiceConnection(message.guild.id);
+        if (oldConnection) oldConnection.destroy();
+
+        joinVoiceChannel({
+          channelId: voiceChannel.id,
+          guildId: voiceChannel.guild.id,
+          adapterCreator: voiceChannel.guild.voiceAdapterCreator,
+          selfDeaf: false,
+        });
+
+        return message.reply(`✅ Bot join ke VC **${voiceChannel.name}**`);
+      } catch (err) {
+        console.error("❌ Gagal join VC:", err);
+        return message.reply("❌ Bot gagal join VC. Cek permission.");
+      }
+    }
+
+    // ===== VC TOOLS =====
+    if (contentLower === "!vctools") {
+      return vcTools.execute(message);
+    }
 
     // ===== TEST DM =====
-    if (content.startsWith("!testdm")) {
-      if (!isAdmin) return message.reply("❌ Gak punya izin.");
-
-      const args = message.content.trim().split(/\s+/);
+    if (contentLower.startsWith("!testdm")) {
+      const args = content.trim().split(/\s+/);
       const user = message.mentions.users.first();
       const inputTagRaw = args.slice(2).join(" ").trim();
       const inputTag = inputTagRaw.toUpperCase().replace(/[\[\]]/g, "");
@@ -148,7 +178,7 @@ if (content.startsWith("!join")) {
           content: `✨ *Selamat ${displayName}!*\n\n🔰 Kamu dapat tag: \`${realTag}\`\n📛 Role: \`${roleDisplay}\`\n\nIngin pakai tag ini di nickname?\n\n👇 Pilih tombol di bawah:`,
           components: [row]
         });
-        await message.reply(`✅ DM terkirim ke ${displayName}`);
+        return message.reply(`✅ DM terkirim ke ${displayName}`);
       } catch (err) {
         console.error("❌ Gagal kirim DM:", err);
         return message.reply("❌ Gagal kirim DM. Cek setting user.");
@@ -156,8 +186,7 @@ if (content.startsWith("!join")) {
     }
 
     // ===== HAPUS TAG =====
-    if (content.startsWith("!hapustag")) {
-      if (!isAdmin) return message.reply("❌ Gak punya izin.");
+    if (contentLower.startsWith("!hapustag")) {
       return handleHapusTag(message);
     }
 
@@ -174,11 +203,10 @@ if (content.startsWith("!join")) {
     };
 
     for (const [keyword, replies] of Object.entries(autoReplies)) {
-      if (content.includes(keyword)) {
+      if (contentLower.includes(keyword)) {
         const reply = replies[Math.floor(Math.random() * replies.length)];
         return message.reply(reply).catch(console.error);
       }
     }
   },
 };
-    
