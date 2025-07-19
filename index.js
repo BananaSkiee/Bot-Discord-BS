@@ -9,7 +9,6 @@ const stickyHandler = require("./sticky");
 const updateOnline = require("./online");
 const autoGreeting = require("./modules/autoGreeting");
 const updateTimeChannel = require("./modules/updateTimeChannel");
-const commandTranslate = require("./modules/commandTranslate"); // ✅ Tambahan baru
 
 const client = new Client({
   intents: [
