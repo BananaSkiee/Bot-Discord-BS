@@ -1,7 +1,7 @@
 // events/interactionCreate.js
 const fs = require("fs");
 const path = require("path");
-const { ROLES, guildId } = require("../config");
+const { ROLES, ROLE_DISPLAY_MAP, guildId } = require("../config");
 
 const filePath = path.join(__dirname, "../data/taggedUsers.json");
 
