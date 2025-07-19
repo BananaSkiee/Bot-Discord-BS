@@ -1,6 +1,5 @@
 const fs = require("fs");
 const path = require("path");
-const translate = require("@vitalets/google-translate-api");
 const { ActionRowBuilder, ButtonBuilder, ButtonStyle } = require("discord.js");
 
 const countValidator = require("../modules/countValidator");
@@ -45,21 +44,6 @@ const ROLE_DISPLAY_MAP = {
   "1352286235233620108": "『〽️』ᴍᴇᴍʙᴇʀ"
 };
 
-
-const translateCommands = {
-  "ind!": { lang: "id", emoji: "🇮🇩" },
-  "ing!": { lang: "en", emoji: "🇬🇧" },
-  "jp!":  { lang: "ja", emoji: "🇯🇵" },
-  "kor!": { lang: "ko", emoji: "🇰🇷" },
-  "ara!": { lang: "ar", emoji: "🇸🇦" },
-  "de!":  { lang: "de", emoji: "🇩🇪" },
-  "fr!":  { lang: "fr", emoji: "🇫🇷" },
-  "ru!":  { lang: "ru", emoji: "🇷🇺" },
-  "cn!":  { lang: "zh-CN", emoji: "🇨🇳" },
-  "it!":  { lang: "it", emoji: "🇮🇹" },
-  "sp!":  { lang: "es", emoji: "🇪🇸" },
-};
-
 module.exports = {
   name: "messageCreate",
   async execute(message, client) {
@@ -72,38 +56,18 @@ module.exports = {
 
     const isAdmin = member.roles.cache.has(ADMIN_ROLE_ID);
 
-    // ========== 1. HANDLE TRANSLATE COMMANDS ==============
-    for (const prefix in translateCommands) {
-      if (contentLower.startsWith(prefix)) {
-        if (!isAdmin && !["ing!", "ind!"].includes(prefix)) {
-          return message.reply("❌ Hanya admin yang bisa pakai perintah translate ini.");
-        }
-
-        const text = content.slice(prefix.length).trim();
-        if (!text) return message.reply("❌ Masukkan teks yang ingin diterjemahkan.");
-
-        try {
-          const res = await translate(text, { to: translateCommands[prefix].lang });
-          return message.reply(`${translateCommands[prefix].emoji} ${res.text}`);
-        } catch (err) {
-          console.error("❌ Translate Error:", err);
-          return message.reply("❌ Gagal menerjemahkan teks.");
-        }
-      }
-    }
-
-    // ========== 2. BLOCK COMMAND NON-ADMIN ==============
-    const isTranslateCommand = Object.keys(translateCommands).some(prefix => contentLower.startsWith(prefix));
-    if (content.startsWith("!") && !isTranslateCommand && !isAdmin) {
+    // ========== 1. BLOCK COMMAND NON-ADMIN ==============
+    if (content.startsWith("!") && !isAdmin) {
       return message.reply("❌ Kamu tidak punya akses pakai command ini.");
     }
 
-    // ========== 3. JOIN VC ==============
+    // ========== 2. JOIN VC ==============
     if (contentLower === "!join") {
       const voiceChannel = message.member.voice.channel;
       if (!voiceChannel) return message.reply("❌ Join voice channel dulu.");
 
       try {
+        const { joinVoiceChannel, getVoiceConnection } = require("@discordjs/voice");
         const oldConnection = getVoiceConnection(message.guild.id);
         if (oldConnection) oldConnection.destroy();
 
@@ -121,7 +85,7 @@ module.exports = {
       }
     }
 
-    // ========== 5. TEST DM =============
+    // ========== 3. TEST DM =============
     if (contentLower.startsWith("!testdm")) {
       const args = content.trim().split(/\s+/);
       const user = message.mentions.users.first();
@@ -183,12 +147,12 @@ module.exports = {
       }
     }
 
-    // ========== 6. HAPUS TAG ============
+    // ========== 4. HAPUS TAG ============
     if (contentLower.startsWith("!hapustag")) {
       return handleHapusTag(message);
     }
 
-    // ========== 7. AUTO REPLY ============
+    // ========== 5. AUTO REPLY ============
     const autoReplies = {
       pagi: ["Pagi juga! 🌞", "Selamat pagi, semangat ya!", "Eh bangun pagi juga 😴"],
       siang: ["Siang juga! 🌤️", "Jangan lupa makan siang ya!", "Siang-siang panas bener 🥵"],
