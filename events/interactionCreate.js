@@ -48,7 +48,11 @@ module.exports = {
     }
 
     // REMOVE TAG
-    if (customId === "remove_tag" || customId === "test_remove_tag") {
+    if (
+      customId === "remove_tag" ||
+      customId === "test_remove_tag" ||
+      customId.startsWith("tidak_paketag_")
+    ) {
       try {
         await member.setNickname(null);
         taggedUsers[member.id] = false;
@@ -67,19 +71,47 @@ module.exports = {
       }
     }
 
-    // USE TAG (use_tag / ya_pakai_tag)
-    if (customId === "use_tag" || customId === "ya_pakai_tag") {
-      const role = ROLES.find(r => member.roles.cache.has(r.id));
-      if (!role) {
-        return interaction.reply({
-          content: "❌ Kamu tidak memiliki role yang cocok.",
-          ephemeral: true,
-        });
+    // USE TAG
+    if (
+      customId === "use_tag" ||
+      customId === "ya_pakai_tag" ||
+      customId.startsWith("ya_paketag_")
+    ) {
+      let matched;
+      if (customId.startsWith("ya_paketag_")) {
+        const parts = customId.split("_");
+        const roleId = parts[2];
+        const safeTag = parts.slice(3).join("_");
+
+        matched = ROLES.find(
+          (r) =>
+            r.id === roleId &&
+            r.tag.replace(/[^\w-]/g, "").toLowerCase() === safeTag
+        );
+
+        if (!matched) {
+          return interaction.reply({
+            content: "❌ Tag tidak valid atau tidak ditemukan.",
+            ephemeral: true,
+          });
+        }
+      } else {
+        matched = ROLES.find((r) => member.roles.cache.has(r.id));
+        if (!matched) {
+          return interaction.reply({
+            content: "❌ Kamu tidak memiliki role yang cocok.",
+            ephemeral: true,
+          });
+        }
       }
 
       try {
-        const newName = `${role.tag} ${username}`.slice(0, 32);
+        const newName = `${matched.tag} ${username}`.slice(0, 32);
         await member.setNickname(newName);
+
+        if (!member.roles.cache.has(matched.id)) {
+          await member.roles.add(matched.id);
+        }
 
         taggedUsers[member.id] = true;
         saveTaggedUsers(taggedUsers);
@@ -89,7 +121,7 @@ module.exports = {
           ephemeral: true,
         });
       } catch (err) {
-        console.error("❌ Gagal set nickname (use_tag):", err);
+        console.error("❌ Gagal set nickname (ya_pakai_tag):", err);
         return interaction.reply({
           content: "❌ Gagal mengatur nama.",
           ephemeral: true,
