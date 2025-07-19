@@ -81,11 +81,6 @@ client.on("messageCreate", async (message) => {
     if (commandName === "ping") {
       return message.channel.send("🏓 Pong!");
     }
-
-    if (commandName === "testdm") {
-      return message.author.send("📩 Ini adalah test DM dari Akira.");
-    }
-
     // Tambah command manual lain di sini
 
   } catch (err) {
