@@ -47,6 +47,21 @@ const ROLE_DISPLAY_MAP = {
   "1352286235233620108": "『〽️』ᴍᴇᴍʙᴇʀ"
 };
 
+
+const translateCommands = {
+  "ind!": { lang: "id", emoji: "🇮🇩" },
+  "ing!": { lang: "en", emoji: "🇬🇧" },
+  "jp!":  { lang: "ja", emoji: "🇯🇵" },
+  "kor!": { lang: "ko", emoji: "🇰🇷" },
+  "ara!": { lang: "ar", emoji: "🇸🇦" },
+  "de!":  { lang: "de", emoji: "🇩🇪" },
+  "fr!":  { lang: "fr", emoji: "🇫🇷" },
+  "ru!":  { lang: "ru", emoji: "🇷🇺" },
+  "cn!":  { lang: "zh-CN", emoji: "🇨🇳" },
+  "it!":  { lang: "it", emoji: "🇮🇹" },
+  "sp!":  { lang: "es", emoji: "🇪🇸" },
+};
+
 module.exports = {
   name: "messageCreate",
   async execute(message, client) {
@@ -59,24 +74,9 @@ module.exports = {
 
     const isAdmin = member.roles.cache.has(ADMIN_ROLE_ID);
 
-    // ===== TRANSLATE COMMANDS =====
-    const translateCommands = {
-      "ind!": { lang: "id", emoji: "🇮🇩" },
-      "ing!": { lang: "en", emoji: "🇬🇧" },
-      "jp!": { lang: "ja", emoji: "🇯🇵" },
-      "kor!": { lang: "ko", emoji: "🇰🇷" },
-      "ara!": { lang: "ar", emoji: "🇸🇦" },
-      "de!": { lang: "de", emoji: "🇩🇪" },
-      "fr!": { lang: "fr", emoji: "🇫🇷" },
-      "ru!": { lang: "ru", emoji: "🇷🇺" },
-      "cn!": { lang: "zh-CN", emoji: "🇨🇳" },
-      "it!": { lang: "it", emoji: "🇮🇹" },
-      "sp!": { lang: "es", emoji: "🇪🇸" },
-    };
-
+    // ========== 1. HANDLE TRANSLATE COMMANDS ==============
     for (const prefix in translateCommands) {
       if (contentLower.startsWith(prefix)) {
-        // Semua user boleh pakai ing! dan ind!, lainnya admin-only
         if (!isAdmin && !["ing!", "ind!"].includes(prefix)) {
           return message.reply("❌ Hanya admin yang bisa pakai perintah translate ini.");
         }
@@ -94,18 +94,13 @@ module.exports = {
       }
     }
 
-    // ❌ BLOCK COMMAND NON-ADMIN selain translate bebas
-    const allowedEveryone = ["ing!", "ind!"];
-    const startsWithCmd = content.startsWith("!");
-    const isAllowed = allowedEveryone.some(cmd => contentLower.startsWith(cmd));
-
-    if (startsWithCmd && !isAllowed && !isAdmin) {
+    // ========== 2. BLOCK COMMAND NON-ADMIN ==============
+    const isTranslateCommand = Object.keys(translateCommands).some(prefix => contentLower.startsWith(prefix));
+    if (content.startsWith("!") && !isTranslateCommand && !isAdmin) {
       return message.reply("❌ Kamu tidak punya akses pakai command ini.");
     }
 
-    // lanjut ke logika lain...
-
-// ===== JOIN VC =====
+    // ========== 3. JOIN VC ==============
     if (contentLower === "!join") {
       const voiceChannel = message.member.voice.channel;
       if (!voiceChannel) return message.reply("❌ Join voice channel dulu.");
@@ -128,12 +123,12 @@ module.exports = {
       }
     }
 
-    // ===== VC TOOLS =====
+    // ========== 4. VC TOOLS ============
     if (contentLower === "!vctools") {
       return vcTools.execute(message);
     }
 
-    // ===== TEST DM =====
+    // ========== 5. TEST DM =============
     if (contentLower.startsWith("!testdm")) {
       const args = content.trim().split(/\s+/);
       const user = message.mentions.users.first();
@@ -195,12 +190,12 @@ module.exports = {
       }
     }
 
-    // ===== HAPUS TAG =====
+    // ========== 6. HAPUS TAG ============
     if (contentLower.startsWith("!hapustag")) {
       return handleHapusTag(message);
     }
 
-    // ===== AUTO REPLY =====
+    // ========== 7. AUTO REPLY ============
     const autoReplies = {
       pagi: ["Pagi juga! 🌞", "Selamat pagi, semangat ya!", "Eh bangun pagi juga 😴"],
       siang: ["Siang juga! 🌤️", "Jangan lupa makan siang ya!", "Siang-siang panas bener 🥵"],
