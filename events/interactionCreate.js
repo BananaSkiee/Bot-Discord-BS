@@ -1,3 +1,4 @@
+// events/interactionCreate.js
 const fs = require("fs");
 const path = require("path");
 const { ROLES, guildId } = require("../config");
@@ -27,8 +28,13 @@ module.exports = {
 
     const { customId } = interaction;
     const username = interaction.user.globalName ?? interaction.user.username;
+    const taggedUsers = loadTaggedUsers();
+
     const guild = interaction.client.guilds.cache.get(guildId);
-    if (!guild) return;
+    if (!guild) {
+      console.error("❌ Guild tidak ditemukan.");
+      return interaction.reply({ content: "❌ Server tidak ditemukan.", ephemeral: true }).catch(() => {});
+    }
 
     let member;
     try {
@@ -36,130 +42,131 @@ module.exports = {
     } catch (err) {
       console.error("❌ Gagal fetch member:", err);
       return interaction.reply({
-        content: "❌ Gagal mengambil data member dari server.",
+        content: "❌ Gagal mengambil data member.",
         ephemeral: true,
-      });
+      }).catch(() => {});
     }
-
-    let taggedUsers = loadTaggedUsers();
 
     // ===== REMOVE TAG =====
     if (customId === "remove_tag" || customId === "test_remove_tag") {
       try {
-        await member.setNickname(null);
+        await member.setNickname(null).catch(() => {});
         taggedUsers[member.id] = false;
         saveTaggedUsers(taggedUsers);
 
         return interaction.reply({
           content: `✅ Nama kamu dikembalikan menjadi \`${username}\``,
           ephemeral: true,
-        });
+        }).catch(() => {});
       } catch (err) {
-        console.error("❌ Gagal hapus nickname:", err);
+        console.error("❌ Gagal menghapus tag:", err);
         return interaction.reply({
           content: "❌ Gagal menghapus tag.",
           ephemeral: true,
-        });
+        }).catch(() => {});
       }
     }
 
-    // ===== APPLY TAG (normal & ya_pakai_tag) =====
+    // ===== APPLY TAG (use_tag / ya_pakai_tag) =====
     if (customId === "use_tag" || customId === "ya_pakai_tag") {
       const role = ROLES.find(r => member.roles.cache.has(r.id));
       if (!role) {
         return interaction.reply({
-          content: "❌ Kamu tidak punya role yang cocok untuk tag ini.",
+          content: "❌ Kamu tidak memiliki role yang cocok.",
           ephemeral: true,
-        });
+        }).catch(() => {});
       }
 
       try {
-        await member.setNickname(`${role.tag} ${username}`);
+        const newName = `${role.tag} ${username}`.slice(0, 32);
+        await member.setNickname(newName).catch(() => {});
         taggedUsers[member.id] = true;
         saveTaggedUsers(taggedUsers);
 
         return interaction.reply({
-          content: `✅ Nama kamu sekarang: \`${role.tag} ${username}\``,
+          content: `✅ Nama kamu sekarang: \`${newName}\``,
           ephemeral: true,
-        });
+        }).catch(() => {});
       } catch (err) {
         console.error("❌ Gagal set nickname:", err);
         return interaction.reply({
-          content: "❌ Gagal menambahkan tag.",
+          content: "❌ Gagal mengatur nama.",
           ephemeral: true,
-        });
+        }).catch(() => {});
       }
     }
 
-    // ===== TEST BUTTONS (use/remove) =====
+    // ===== TEST BUTTONS (test_use_tag_ & test_remove_tag_) =====
     if (customId.startsWith("test_use_tag_") || customId.startsWith("test_remove_tag_")) {
       const parts = customId.split("_");
-      const action = parts[1]; // "use" atau "remove"
+      const action = parts[1];
       const roleId = parts[3];
-      const safeTagId = parts.slice(4).join("_");
+      const safeTag = parts.slice(4).join("_");
 
       const matched = ROLES.find(r =>
-        r.id === roleId &&
-        r.tag.replace(/[^\w-]/g, "").toLowerCase() === safeTagId
+        r.id === roleId && r.tag.replace(/[^\w-]/g, "").toLowerCase() === safeTag
       );
 
       if (!matched) {
         return interaction.reply({
           content: "❌ Tag tidak valid atau tidak ditemukan.",
           ephemeral: true,
-        });
+        }).catch(() => {});
       }
 
       const realTag = matched.tag;
 
       if (action === "use") {
         try {
-          await member.setNickname(`${realTag} ${username}`);
+          const newName = `${realTag} ${username}`.slice(0, 32);
+          await member.setNickname(newName).catch(() => {});
+
           if (!member.roles.cache.has(matched.id)) {
-            await member.roles.add(matched.id);
+            await member.roles.add(matched.id).catch(() => {});
           }
+
           taggedUsers[member.id] = true;
           saveTaggedUsers(taggedUsers);
 
           return interaction.reply({
-            content: `🧪 Nickname kamu sekarang: \`${realTag} ${username}\``,
+            content: `🧪 Nickname kamu sekarang: \`${newName}\``,
             ephemeral: true,
-          });
+          }).catch(() => {});
         } catch (err) {
           console.error("❌ Gagal set nickname test:", err);
           return interaction.reply({
             content: "❌ Gagal mengubah nickname/tag.",
             ephemeral: true,
-          });
+          }).catch(() => {});
         }
       }
 
       if (action === "remove") {
         try {
-          await member.setNickname(null);
+          await member.setNickname(null).catch(() => {});
           taggedUsers[member.id] = false;
           saveTaggedUsers(taggedUsers);
 
           return interaction.reply({
             content: `🧪 Nickname kamu dikembalikan menjadi \`${username}\``,
             ephemeral: true,
-          });
+          }).catch(() => {});
         } catch (err) {
           console.error("❌ Gagal reset nickname test:", err);
           return interaction.reply({
             content: "❌ Gagal menghapus nickname/tag.",
             ephemeral: true,
-          });
+          }).catch(() => {});
         }
       }
     }
 
-    // ===== UNKNOWN BUTTON =====
+    // ===== DEFAULT: UNKNOWN BUTTON =====
     return interaction.reply({
       content: "⚠️ Tombol tidak dikenali.",
       ephemeral: true,
     }).catch(err => {
-      console.error("❌ Gagal kirim error tombol tidak dikenal:", err);
+      console.error("❌ Gagal mengirim fallback unknown interaction:", err);
     });
   },
 };
