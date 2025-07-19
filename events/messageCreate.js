@@ -2,7 +2,6 @@ const fs = require("fs");
 const path = require("path");
 const translate = require("@vitalets/google-translate-api");
 const { ActionRowBuilder, ButtonBuilder, ButtonStyle } = require("discord.js");
-const { joinVoiceChannel, getVoiceConnection } = require("@discordjs/voice");
 
 const countValidator = require("../modules/countValidator");
 const handleHapusTag = require("../modules/hapusTagCommand");
