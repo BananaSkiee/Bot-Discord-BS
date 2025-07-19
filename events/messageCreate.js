@@ -54,11 +54,47 @@ module.exports = {
 
     const content = message.content.trim();
     const contentLower = content.toLowerCase();
-
     const member = await message.guild.members.fetch(message.author.id).catch(() => null);
-    const isAdmin = member?.roles.cache.has(ADMIN_ROLE_ID);
+    if (!member) return;
 
-    // ⛔ Cek apakah user coba pakai command lain (!...) selain yang bebas
+    const isAdmin = member.roles.cache.has(ADMIN_ROLE_ID);
+
+    // ===== TRANSLATE COMMANDS =====
+    const translateCommands = {
+      "ind!": { lang: "id", emoji: "🇮🇩" },
+      "ing!": { lang: "en", emoji: "🇬🇧" },
+      "jp!": { lang: "ja", emoji: "🇯🇵" },
+      "kor!": { lang: "ko", emoji: "🇰🇷" },
+      "ara!": { lang: "ar", emoji: "🇸🇦" },
+      "de!": { lang: "de", emoji: "🇩🇪" },
+      "fr!": { lang: "fr", emoji: "🇫🇷" },
+      "ru!": { lang: "ru", emoji: "🇷🇺" },
+      "cn!": { lang: "zh-CN", emoji: "🇨🇳" },
+      "it!": { lang: "it", emoji: "🇮🇹" },
+      "sp!": { lang: "es", emoji: "🇪🇸" },
+    };
+
+    for (const prefix in translateCommands) {
+      if (contentLower.startsWith(prefix)) {
+        // Semua user boleh pakai ing! dan ind!, lainnya admin-only
+        if (!isAdmin && !["ing!", "ind!"].includes(prefix)) {
+          return message.reply("❌ Hanya admin yang bisa pakai perintah translate ini.");
+        }
+
+        const text = content.slice(prefix.length).trim();
+        if (!text) return message.reply("❌ Masukkan teks yang ingin diterjemahkan.");
+
+        try {
+          const res = await translate(text, { to: translateCommands[prefix].lang });
+          return message.reply(`${translateCommands[prefix].emoji} ${res.text}`);
+        } catch (err) {
+          console.error("❌ Translate Error:", err);
+          return message.reply("❌ Gagal menerjemahkan teks.");
+        }
+      }
+    }
+
+    // ❌ BLOCK COMMAND NON-ADMIN selain translate bebas
     const allowedEveryone = ["ing!", "ind!"];
     const startsWithCmd = content.startsWith("!");
     const isAllowed = allowedEveryone.some(cmd => contentLower.startsWith(cmd));
@@ -67,35 +103,9 @@ module.exports = {
       return message.reply("❌ Kamu tidak punya akses pakai command ini.");
     }
 
-    // ✅ Mulai lanjut proses
-    await countValidator(message);
+    // lanjut ke logika lain...
 
-    // ===== TRANSLATE COMMAND =====
-    if (contentLower.startsWith("ing!")) {
-      const text = content.slice(4).trim();
-      if (!text) return message.reply("❌ Masukkan teks yang ingin diterjemahkan.");
-      try {
-        const res = await translate(text, { to: "en" });
-        return message.reply(`🇬🇧 ${res.text}`);
-      } catch (err) {
-        console.error("❌ Translate Error:", err);
-        return message.reply("❌ Gagal menerjemahkan ke Inggris.");
-      }
-    }
-
-    if (contentLower.startsWith("ind!")) {
-      const text = content.slice(4).trim();
-      if (!text) return message.reply("❌ Masukkan teks yang ingin diterjemahkan.");
-      try {
-        const res = await translate(text, { to: "id" });
-        return message.reply(`🇮🇩 ${res.text}`);
-      } catch (err) {
-        console.error("❌ Translate Error:", err);
-        return message.reply("❌ Gagal menerjemahkan ke Indonesia.");
-      }
-    }
-
-    // ===== JOIN VC =====
+// ===== JOIN VC =====
     if (contentLower === "!join") {
       const voiceChannel = message.member.voice.channel;
       if (!voiceChannel) return message.reply("❌ Join voice channel dulu.");
