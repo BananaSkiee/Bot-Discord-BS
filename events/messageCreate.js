@@ -152,9 +152,18 @@ if (contentLower.startsWith("!testdm")) {
 
   try {
     await user.send({
-      content: `✨ *Selamat ${displayName}!*\n\n🔰 Kamu dapat tag: \`${realTag}\`\n📛 Role: \`${roleDisplay}\`\n\nIngin pakai tag ini di nickname?\n\n👇 Pilih tombol di bawah:`,
-      components: [row],
-    });
+  content: `✨ *Selamat kepada, ${displayName}..*\n
+🔰 Kamu menerima tag khusus: \`${realTag}\`  
+📛 Diberikan karena kamu memiliki role: \`${roleDisplay}\`
+
+Ingin menampilkan tag itu di nickname kamu?  
+Contoh: \`${realTag} ${displayName}.\`
+
+───────────────────────────
+
+Silakan pilih opsi di bawah ini: 👇`,
+  components: [row],
+});
 
     return message.reply(`✅ DM terkirim ke **${displayName}**.`);
   } catch (err) {
