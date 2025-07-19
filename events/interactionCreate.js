@@ -1,4 +1,3 @@
-// events/interactionCreate.js
 const fs = require("fs");
 const path = require("path");
 const { ROLES, guildId } = require("../config");
@@ -9,7 +8,15 @@ function saveTaggedUsers(data) {
   try {
     fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
   } catch (err) {
-    console.error("Gagal menyimpan taggedUsers.json:", err);
+    console.error("❌ Gagal menyimpan taggedUsers.json:", err);
+  }
+}
+
+function loadTaggedUsers() {
+  try {
+    return JSON.parse(fs.readFileSync(filePath, "utf8"));
+  } catch {
+    return {};
   }
 }
 
@@ -18,6 +25,7 @@ module.exports = {
   async execute(interaction) {
     if (!interaction.isButton()) return;
 
+    const { customId } = interaction;
     const username = interaction.user.globalName ?? interaction.user.username;
     const guild = interaction.client.guilds.cache.get(guildId);
     if (!guild) return;
@@ -26,33 +34,28 @@ module.exports = {
     try {
       member = await guild.members.fetch(interaction.user.id);
     } catch (err) {
-      console.error("Gagal fetch member:", err);
+      console.error("❌ Gagal fetch member:", err);
       return interaction.reply({
         content: "❌ Gagal mengambil data member dari server.",
         ephemeral: true,
       });
     }
 
-    let taggedUsers = {};
-    try {
-      taggedUsers = JSON.parse(fs.readFileSync(filePath, "utf8"));
-    } catch (err) {
-      console.warn("Gagal baca file taggedUsers.json. Menggunakan data kosong.");
-      taggedUsers = {};
-    }
+    let taggedUsers = loadTaggedUsers();
 
     // ===== REMOVE TAG =====
-    if (interaction.customId === "remove_tag") {
+    if (customId === "remove_tag" || customId === "test_remove_tag") {
       try {
         await member.setNickname(null);
         taggedUsers[member.id] = false;
         saveTaggedUsers(taggedUsers);
+
         return interaction.reply({
           content: `✅ Nama kamu dikembalikan menjadi \`${username}\``,
           ephemeral: true,
         });
       } catch (err) {
-        console.error("Gagal remove tag:", err);
+        console.error("❌ Gagal hapus nickname:", err);
         return interaction.reply({
           content: "❌ Gagal menghapus tag.",
           ephemeral: true,
@@ -60,8 +63,8 @@ module.exports = {
       }
     }
 
-    // ===== USE TAG =====
-    if (interaction.customId === "use_tag") {
+    // ===== APPLY TAG (normal & ya_pakai_tag) =====
+    if (customId === "use_tag" || customId === "ya_pakai_tag") {
       const role = ROLES.find(r => member.roles.cache.has(r.id));
       if (!role) {
         return interaction.reply({
@@ -74,12 +77,13 @@ module.exports = {
         await member.setNickname(`${role.tag} ${username}`);
         taggedUsers[member.id] = true;
         saveTaggedUsers(taggedUsers);
+
         return interaction.reply({
           content: `✅ Nama kamu sekarang: \`${role.tag} ${username}\``,
           ephemeral: true,
         });
       } catch (err) {
-        console.error("Gagal apply tag:", err);
+        console.error("❌ Gagal set nickname:", err);
         return interaction.reply({
           content: "❌ Gagal menambahkan tag.",
           ephemeral: true,
@@ -87,23 +91,21 @@ module.exports = {
       }
     }
 
-    // ===== TEST BUTTON =====
-    if (
-      interaction.customId.startsWith("test_use_tag_") ||
-      interaction.customId.startsWith("test_remove_tag_")
-    ) {
-      const parts = interaction.customId.split("_");
-      const action = parts[1];
+    // ===== TEST BUTTONS (use/remove) =====
+    if (customId.startsWith("test_use_tag_") || customId.startsWith("test_remove_tag_")) {
+      const parts = customId.split("_");
+      const action = parts[1]; // "use" atau "remove"
       const roleId = parts[3];
       const safeTagId = parts.slice(4).join("_");
 
-      const matched = ROLES.find(
-        r => r.id === roleId && r.tag.replace(/[^\w-]/g, "").toLowerCase() === safeTagId
+      const matched = ROLES.find(r =>
+        r.id === roleId &&
+        r.tag.replace(/[^\w-]/g, "").toLowerCase() === safeTagId
       );
 
       if (!matched) {
         return interaction.reply({
-          content: "❌ Tag tidak ditemukan atau tidak valid.",
+          content: "❌ Tag tidak valid atau tidak ditemukan.",
           ephemeral: true,
         });
       }
@@ -118,12 +120,13 @@ module.exports = {
           }
           taggedUsers[member.id] = true;
           saveTaggedUsers(taggedUsers);
+
           return interaction.reply({
             content: `🧪 Nickname kamu sekarang: \`${realTag} ${username}\``,
             ephemeral: true,
           });
         } catch (err) {
-          console.error("Gagal saat 'test_use_tag':", err);
+          console.error("❌ Gagal set nickname test:", err);
           return interaction.reply({
             content: "❌ Gagal mengubah nickname/tag.",
             ephemeral: true,
@@ -136,12 +139,13 @@ module.exports = {
           await member.setNickname(null);
           taggedUsers[member.id] = false;
           saveTaggedUsers(taggedUsers);
+
           return interaction.reply({
             content: `🧪 Nickname kamu dikembalikan menjadi \`${username}\``,
             ephemeral: true,
           });
         } catch (err) {
-          console.error("Gagal saat 'test_remove_tag':", err);
+          console.error("❌ Gagal reset nickname test:", err);
           return interaction.reply({
             content: "❌ Gagal menghapus nickname/tag.",
             ephemeral: true,
@@ -155,7 +159,7 @@ module.exports = {
       content: "⚠️ Tombol tidak dikenali.",
       ephemeral: true,
     }).catch(err => {
-      console.error("Gagal mengirim pesan unknown interaction:", err);
+      console.error("❌ Gagal kirim error tombol tidak dikenal:", err);
     });
   },
 };
