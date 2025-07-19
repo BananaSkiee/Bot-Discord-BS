@@ -71,7 +71,6 @@ client.on("interactionCreate", async (interaction) => {
 
 // 💬 Command pakai prefix (!)
 client.on("messageCreate", async (message) => {
-  commandTranslate(message); // ✅ Tambahkan translate di sini
 
   if (message.author.bot || !message.content.startsWith("!")) return;
 
