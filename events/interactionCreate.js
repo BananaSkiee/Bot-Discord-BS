@@ -1,7 +1,7 @@
 // events/interactionCreate.js
 const fs = require("fs");
 const path = require("path");
-const { ROLES, ROLE_DISPLAY_MAP, guildId } = require("../config");
+const { ROLES, guildId } = require("../config");
 
 const filePath = path.join(__dirname, "../data/taggedUsers.json");
 
@@ -47,10 +47,11 @@ module.exports = {
       });
     }
 
+    // ================================
     // REMOVE TAG
+    // ================================
     if (
-      customId === "remove_tag" ||
-      customId === "test_remove_tag" ||
+      ["remove_tag", "test_remove_tag"].includes(customId) ||
       customId.startsWith("tidak_paketag_")
     ) {
       try {
@@ -65,30 +66,32 @@ module.exports = {
       } catch (err) {
         console.error("❌ Gagal hapus nickname:", err);
         return interaction.reply({
-          content: "❌ Gagal menghapus tag.",
+          content:
+            err.code === 50013
+              ? "❌ Bot tidak punya izin mengubah nickname kamu."
+              : "❌ Gagal menghapus tag.",
           ephemeral: true,
         });
       }
     }
 
+    // ================================
     // USE TAG
+    // ================================
     if (
-      customId === "use_tag" ||
-      customId === "ya_pakai_tag" ||
+      ["use_tag", "ya_pakai_tag"].includes(customId) ||
       customId.startsWith("ya_paketag_")
     ) {
       let matched;
-      if (customId.startsWith("ya_paketag_")) {
-        const parts = customId.split("_");
-        const roleId = parts[2];
-        const safeTag = parts.slice(3).join("_");
 
+      if (customId.startsWith("ya_paketag_")) {
+        const [, , roleId, ...rest] = customId.split("_");
+        const safeTag = rest.join("_");
         matched = ROLES.find(
           (r) =>
             r.id === roleId &&
             r.tag.replace(/[^\w-]/g, "").toLowerCase() === safeTag
         );
-
         if (!matched) {
           return interaction.reply({
             content: "❌ Tag tidak valid atau tidak ditemukan.",
@@ -123,22 +126,29 @@ module.exports = {
       } catch (err) {
         console.error("❌ Gagal set nickname (ya_pakai_tag):", err);
         return interaction.reply({
-          content: "❌ Gagal mengatur nama.",
+          content:
+            err.code === 50013
+              ? "❌ Bot tidak punya izin mengubah nickname kamu."
+              : "❌ Gagal mengatur nama.",
           ephemeral: true,
         });
       }
     }
 
+    // ================================
     // TEST BUTTONS
-    if (customId.startsWith("test_use_tag_") || customId.startsWith("test_remove_tag_")) {
-      const parts = customId.split("_");
-      const action = parts[1];
-      const roleId = parts[3];
-      const safeTag = parts.slice(4).join("_");
+    // ================================
+    if (
+      customId.startsWith("test_use_tag_") ||
+      customId.startsWith("test_remove_tag_")
+    ) {
+      const [prefix, action, , roleId, ...rest] = customId.split("_");
+      const safeTag = rest.join("_");
 
-      const matched = ROLES.find(r =>
-        r.id === roleId &&
-        r.tag.replace(/[^\w-]/g, "").toLowerCase() === safeTag
+      const matched = ROLES.find(
+        (r) =>
+          r.id === roleId &&
+          r.tag.replace(/[^\w-]/g, "").toLowerCase() === safeTag
       );
 
       if (!matched) {
@@ -150,8 +160,8 @@ module.exports = {
 
       const realTag = matched.tag;
 
-      if (action === "use") {
-        try {
+      try {
+        if (action === "use") {
           const newName = `${realTag} ${username}`.slice(0, 32);
           await member.setNickname(newName);
 
@@ -166,17 +176,9 @@ module.exports = {
             content: `🧪 Nickname kamu sekarang: \`${newName}\``,
             ephemeral: true,
           });
-        } catch (err) {
-          console.error("❌ Gagal set nickname / role test:", err);
-          return interaction.reply({
-            content: "❌ Gagal mengubah nickname/tag.",
-            ephemeral: true,
-          });
         }
-      }
 
-      if (action === "remove") {
-        try {
+        if (action === "remove") {
           await member.setNickname(null);
           taggedUsers[member.id] = false;
           saveTaggedUsers(taggedUsers);
@@ -185,21 +187,26 @@ module.exports = {
             content: `🧪 Nickname kamu dikembalikan menjadi \`${username}\``,
             ephemeral: true,
           });
-        } catch (err) {
-          console.error("❌ Gagal reset nickname test:", err);
-          return interaction.reply({
-            content: "❌ Gagal menghapus nickname/tag.",
-            ephemeral: true,
-          });
         }
+      } catch (err) {
+        console.error("❌ Gagal handle tombol test:", err);
+        return interaction.reply({
+          content:
+            err.code === 50013
+              ? "❌ Bot tidak punya izin mengubah nickname kamu."
+              : "❌ Gagal memproses tombol test.",
+          ephemeral: true,
+        });
       }
     }
 
+    // ================================
     // UNKNOWN BUTTON
+    // ================================
     return interaction.reply({
       content: "⚠️ Tombol tidak dikenali.",
       ephemeral: true,
-    }).catch(err => {
+    }).catch((err) => {
       console.error("❌ Gagal kirim fallback:", err);
     });
   },
