@@ -4,15 +4,6 @@ module.exports = {
   voiceChannelId: "1366854862608007329",
   logChannelId: "1393011303492092035",
 
-  openTicketCategoryId: "1354116735594266644",
-  closedTicketCategoryId: "1354119154042404926",
-
-  // Daftar bot yang boleh diterjemahkan
-  TRANSLATABLE_BOT_IDS: [
-    "715906723982082139", // Ganti dengan ID bot 1
-    "356065937318871041", // Ganti dengan ID bot 2, dst
-  ],
-
   ROLES: [
     { id: "1352279577174605884", tag: "[OWNER]" },
     { id: "1352282368043389069", tag: "[ADMIN]" },
