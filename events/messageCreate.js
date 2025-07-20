@@ -141,11 +141,11 @@ if (contentLower.startsWith("!testdm")) {
 
   const row = new ActionRowBuilder().addComponents(
     new ButtonBuilder()
-      .setCustomId(`test_use_tag_tag_${matchedRole.id}_${safeTagId}`)
+      .setCustomId(`test_use_${matchedRole.id}_${safeTagId}`)
       .setLabel(`✅ Pakai Tag ${realTag}`)
       .setStyle(ButtonStyle.Success),
     new ButtonBuilder()
-      .setCustomId(`test_remove_tag_tag_${matchedRole.id}_${safeTagId}`)
+      .setCustomId(`test_remove_${matchedRole.id}_${safeTagId}`)
       .setLabel(`❌ Jangan Pakai Tag`)
       .setStyle(ButtonStyle.Secondary)
   );
