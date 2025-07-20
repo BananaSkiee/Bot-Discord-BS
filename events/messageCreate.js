@@ -136,11 +136,11 @@ if (contentLower.startsWith("!testdm")) {
   const row = new ActionRowBuilder().addComponents(
     new ButtonBuilder()
       .setCustomId(`test_use_tag_${matchedRole.id}_${safeTagId}`)
-      .setLabel("Ya, pakai tag ${realTag}")
+      .setLabel("Ya, pakai tag ${roleDisplay}")
       .setStyle(ButtonStyle.Success),
     new ButtonBuilder()
       .setCustomId(`test_remove_tag_${matchedRole.id}_${safeTagId}`)
-      .setLabel("Tidak, tanpa tag")
+      .setLabel("Tidak, tanpa tag ${roleDisplay}")
       .setStyle(ButtonStyle.Secondary)
   );
 
