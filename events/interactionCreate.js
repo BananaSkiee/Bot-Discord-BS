@@ -1,116 +1,65 @@
-const {
-  ButtonBuilder,
-  ActionRowBuilder,
-  ButtonStyle,
-  EmbedBuilder,
-} = require("discord.js");
+// events/interactionCreate.js
 const fs = require("fs");
 const path = require("path");
-const { ROLES, ROLE_DISPLAY_MAP } = require("../config");
+const { ROLES, guildId } = require("../config");
 
 const filePath = path.join(__dirname, "../data/taggedUsers.json");
 
 module.exports = {
   name: "interactionCreate",
   async execute(interaction) {
-    try {
-      if (!interaction.isButton()) return;
+    if (!interaction.isButton()) return;
 
-      const member = await interaction.guild.members.fetch(interaction.user.id);
-      let taggedUsers = {};
+    const { member, customId, client } = interaction;
+    const displayName = member.user.globalName || member.displayName;
 
-      // Baca file JSON
-      if (fs.existsSync(filePath)) {
-        const fileData = fs.readFileSync(filePath);
-        taggedUsers = JSON.parse(fileData);
-      }
+    // Ambil role tertinggi dari list ROLES
+    const role = ROLES.find((r) => member.roles.cache.has(r.id));
+    if (!role) {
+      return interaction.reply({ content: "❌ Role tidak ditemukan.", ephemeral: true });
+    }
 
-      // Tombol tambah tag
-      if (interaction.customId === "tag_nickname") {
-        const highestRole = ROLES.find(role =>
-          member.roles.cache.has(role.id)
-        );
+    // Update file tag
+    let taggedUsers = {};
+    if (fs.existsSync(filePath)) {
+      taggedUsers = JSON.parse(fs.readFileSync(filePath, "utf8"));
+    }
 
-        if (!highestRole) {
-          await interaction.reply({
-            content: "❌ Kamu tidak memiliki role yang valid.",
-            ephemeral: true,
-          });
-          return;
-        }
-
-        const tag = highestRole.tag;
-
-        // Cek jika sebelumnya sudah pernah ditag
-        const currentTagData = taggedUsers[member.id];
-
-        // Ambil nama asli dari JSON atau pakai username
-        const baseName = currentTagData?.originalName || member.user.username;
-
-        const newNickname = `${tag} ${baseName}`;
-        if (newNickname.length > 32) {
-          await interaction.reply({
-            content: `❌ Nickname terlalu panjang (maks 32 karakter): **${newNickname}**`,
-            ephemeral: true,
-          });
-          return;
-        }
-
-        await member.setNickname(newNickname).catch(() => null);
-
-        taggedUsers[member.id] = {
-          tag,
-          originalName: baseName,
-        };
-
-        fs.writeFileSync(filePath, JSON.stringify(taggedUsers, null, 2));
-
-        await interaction.reply({
-          content: `✅ Nickname kamu telah diubah menjadi **${newNickname}**`,
-          ephemeral: true,
-        });
-        return;
-      }
-
-      // Tombol hapus tag
-      if (interaction.customId === "remove_tag") {
-        const userTagData = taggedUsers[member.id];
-
-        if (!userTagData) {
-          await interaction.reply({
-            content: "❌ Kamu belum memiliki tag yang aktif.",
-            ephemeral: true,
-          });
-          return;
-        }
-
-        await member.setNickname(userTagData.originalName).catch(() => null);
-
-        delete taggedUsers[member.id];
-        fs.writeFileSync(filePath, JSON.stringify(taggedUsers, null, 2));
-
-        await interaction.reply({
-          content: `✅ Tag nickname telah dihapus. Nama kamu sekarang: **${userTagData.originalName}**`,
-          ephemeral: true,
-        });
-        return;
-      }
-    } catch (error) {
-      console.error("❌ Error di interactionCreate:", error);
+    // Handle tombol tag
+    if (customId === "use_tag") {
       try {
-        if (interaction.deferred || interaction.replied) {
-          await interaction.followUp({
-            content: "❌ Terjadi error saat menjalankan perintah.",
-            ephemeral: true,
-          });
-        } else {
-          await interaction.reply({
-            content: "❌ Terjadi error saat menjalankan perintah.",
-            ephemeral: true,
-          });
-        }
+        const newNick = `${role.tag} ${displayName}`;
+        await member.setNickname(newNick);
+        taggedUsers[member.id] = role.tag;
+        fs.writeFileSync(filePath, JSON.stringify(taggedUsers, null, 2));
+
+        await interaction.reply({
+          content: `✅ Nickname kamu sudah diubah menjadi **${newNick}**`,
+          ephemeral: true,
+        });
       } catch (err) {
-        console.error("❌ Gagal mengirim error ke user:", err);
+        await interaction.reply({
+          content: `❌ Gagal mengubah nickname: ${err.message}`,
+          ephemeral: true,
+        });
+      }
+    }
+
+    if (customId === "remove_tag") {
+      try {
+        await member.setNickname(null); // Hapus nickname (kembali ke default)
+        taggedUsers[member.id] = null;
+        fs.writeFileSync(filePath, JSON.stringify(taggedUsers, null, 2));
+
+        await interaction.reply({
+          content: "✅ Nickname kamu dikembalikan seperti semula tanpa tag.",
+          ephemeral: true,
+        });
+      } catch (err) {
+        await interaction.reply({
+          content: `❌ Gagal menghapus tag: ${err.message}`,
+          ephemeral: true,
+        });
       }
     }
   },
