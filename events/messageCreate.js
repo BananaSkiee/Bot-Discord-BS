@@ -6,6 +6,9 @@ const {
   ButtonStyle,
 } = require("discord.js");
 
+const countValidator = require("../modules/countValidator");
+const handleHapusTag = require("../modules/hapusTagCommand");
+
 const filePath = path.join(__dirname, "../data/taggedUsers.json");
 
 const ADMIN_ROLE_ID = "1352279577174605884";
