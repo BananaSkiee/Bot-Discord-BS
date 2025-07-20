@@ -1,37 +1,67 @@
-const { ROLES, ROLE_DISPLAY_MAP } = require("../config");
+const fs = require("fs");
+const path = require("path");
+const { ActionRowBuilder, ButtonBuilder, ButtonStyle } = require("discord.js");
+const { ROLES, ROLE_DISPLAY_MAP, guildId } = require("../config");
 
-/**
- * Menambahkan tag ke nickname user
- */
-async function tambahTag(member, tag) {
-  try {
-    const displayTag = ROLE_DISPLAY_MAP[tag] || tag;
-    const username = member.user.globalName || member.user.username;
-    const newNick = `[${displayTag}] ${username}`.slice(0, 32); // max 32 karakter
+const filePath = path.join(__dirname, "../data/taggedUsers.json");
 
-    await member.setNickname(newNick);
-    return true;
-  } catch (error) {
-    console.error("Gagal menambahkan tag nickname:", error);
-    return false;
-  }
+module.exports = async (client) => {
+const guild = await client.guilds.fetch(guildId);
+const member = await guild.members.fetch("1346964077309595658"); // Ganti dengan ID user yang ingin dites
+
+if (!member || member.user.bot) return;
+
+// Cek file tag
+let taggedUsers = {};
+if (fs.existsSync(filePath)) {
+taggedUsers = JSON.parse(fs.readFileSync(filePath, "utf8"));
 }
 
-/**
- * Menghapus tag dari nickname user
- */
-async function hapusTag(member) {
-  try {
-    const username = member.user.globalName || member.user.username;
-    await member.setNickname(username);
-    return true;
-  } catch (error) {
-    console.error("Gagal menghapus tag nickname:", error);
-    return false;
-  }
-}
+// Sudah pernah dikirimi DM
+if (taggedUsers[member.id] !== undefined) return;
 
-module.exports = {
-  tambahTag,
-  hapusTag,
+const displayName = member.user.globalName;
+
+const role = ROLES.find((r) => member.roles.cache.has(r.id));
+if (!role) return;
+
+const displayRole = ROLE_DISPLAY_MAP[role.id] || "📛 Tidak Dikenali";
+
+const row = new ActionRowBuilder().addComponents(
+new ButtonBuilder()
+.setCustomId("use_tag")
+.setLabel(Ya, pakai tag ${role.tag})
+.setStyle(ButtonStyle.Success),
+new ButtonBuilder()
+.setCustomId("remove_tag")
+.setLabel("Tidak, tanpa tag")
+.setStyle(ButtonStyle.Secondary)
+);
+
+try {
+await member.send({
+content: `✨ Halo, ${displayName}!
+
+🔰 Kamu menerima tag eksklusif: ${role.tag}
+📛 Karena kamu memiliki role: ${displayRole}
+
+Ingin menampilkan tag itu di nickname kamu?
+Contoh: `${role.tag} ${displayName}`
+
+────────────────────────────
+
+Silakan pilih opsi di bawah ini: 👇`,
+components: [row],
+});
+
+taggedUsers[member.id] = null;  
+fs.writeFileSync(filePath, JSON.stringify(taggedUsers, null, 2));  
+
+console.log(`✅ DM sukses dikirim ke ${displayName}`);
+
+} catch (err) {
+console.error(❌ Gagal kirim DM ke ${displayName}:, err.message);
+}
 };
+
+  
