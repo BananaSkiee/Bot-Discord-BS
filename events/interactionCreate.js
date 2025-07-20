@@ -1,80 +1,96 @@
+const {
+  ButtonBuilder,
+  ActionRowBuilder,
+  ButtonStyle,
+  EmbedBuilder,
+} = require("discord.js");
 const fs = require("fs");
 const path = require("path");
-const { ROLES, guildId } = require("../config");
+const { ROLES, ROLE_DISPLAY_MAP } = require("../config");
 
 const filePath = path.join(__dirname, "../data/taggedUsers.json");
 
-// Load tagged user data
-function loadTaggedUsers() {
-  try {
-    const data = fs.readFileSync(filePath, "utf8");
-    return JSON.parse(data);
-  } catch (err) {
-    return {};
-  }
-}
-
-// Save tagged user data
-function saveTaggedUsers(data) {
-  fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
-}
-
 module.exports = {
   name: "interactionCreate",
-
   async execute(interaction) {
-    if (!interaction.isButton()) return;
+    try {
+      if (!interaction.isButton()) return;
 
-    const member = interaction.member;
-    if (!member) return;
+      const member = await interaction.guild.members.fetch(interaction.user.id);
+      let taggedUsers = {};
 
-    const username = member.user.globalName || member.user.username;
-    const taggedUsers = loadTaggedUsers();
+      if (fs.existsSync(filePath)) {
+        const fileData = fs.readFileSync(filePath);
+        taggedUsers = JSON.parse(fileData);
+      }
 
-    // === Handle tombol Pakai Tag ===
-    if (interaction.customId.startsWith("test_use_tag_")) {
-      const tagId = interaction.customId.replace("test_use_tag_", "");
+      if (interaction.customId === "tag_nickname") {
+        const highestRole = ROLES.find(role =>
+          member.roles.cache.has(role.id)
+        );
 
-      const matched = ROLES.find((r) =>
-        r.tag.replace(/[^\w-]/g, "").toLowerCase() === tagId
-      );
+        if (!highestRole) {
+          await interaction.reply({ content: "❌ Kamu tidak memiliki role yang valid.", ephemeral: true });
+          return;
+        }
 
-      if (!matched) {
-        return interaction.reply({
-          content: "❌ Tag tidak ditemukan atau tidak valid.",
+        const tag = highestRole.tag;
+        const originalName = member.nickname || member.user.username;
+        const newNickname = originalName.startsWith(tag)
+          ? originalName
+          : `${tag} ${originalName}`;
+
+        await member.setNickname(newNickname).catch(() => null);
+
+        taggedUsers[member.id] = {
+          tag,
+          originalName,
+        };
+
+        fs.writeFileSync(filePath, JSON.stringify(taggedUsers, null, 2));
+
+        await interaction.reply({
+          content: `✅ Nickname kamu telah diubah menjadi **${newNickname}**`,
+          ephemeral: true,
+        });
+        return;
+      }
+
+      if (interaction.customId === "remove_tag") {
+        const userTagData = taggedUsers[member.id];
+
+        if (!userTagData) {
+          await interaction.reply({
+            content: "❌ Kamu belum memiliki tag yang aktif.",
+            ephemeral: true,
+          });
+          return;
+        }
+
+        await member.setNickname(userTagData.originalName).catch(() => null);
+
+        delete taggedUsers[member.id];
+        fs.writeFileSync(filePath, JSON.stringify(taggedUsers, null, 2));
+
+        await interaction.reply({
+          content: `✅ Tag nickname telah dihapus. Nama kamu sekarang: **${userTagData.originalName}**`,
+          ephemeral: true,
+        });
+        return;
+      }
+    } catch (error) {
+      console.error("❌ Error di interactionCreate:", error);
+      if (interaction.deferred || interaction.replied) {
+        await interaction.followUp({
+          content: "❌ Terjadi error saat menjalankan perintah.",
+          ephemeral: true,
+        });
+      } else {
+        await interaction.reply({
+          content: "❌ Terjadi error saat menjalankan perintah.",
           ephemeral: true,
         });
       }
-
-      const realTag = matched.tag;
-      await member.setNickname(`${realTag} ${username}`).catch(console.error);
-
-      taggedUsers[member.id] = true;
-      saveTaggedUsers(taggedUsers);
-
-      return interaction.reply({
-        content: `🧪 Nickname kamu sekarang : \`${realTag} ${username}\``,
-        ephemeral: true,
-      });
     }
-
-    // === Handle tombol Hapus Tag ===
-    if (interaction.customId.startsWith("test_remove_tag_")) {
-      await member.setNickname(null).catch(console.error);
-
-      taggedUsers[member.id] = false;
-      saveTaggedUsers(taggedUsers);
-
-      return interaction.reply({
-        content: "🧪 Nickname kamu dikembalikan ke semula.",
-        ephemeral: true,
-      });
-    }
-
-    // === Tombol lain (fallback) ===
-    return interaction.reply({
-      content: "⚠️ Tombol tidak dikenali.",
-      ephemeral: true,
-    });
   },
 };
