@@ -3,6 +3,7 @@ const path = require("path");
 const { ROLES, guildId } = require("../config");
 
 const filePath = path.join(__dirname, "../data/taggedUsers.json");
+if (!fs.existsSync(filePath)) fs.writeFileSync(filePath, JSON.stringify({}));
 
 function saveTaggedUsers(data) {
   fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
@@ -32,8 +33,10 @@ module.exports = {
       taggedUsers = {};
     }
 
-    // ========== TOMBOL ❌ UMUM ==========
-    if (interaction.customId === "remove_tag") {
+    const id = interaction.customId;
+
+    // ===== UMUM: REMOVE TAG =====
+    if (id === "remove_tag") {
       await member.setNickname(null).catch(console.error);
       taggedUsers[member.id] = false;
       saveTaggedUsers(taggedUsers);
@@ -44,8 +47,8 @@ module.exports = {
       }).catch(console.error);
     }
 
-    // ========== TOMBOL ✅ UMUM ==========
-    if (interaction.customId === "use_tag") {
+    // ===== UMUM: USE TAG DARI ROLE =====
+    if (id === "use_tag") {
       const role = ROLES.find(r => member.roles.cache.has(r.id));
       if (!role) {
         return interaction.reply({
@@ -55,7 +58,6 @@ module.exports = {
       }
 
       await member.setNickname(`${role.tag} ${username}`).catch(console.error);
-
       taggedUsers[member.id] = true;
       saveTaggedUsers(taggedUsers);
 
@@ -64,60 +66,54 @@ module.exports = {
         ephemeral: true,
       }).catch(console.error);
     }
-    
-// ========== TOMBOL TEST ✅ / ❌ ==========
-if (
-  interaction.customId.startsWith("test_use_tag_") ||
-  interaction.customId.startsWith("test_remove_tag_")
-) {
-  const parts = interaction.customId.split("_");
-  const action = parts[1]; // use atau remove
-  const roleId = parts[3]; // ID role
-  const safeTagId = parts.slice(4).join("_"); // tag aman dari customId
-  const matched = ROLES.find(
-    r =>
-      r.id === roleId &&
-      r.tag.replace(/[^\w-]/g, "").toLowerCase() === safeTagId
-  );
-  if (!matched) {
-    return interaction.reply({
-      content: "❌ Tag tidak ditemukan atau tidak valid.",
-      ephemeral: true,
-    }).catch(console.error);
-  }
-  
-  const realTag = matched.tag;
 
-  if (action === "use") {
-    await member.setNickname(`${realTag} ${username}`).catch(console.error);
+    // ===== TEST MODE: test_use_tag_ / test_remove_tag_ =====
+    if (id.startsWith("test_use_tag_") || id.startsWith("test_remove_tag_")) {
+      const isUse = id.startsWith("test_use_tag_");
+      const parts = id.split("_");
+      const roleId = parts[3];
+      const tagId = parts.slice(4).join("_"); // support tag ada "_"
 
-    if (!member.roles.cache.has(matched.id)) {
-      await member.roles.add(matched.id).catch(console.error);
-    }
+      const matched = ROLES.find(r =>
+        r.id === roleId && r.tag.replace(/[^\w-]/g, "").toLowerCase() === tagId
+      );
 
-    taggedUsers[member.id] = true;
-    saveTaggedUsers(taggedUsers);
-
-    return interaction.reply({
-      content: `🧪 Nickname kamu sekarang: \`${realTag} ${username}\`\n🆗 Role diberikan juga.`,
-      ephemeral: true,
-    }).catch(console.error);
-  }
-    
-  if (action === "remove") {
-    await member.setNickname(null).catch(console.error);
-
-    taggedUsers[member.id] = false;
-    saveTaggedUsers(taggedUsers);
-
-    return interaction.reply({
-      content: "🧪 Nickname kamu dikembalikan ke semula. Role tetap aman.",
-      ephemeral: true,
-    }).catch(console.error);
-  }
+      if (!matched) {
+        return interaction.reply({
+          content: "❌ Tag tidak ditemukan atau tidak valid.",
+          ephemeral: true,
+        }).catch(console.error);
       }
 
-    // ========== UNKNOWN ==========
+      const realTag = matched.tag;
+
+      if (isUse) {
+        await member.setNickname(`${realTag} ${username}`).catch(console.error);
+
+        if (!member.roles.cache.has(matched.id)) {
+          await member.roles.add(matched.id).catch(console.error);
+        }
+
+        taggedUsers[member.id] = true;
+        saveTaggedUsers(taggedUsers);
+
+        return interaction.reply({
+          content: `🧪 Nickname kamu sekarang: \`${realTag} ${username}\`\n🆗 Role diberikan juga.`,
+          ephemeral: true,
+        }).catch(console.error);
+      } else {
+        await member.setNickname(null).catch(console.error);
+        taggedUsers[member.id] = false;
+        saveTaggedUsers(taggedUsers);
+
+        return interaction.reply({
+          content: "🧪 Nickname kamu dikembalikan ke semula. Role tetap aman.",
+          ephemeral: true,
+        }).catch(console.error);
+      }
+    }
+
+    // ===== TOMBOL TIDAK DIKENALI =====
     return interaction.reply({
       content: "⚠️ Tombol tidak dikenali.",
       ephemeral: true,
