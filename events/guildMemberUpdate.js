@@ -1,6 +1,10 @@
 const fs = require("fs");
 const path = require("path");
-const { ActionRowBuilder, ButtonBuilder, ButtonStyle } = require("discord.js");
+const {
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+} = require("discord.js");
 
 const filePath = path.join(__dirname, "../data/taggedUsers.json");
 
@@ -19,7 +23,7 @@ const ROLES = [
   { id: process.env.ROLE_12_ID, tag: "[VIP]" },
   { id: process.env.ROLE_13_ID, tag: "[FRIEND]" },
   { id: process.env.ROLE_14_ID, tag: "[PARTNER]" },
-  { id: process.env.ROLE_15_ID, tag: "[MEM]" }
+  { id: process.env.ROLE_15_ID, tag: "[MEM]" },
 ];
 
 const ROLE_DISPLAY_MAP = {
@@ -37,27 +41,33 @@ const ROLE_DISPLAY_MAP = {
   "1352286232331292814": "『💜』Sᴘᴇsɪᴀʟ",
   "1352286224420962376": "『💙』ғʀɪᴇɴᴅs",
   "1357693246268244209": "「🤝」ᴘᴀʀᴛɴᴇʀsʜɪᴘ",
-  "1352286235233620108": "『〽️』ᴍᴇᴍʙᴇʀ"
+  "1352286235233620108": "『〽️』ᴍᴇᴍʙᴇʀ",
 };
 
 module.exports = {
   name: "guildMemberUpdate",
   async execute(oldMember, newMember) {
-    // Cek role yang baru ditambahkan
-    const addedRoles = newMember.roles.cache.filter(r => !oldMember.roles.cache.has(r.id));
-    const matchingRole = ROLES.find(r => addedRoles.has(r.id));
+    const addedRoles = newMember.roles.cache.filter(
+      (r) => !oldMember.roles.cache.has(r.id)
+    );
+    const matchingRole = ROLES.find((r) => addedRoles.has(r.id));
     if (!matchingRole) return;
-    const highestDisplayRole = newMember.roles.highest;
-    const roleDisplay = highestDisplayRole
-  ? ROLE_DISPLAY_MAP[highestDisplayRole.id] || "Tanpa Nama"
-  : "Tanpa Nama";
+
     const displayName = newMember.user.globalName ?? newMember.user.username;
+    const roleDisplay =
+      ROLE_DISPLAY_MAP[newMember.roles.highest.id] || "Tanpa Nama";
 
-    // Hindari spam
-    const fileExists = fs.existsSync(filePath);
-    let taggedUsers = fileExists ? JSON.parse(fs.readFileSync(filePath, "utf8")) : {};
+    let taggedUsers = {};
+    if (fs.existsSync(filePath)) {
+      try {
+        taggedUsers = JSON.parse(fs.readFileSync(filePath, "utf8"));
+      } catch (err) {
+        console.error("❌ Gagal baca file taggedUsers.json:", err);
+      }
+    }
 
-    if (taggedUsers[newMember.id] !== undefined) return;
+    // Cegah spam — hanya DM kalau belum ada catatan tagging sama sekali
+    if (taggedUsers.hasOwnProperty(newMember.id)) return;
 
     const row = new ActionRowBuilder().addComponents(
       new ButtonBuilder()
@@ -86,11 +96,11 @@ Silakan pilih opsi di bawah ini: 👇`,
         components: [row],
       });
 
-      taggedUsers[newMember.id] = null;
+      taggedUsers[newMember.id] = null; // Tandai sebagai sudah dikirimi
       fs.writeFileSync(filePath, JSON.stringify(taggedUsers, null, 2));
       console.log(`✅ DM dikirim ke ${newMember.user.tag}`);
     } catch (err) {
-      console.error("❌ Gagal mengirim DM:", err.message);
+      console.error(`❌ Gagal kirim DM ke ${newMember.user.tag}:`, err.message);
     }
-  }
+  },
 };
