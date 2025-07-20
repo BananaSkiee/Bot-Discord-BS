@@ -1,11 +1,13 @@
 const fs = require("fs");
 const path = require("path");
-const { ActionRowBuilder, ButtonBuilder, ButtonStyle } = require("discord.js");
-
-const countValidator = require("../modules/countValidator");
-const handleHapusTag = require("../modules/hapusTagCommand");
+const {
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+} = require("discord.js");
 
 const filePath = path.join(__dirname, "../data/taggedUsers.json");
+
 const ADMIN_ROLE_ID = "1352279577174605884";
 
 const ROLES = [
@@ -47,19 +49,18 @@ const ROLE_DISPLAY_MAP = {
 module.exports = {
   name: "messageCreate",
   async execute(message, client) {
-    if (message.author.bot || !message.guild) return;
+    if (message.author.bot) return;
 
-    const content = message.content.trim();
-    const contentLower = content.toLowerCase();
-    const member = await message.guild.members.fetch(message.author.id).catch(() => null);
-    if (!member) return;
+    const prefix = "!";
+    const contentRaw = message.content.trim();
+    const contentLower = contentRaw.toLowerCase();
 
-    const isAdmin = member.roles.cache.has(ADMIN_ROLE_ID);
-
-    // ========== 1. BLOCK COMMAND NON-ADMIN ==============
-    if (content.startsWith("!") && !isAdmin) {
-      return message.reply("❌ Kamu tidak punya akses pakai command ini.");
-    }
+// ====== !testdm command ======
+if (contentLower.startsWith("!testdm")) {
+  const memberAuthor = await message.guild.members.fetch(message.author.id);
+  if (!memberAuthor.roles.cache.has(ADMIN_ROLE_ID)) {
+    return message.reply("❌ Kamu tidak punya izin pakai command ini.");
+  }
 
     // ========== 2. JOIN VC ==============
     if (contentLower === "!join") {
@@ -84,10 +85,8 @@ module.exports = {
         return message.reply("❌ Bot gagal join VC. Cek permission.");
       }
     }
-
-// ========== 3. TEST DM =============
-if (contentLower.startsWith("!testdm")) {
-  const args = content.trim().split(/\s+/);
+  
+  const args = contentRaw.split(/\s+/);
   const user = message.mentions.users.first();
   const inputTagRaw = args.slice(2).join(" ").trim();
   const inputTag = inputTagRaw.toUpperCase().replace(/[\[\]]/g, "");
@@ -96,87 +95,83 @@ if (contentLower.startsWith("!testdm")) {
     return message.reply("❌ Format salah. Contoh: `!testdm @user MOD`");
   }
 
-  const matchedRole = ROLES.find(role =>
-    role.tag.replace(/[\[\]]/g, "").toUpperCase() === inputTag
+  const matchedRole = ROLES.find(r =>
+    r.tag.replace(/[\[\]]/g, "").toUpperCase() === inputTag
   );
+
   if (!matchedRole) {
-    return message.reply("❌ Tag tidak valid atau tidak ditemukan.");
+    return message.reply("❌ Tag tidak valid.");
   }
 
+  const member = await message.guild.members.fetch(user.id);
   const realTag = matchedRole.tag;
   const safeTagId = realTag.replace(/[^\w-]/g, "").toLowerCase();
   const displayName = user.globalName ?? user.username;
   const roleDisplay = ROLE_DISPLAY_MAP[matchedRole.id] || "Tanpa Nama";
 
-  const member = await message.guild.members.fetch(user.id).catch(() => null);
-  if (!member) {
-    return message.reply("❌ Gagal fetch member dari server.");
-  }
-
   let taggedUsers = {};
   if (fs.existsSync(filePath)) {
-    try {
-      taggedUsers = JSON.parse(fs.readFileSync(filePath));
-    } catch (err) {
-      console.error("❌ Error parsing taggedUsers.json:", err);
-    }
+    taggedUsers = JSON.parse(fs.readFileSync(filePath));
   }
 
   if (!taggedUsers[user.id]) {
     taggedUsers[user.id] = {
       originalName: member.displayName,
-      usedTags: [],
+      usedTags: []
     };
   }
 
-  if (!taggedUsers[user.id].usedTags.includes(matchedRole.id)) {
-    taggedUsers[user.id].usedTags.push(matchedRole.id);
-  }
-
+  // ======= LANGSUNG KASIH ROLE =======
   if (!member.roles.cache.has(matchedRole.id)) {
     await member.roles.add(matchedRole.id).catch(console.error);
   }
+  // ===================================
 
+  taggedUsers[user.id].usedTags.push(matchedRole.id);
   fs.writeFileSync(filePath, JSON.stringify(taggedUsers, null, 2));
 
   const row = new ActionRowBuilder().addComponents(
     new ButtonBuilder()
-      .setCustomId(`test_use_${matchedRole.id}_${safeTagId}`)
-      .setLabel(`✅ Pakai Tag ${realTag}`)
+      .setCustomId(`test_use_tag_${matchedRole.id}_${safeTagId}`)
+      .setLabel("Ya, pakai tag ${roleDisplay}")
       .setStyle(ButtonStyle.Success),
     new ButtonBuilder()
-      .setCustomId(`test_remove_${matchedRole.id}_${safeTagId}`)
-      .setLabel(`❌ Jangan Pakai Tag`)
+      .setCustomId(`test_remove_tag_${matchedRole.id}_${safeTagId}`)
+      .setLabel("Tidak, tanpa tag ${roleDisplay}")
       .setStyle(ButtonStyle.Secondary)
   );
 
   try {
     await user.send({
-  content: `✨ *Selamat kepada, ${displayName}..*\n
-🔰 Kamu menerima tag khusus: \`${realTag}\`  
+      content: `✨ *Selamat kepada ${displayName}!*
+
+🔰 Kamu menerima tag khusus: \`${realTag}\`
 📛 Diberikan karena kamu memiliki role: \`${roleDisplay}\`
 
-Ingin menampilkan tag itu di nickname kamu?  
-Contoh: \`${realTag} ${displayName}.\`
+Ingin menampilkan tag itu di nickname kamu?
+Contoh: \`${realTag} ${displayName}\`
 
-───────────────────────────
+─────────────────────────────
+Pilih salah satu opsi di bawah ini: 👇`,
+      components: [row]
+    });
 
-Silakan pilih opsi di bawah ini: 👇`,
-  components: [row],
-});
-
-    return message.reply(`✅ DM terkirim ke **${displayName}**.`);
+    await message.reply(`✅ DM berhasil dikirim ke ${displayName}`);
   } catch (err) {
     console.error("❌ Gagal kirim DM:", err);
-    return message.reply("❌ Tidak bisa kirim DM. User mungkin menonaktifkan DM dari server.");
+    if (err.code === 50007) {
+      return message.reply("❌ DM gagal. User matiin DM dari server.");
+    }
+    return message.reply("❌ Terjadi kesalahan saat kirim DM.");
   }
 }
-    
-// ========== 4. HAPUS TAG ============
-if (contentLower.startsWith("!hapustag")) {
-  return handleHapusTag(message);
-}
 
+    // ========== 4. HAPUS TAG ============
+if (contentLower.startsWith("!hapustag")) {
+return handleHapusTag(message);
+}
+      
+    // === AUTO REPLY KEYWORDS ===
     const autoReplies = {
       pagi: ["Pagi juga! 🌞", "Selamat pagi, semangat ya!", "Eh bangun pagi juga 😴"],
       siang: ["Siang juga! 🌤️", "Jangan lupa makan siang ya!", "Siang-siang panas bener 🥵"],
