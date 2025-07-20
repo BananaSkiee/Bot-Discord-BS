@@ -1,202 +1,167 @@
-Interactioncreate
 const fs = require("fs");
 const path = require("path");
-const { ROLES, ROLE_DISPLAY_MAP, guildId } = require("../config");
+const {
+  ROLE_DISPLAY_MAP,
+  ROLES,
+  guildId,
+  ADMIN_ROLE_ID,
+} = require("../config");
+
 const filePath = path.join(__dirname, "../data/taggedUsers.json");
-function saveTaggedUsers(data) {
-try {
-fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
-} catch (err) {
-console.error("❌ Gagal menyimpan taggedUsers.json:", err);
-}
-}
-function loadTaggedUsers() {
-try {
-return JSON.parse(fs.readFileSync(filePath, "utf8"));
-} catch {
-return {};
-}
-}
-module.exports = {
-name: "interactionCreate",
-async execute(interaction) {
-if (!interaction.isButton()) return;
 
-const { customId } = interaction;  
-const username = interaction.user.globalName ?? interaction.user.username;  
-const taggedUsers = loadTaggedUsers();  
+module.exports = async (interaction) => {
+  if (!interaction.isButton()) return;
 
-const guild = interaction.client.guilds.cache.get(guildId);  
-if (!guild) {  
-  console.error("❌ Guild tidak ditemukan.");  
-  return interaction.reply({ content: "❌ Server tidak ditemukan.", ephemeral: true });  
-}  
+  const { customId, user, guild } = interaction;
 
-let member;  
-try {  
-  member = await guild.members.fetch(interaction.user.id);  
-} catch (err) {  
-  console.error("❌ Gagal fetch member:", err);  
-  return interaction.reply({  
-    content: "❌ Gagal mengambil data member.",  
-    ephemeral: true,  
-  });  
-}  
+  // Validasi guild dan member
+  const member = guild?.members.cache.get(user.id);
+  if (!member) return;
 
-// ================================  
-// REMOVE TAG  
-// ================================  
-if (  
-  ["remove_tag", "test_remove_tag"].includes(customId) ||  
-  customId.startsWith("tidak_paketag_")  
-) {  
-  try {  
-    await member.setNickname(null).catch(() => {});  
-    taggedUsers[member.id] = false;  
-    saveTaggedUsers(taggedUsers);  
+  // Handle tombol hapus tag
+  if (customId === "remove_tag") {
+    try {
+      await member.setNickname(null);
+      const data = fs.existsSync(filePath)
+        ? JSON.parse(fs.readFileSync(filePath, "utf8"))
+        : {};
+      delete data[user.id];
+      fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
+      await interaction.reply({
+        content: "✅ Tag dihapus dari nickname kamu.",
+        ephemeral: true,
+      });
+    } catch (err) {
+      console.error("Gagal hapus tag:", err);
+      await interaction.reply({
+        content: "❌ Gagal menghapus tag. Pastikan bot punya izin mengubah nickname.",
+        ephemeral: true,
+      });
+    }
+    return;
+  }
 
-    return interaction.reply({  
-      content: `✅ Nama kamu dikembalikan menjadi \`${username}\``,  
-      ephemeral: true,  
-    });  
-  } catch (err) {  
-    console.error("❌ Gagal hapus nickname:", err);  
-    return interaction.reply({  
-      content: err.code === 50013  
-        ? "❌ Bot tidak punya izin mengubah nickname kamu."  
-        : "❌ Gagal menghapus tag.",  
-      ephemeral: true,  
-    });  
-  }  
-}  
+  // Handle tombol pakai tag
+  if (customId === "use_tag") {
+    try {
+      const userRoles = member.roles.cache.map((r) => r.id);
+      const found = ROLES.find((r) => userRoles.includes(r.id));
+      if (!found) {
+        return interaction.reply({
+          content: "❌ Kamu tidak memiliki role untuk tag nickname.",
+          ephemeral: true,
+        });
+      }
 
-// ================================  
-// USE TAG  
-// ================================  
-if (  
-  ["use_tag", "ya_pakai_tag"].includes(customId) ||  
-  customId.startsWith("ya_paketag_")  
-) {  
-  let matched;  
+      const newName = `${found.tag} ${member.user.username}`.slice(0, 32);
+      await member.setNickname(newName);
 
-  if (customId.startsWith("ya_paketag_")) {  
-    const parts = customId.split("_");  
-    const roleId = parts[2];  
-    const safeTag = parts.slice(3).join("_");  
-    matched = ROLES.find(  
-      (r) =>  
-        r.id === roleId &&  
-        r.tag.replace(/[^\w-]/g, "").toLowerCase() === safeTag  
-    );  
-  } else {  
-    matched = ROLES.find((r) => member.roles.cache.has(r.id));  
-  }  
+      const data = fs.existsSync(filePath)
+        ? JSON.parse(fs.readFileSync(filePath, "utf8"))
+        : {};
+      data[user.id] = found.tag;
+      fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
 
-  if (!matched) {  
-    return interaction.reply({  
-      content: "❌ Tag tidak valid atau tidak ditemukan.",  
-      ephemeral: true,  
-    });  
-  }  
+      await interaction.reply({
+        content: `✅ Nickname kamu sekarang: \`${newName}\``,
+        ephemeral: true,
+      });
+    } catch (err) {
+      console.error("Gagal atur nickname:", err);
+      await interaction.reply({
+        content: "❌ Gagal menambahkan tag. Pastikan bot punya izin mengubah nickname.",
+        ephemeral: true,
+      });
+    }
+    return;
+  }
 
-  try {  
-    const newName = `${matched.tag} ${username}`.slice(0, 32);  
-    await member.setNickname(newName);  
+  // Handle tombol admin untuk tes tag
+  if (customId.startsWith("test_")) {
+    const roleId = customId.split("_")[1];
+    if (!member.roles.cache.has(ADMIN_ROLE_ID)) {
+      return interaction.reply({
+        content: "❌ Kamu tidak punya izin untuk mengetes tombol ini.",
+        ephemeral: true,
+      });
+    }
 
-    if (!member.roles.cache.has(matched.id)) {  
-      await member.roles.add(matched.id);  
-    }  
+    const display = ROLE_DISPLAY_MAP[roleId];
+    if (!display) {
+      return interaction.reply({
+        content: "❌ Role ID tidak ditemukan di config.",
+        ephemeral: true,
+      });
+    }
 
-    taggedUsers[member.id] = true;  
-    saveTaggedUsers(taggedUsers);  
+    const newName = `${display} ${member.user.username}`.slice(0, 32);
+    try {
+      await member.setNickname(newName);
+      await interaction.reply({
+        content: `✅ Nickname tes: \`${newName}\``,
+        ephemeral: true,
+      });
+    } catch (err) {
+      console.error("Gagal set nickname test:", err);
+      await interaction.reply({
+        content: "❌ Gagal mengganti nickname saat tes.",
+        ephemeral: true,
+      });
+    }
+    return;
+  }
 
-    return interaction.reply({  
-      content: `✅ Nama kamu sekarang: \`${newName}\``,  
-      ephemeral: true,  
-    });  
-  } catch (err) {  
-    console.error("❌ Gagal set nickname:", err);  
-    return interaction.reply({  
-      content: err.code === 50013  
-        ? "❌ Bot tidak punya izin mengubah nickname kamu."  
-        : "❌ Gagal mengatur nama.",  
-      ephemeral: true,  
-    });  
-  }  
-}  
+  // Handle tombol ya_paketag_...
+  if (customId.startsWith("ya_paketag_")) {
+    const parts = customId.split("_");
 
-// ================================  
-// TEST BUTTONS  
-// ================================  
-if (  
-  customId.startsWith("test_use_tag_") ||  
-  customId.startsWith("test_remove_tag_")  
-) {  
-  const parts = customId.split("_");  
-  const action = parts[1];  
-  const roleId = parts[3];  
-  const safeTag = parts.slice(4).join("_");  
+    // Tambahkan validasi agar tidak error
+    if (parts.length < 5) {
+      return interaction.reply({
+        content: "❌ Tombol tidak valid.",
+        ephemeral: true,
+      });
+    }
 
-  const matched = ROLES.find(  
-    (r) =>  
-      r.id === roleId &&  
-      r.tag.replace(/[^\w-]/g, "").toLowerCase() === safeTag  
-  );  
+    const roleId = parts[3];
+    const safeTag = parts.slice(4).join("_");
 
-  if (!matched) {  
-    return interaction.reply({  
-      content: "❌ Tag tidak valid atau tidak ditemukan.",  
-      ephemeral: true,  
-    });  
-  }  
+    const matched = ROLES.find((r) => {
+      return (
+        r.id === roleId &&
+        r.tag &&
+        r.tag.replace(/[^\w-]/g, "").toLowerCase() === safeTag.toLowerCase()
+      );
+    });
 
-  try {  
-    if (action === "use") {  
-      const newName = `${matched.tag} ${username}`.slice(0, 32);  
-      await member.setNickname(newName);  
+    if (!matched) {
+      return interaction.reply({
+        content: "❌ Gagal mengenali tag dari tombol.",
+        ephemeral: true,
+      });
+    }
 
-      if (!member.roles.cache.has(matched.id)) {  
-        await member.roles.add(matched.id);  
-      }  
+    const newName = `${matched.tag} ${member.user.username}`.slice(0, 32);
 
-      taggedUsers[member.id] = true;  
-      saveTaggedUsers(taggedUsers);  
+    try {
+      await member.setNickname(newName);
+      const data = fs.existsSync(filePath)
+        ? JSON.parse(fs.readFileSync(filePath, "utf8"))
+        : {};
+      data[user.id] = matched.tag;
+      fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
 
-      return interaction.reply({  
-        content: `🧪 Nickname kamu sekarang: \`${newName}\``,  
-        ephemeral: true,  
-      });  
-    }  
-
-    if (action === "remove") {  
-      await member.setNickname(null);  
-      taggedUsers[member.id] = false;  
-      saveTaggedUsers(taggedUsers);  
-
-      return interaction.reply({  
-        content: `🧪 Nama kamu dikembalikan menjadi \`${username}\``,  
-        ephemeral: true,  
-      });  
-    }  
-  } catch (err) {  
-    console.error("❌ Gagal proses tombol test:", err);  
-    return interaction.reply({  
-      content: err.code === 50013  
-        ? "❌ Bot tidak punya izin mengubah nickname kamu."  
-        : "❌ Gagal memproses tombol test.",  
-      ephemeral: true,  
-    });  
-  }  
-}  
-
-// ================================  
-// UNKNOWN BUTTON  
-// ================================  
-return interaction.reply({  
-  content: "⚠️ Tombol tidak dikenali.",  
-  ephemeral: true,  
-}).catch((err) => {  
-  console.error("❌ Gagal kirim fallback tombol:", err);  
-});  
-},
+      await interaction.reply({
+        content: `✅ Nickname kamu sekarang: \`${newName}\``,
+        ephemeral: true,
+      });
+    } catch (err) {
+      console.error("Gagal set nickname:", err);
+      await interaction.reply({
+        content: "❌ Gagal mengubah nickname.",
+        ephemeral: true,
+      });
+    }
+    return;
+  }
 };
