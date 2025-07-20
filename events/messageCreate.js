@@ -87,7 +87,7 @@ module.exports = {
 
 // ========== 3. TEST DM =============
 if (contentLower.startsWith("!testdm")) {
-  const args = content.trim().split(/\s+/);
+ const args = contentRaw.split(/\s+/);
   const user = message.mentions.users.first();
   const inputTagRaw = args.slice(2).join(" ").trim();
   const inputTag = inputTagRaw.toUpperCase().replace(/[\[\]]/g, "");
@@ -96,88 +96,82 @@ if (contentLower.startsWith("!testdm")) {
     return message.reply("❌ Format salah. Contoh: `!testdm @user MOD`");
   }
 
-  const matchedRole = ROLES.find(role =>
-    role.tag.replace(/[\[\]]/g, "").toUpperCase() === inputTag
+  const matchedRole = ROLES.find(r =>
+    r.tag.replace(/[\[\]]/g, "").toUpperCase() === inputTag
   );
+
   if (!matchedRole) {
-    return message.reply("❌ Tag tidak valid atau tidak ditemukan.");
+    return message.reply("❌ Tag tidak valid.");
   }
 
+  const member = await message.guild.members.fetch(user.id);
   const realTag = matchedRole.tag;
   const safeTagId = realTag.replace(/[^\w-]/g, "").toLowerCase();
   const displayName = user.globalName ?? user.username;
   const roleDisplay = ROLE_DISPLAY_MAP[matchedRole.id] || "Tanpa Nama";
 
-  const member = await message.guild.members.fetch(user.id).catch(() => null);
-  if (!member) {
-    return message.reply("❌ Gagal fetch member dari server.");
-  }
-
   let taggedUsers = {};
   if (fs.existsSync(filePath)) {
-    try {
-      taggedUsers = JSON.parse(fs.readFileSync(filePath));
-    } catch (err) {
-      console.error("❌ Error parsing taggedUsers.json:", err);
-    }
+    taggedUsers = JSON.parse(fs.readFileSync(filePath));
   }
 
   if (!taggedUsers[user.id]) {
     taggedUsers[user.id] = {
       originalName: member.displayName,
-      usedTags: [],
+      usedTags: []
     };
   }
 
-  if (!taggedUsers[user.id].usedTags.includes(matchedRole.id)) {
-    taggedUsers[user.id].usedTags.push(matchedRole.id);
-  }
-
+  // ======= LANGSUNG KASIH ROLE =======
   if (!member.roles.cache.has(matchedRole.id)) {
     await member.roles.add(matchedRole.id).catch(console.error);
   }
+  // ===================================
 
+  taggedUsers[user.id].usedTags.push(matchedRole.id);
   fs.writeFileSync(filePath, JSON.stringify(taggedUsers, null, 2));
 
   const row = new ActionRowBuilder().addComponents(
     new ButtonBuilder()
-      .setCustomId(`test_use_tag_tag_${matchedRole.id}_${safeTagId}`)
-      .setLabel(`✅ Pakai Tag ${realTag}`)
+      .setCustomId(`test_use_tag_${matchedRole.id}_${safeTagId}`)
+      .setLabel("Ya, pakai tag ${roleDisplay}")
       .setStyle(ButtonStyle.Success),
     new ButtonBuilder()
-      .setCustomId(`test_remove_tag_tag_${matchedRole.id}_${safeTagId}`)
-      .setLabel(`❌ Jangan Pakai Tag`)
+      .setCustomId(`test_remove_tag_${matchedRole.id}_${safeTagId}`)
+      .setLabel("Tidak, tanpa tag ${roleDisplay}")
       .setStyle(ButtonStyle.Secondary)
   );
 
   try {
     await user.send({
-  content: `✨ *Selamat kepada, ${displayName}..*\n
-🔰 Kamu menerima tag khusus: \`${realTag}\`  
+      content: `✨ *Selamat kepada ${displayName}!*
+
+🔰 Kamu menerima tag khusus: \`${realTag}\`
 📛 Diberikan karena kamu memiliki role: \`${roleDisplay}\`
 
-Ingin menampilkan tag itu di nickname kamu?  
-Contoh: \`${realTag} ${displayName}.\`
+Ingin menampilkan tag itu di nickname kamu?
+Contoh: \`${realTag} ${displayName}\`
 
-───────────────────────────
+─────────────────────────────
+Pilih salah satu opsi di bawah ini: 👇`,
+      components: [row]
+    });
 
-Silakan pilih opsi di bawah ini: 👇`,
-  components: [row],
-});
-
-    return message.reply(`✅ DM terkirim ke **${displayName}**.`);
+    await message.reply(`✅ DM berhasil dikirim ke ${displayName}`);
   } catch (err) {
     console.error("❌ Gagal kirim DM:", err);
-    return message.reply("❌ Tidak bisa kirim DM. User mungkin menonaktifkan DM dari server.");
+    if (err.code === 50007) {
+      return message.reply("❌ DM gagal. User matiin DM dari server.");
+    }
+    return message.reply("❌ Terjadi kesalahan saat kirim DM.");
   }
 }
-
+    
 // ========== 4. HAPUS TAG ============
 if (contentLower.startsWith("!hapustag")) {
   return handleHapusTag(message);
 }
 
-    // ========== 5. AUTO REPLY ============
     const autoReplies = {
       pagi: ["Pagi juga! 🌞", "Selamat pagi, semangat ya!", "Eh bangun pagi juga 😴"],
       siang: ["Siang juga! 🌤️", "Jangan lupa makan siang ya!", "Siang-siang panas bener 🥵"],
@@ -187,6 +181,14 @@ if (contentLower.startsWith("!hapustag")) {
       makasih: ["Sama-sama 😊", "Sippp 👍", "Yok sama-sama~"],
       ngantuk: ["Ngopi dulu gih ☕", "Tidur sana jangan dipaksa 😴", "Ngantuk? Wajar 😆"],
       gabut: ["Gabut? Ketik !gacha aja!", "Mau main tebak gambar? !tebak", "Chat bot aja kalo gabut 😁"],
+      hehehe: ["Hehe kenapa 🤭", "Ngakak sendiri ya? 😅", "Hehe iya iya 😏"],
+      anjir: ["Anjir parah 😳", "Anjir kenapa tuh?", "Wkwk anjir banget"],
+      woi: ["WOI kenapaa 😤", "Sini gua dengerin", "Santai dong bang"],
+      bang: ["Siap bang 👊", "Kenapa bang?", "Tenang bang, aman 😎"],
+      cape: ["Sini aku pijetin 😌", "Rebahan dulu aja...", "Jangan lupa istirahat ya"],
+      bosen: ["Main Discord dulu 😆", "Bosen? Cari konten baru~", "Main game yuk!"],
+      kangen: ["Kangen siapa tuh? 😏", "Sini pelukk 🤗", "Kangen tuh berat..."],
+      bye: ["👋 Bye bye! Jangan lupa balik lagi ya!", "Daaah~ hati-hati ya 😄", "Sampai ketemu lagi 💫"],
     };
 
     for (const [keyword, replies] of Object.entries(autoReplies)) {
