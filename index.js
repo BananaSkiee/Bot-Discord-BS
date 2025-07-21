@@ -87,7 +87,6 @@ client.on("messageCreate", async (message) => {
 // 📌 Sticky Message Handler
 client.on("messageCreate", async (message) => {
   if (message.author.bot) return;
-  await autoChat(message);
   stickyHandler(client, message);
 });
 
