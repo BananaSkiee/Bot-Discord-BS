@@ -13,26 +13,40 @@ module.exports = {
   async execute(interaction) {
     if (!interaction.isButton()) return;
 
-    const username = interaction.user.globalName ?? interaction.user.username;
-    const guild = interaction.client.guilds.cache.get(guildId);
-    if (!guild) return;
-
-    const member = await guild.members.fetch(interaction.user.id).catch(() => null);
-    if (!member) {
-      return interaction.reply({
-        content: "❌ Gagal ambil datamu dari server.",
-        ephemeral: true,
-      }).catch(console.error);
-    }
-
-    let taggedUsers = {};
     try {
-      taggedUsers = JSON.parse(fs.readFileSync(filePath, "utf8"));
-    } catch {
-      taggedUsers = {};
+      console.log("👉 Tombol ditekan:", interaction.customId);
+
+      const username = interaction.user.globalName ?? interaction.user.username;
+      const guild = interaction.client.guilds.cache.get(guildId);
+      if (!guild) return;
+
+      const member = await guild.members.fetch(interaction.user.id).catch(() => null);
+      if (!member) {
+        return interaction.reply({
+          content: "❌ Gagal ambil datamu dari server.",
+          ephemeral: true,
+        }).catch(console.error);
+      }
+
+      // (LANJUTIN SEMUA KODE KAMU DI SINI...)
+
+    } catch (err) {
+      console.error("❌ ERROR GLOBAL DI INTERACTIONCREATE:", err);
+
+      if (interaction.replied || interaction.deferred) {
+        await interaction.followUp({
+          content: "❌ Terjadi error internal.",
+          ephemeral: true,
+        }).catch(console.error);
+      } else {
+        await interaction.reply({
+          content: "❌ Terjadi error internal.",
+          ephemeral: true,
+        }).catch(console.error);
+      }
     }
-
-
+  },
+};
 
     // ========== TOMBOL ✅ UMUM ==========
     if (interaction.customId === "use_tag") {
