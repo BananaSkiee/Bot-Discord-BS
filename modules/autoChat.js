@@ -1,20 +1,23 @@
-const { OpenAI } = require("openai"); // ✅ penting
+const { Configuration, OpenAIApi } = require("openai"); // ✅ versi 3
+
 const { CHANNEL_AI } = require("../config");
 
-const openai = new OpenAI({
+const configuration = new Configuration({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
+const openai = new OpenAIApi(configuration);
+
 async function generateResponse(prompt) {
   try {
-    const completion = await openai.chat.completions.create({
+    const completion = await openai.createChatCompletion({
       model: "gpt-3.5-turbo",
       messages: [{ role: "user", content: prompt }],
     });
-    return completion.choices[0].message.content.trim();
-  } catch (error) {
-    console.error("Error saat generateResponse:", error);
-    return "❌ Terjadi error saat menjawab.";
+    return completion.data.choices[0].message.content.trim();
+  } catch (err) {
+    console.error("❌ Error di OpenAI:", err);
+    return "Terjadi kesalahan saat menjawab.";
   }
 }
 
