@@ -55,12 +55,6 @@ console.log("📋 ROLES:", ROLES);
   : "Tanpa Nama";
     const displayName = newMember.user.globalName ?? newMember.user.username;
 
-    // Hindari spam
-    const fileExists = fs.existsSync(filePath);
-    let taggedUsers = fileExists ? JSON.parse(fs.readFileSync(filePath, "utf8")) : {};
-
-    if (taggedUsers[newMember.id] !== undefined) return;
-
     const row = new ActionRowBuilder().addComponents(
       new ButtonBuilder()
         .setCustomId("use_tag")
