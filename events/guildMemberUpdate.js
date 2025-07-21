@@ -89,6 +89,5 @@ Silakan pilih opsi di bawah ini: 👇`,
   console.log(`✅ DM dikirim ke ${newMember.user.tag}`);
 } catch (err) {
   console.error("❌ Gagal mengirim DM:", err.message);      
-    }
   } // ← ini penutup function `execute`
 }; // ← ini penutup `module.exports`
