@@ -28,12 +28,14 @@ module.exports = {
         });
       }
 
+      const customId = interaction.customId;
+
       const taggedUsers = fs.existsSync(filePath)
         ? JSON.parse(fs.readFileSync(filePath, "utf8"))
         : {};
 
       // ========== TOMBOL ✅ UMUM ==========
-      if (interaction.customId === "use_tag") {
+      if (customId === "use_tag") {
         const role = ROLES.find(r => member.roles.cache.has(r.id));
         if (!role) {
           return interaction.reply({
@@ -52,12 +54,24 @@ module.exports = {
         });
       }
 
+      // ========== TOMBOL ❌ HAPUS TAG UMUM ==========
+      if (customId === "remove_tag") {
+        await member.setNickname(username).catch(console.error);
+        taggedUsers[member.id] = false;
+        saveTaggedUsers(taggedUsers);
+
+        return interaction.reply({
+          content: "✅ Tag dihapus dan nickname dikembalikan.",
+          ephemeral: true,
+        });
+      }
+
       // ========== TOMBOL TEST ✅ / ❌ ==========
       if (
-        interaction.customId.startsWith("test_use_tag_") ||
-        interaction.customId.startsWith("test_remove_tag_")
+        customId.startsWith("test_use_tag_") ||
+        customId.startsWith("test_remove_tag_")
       ) {
-        const parts = interaction.customId.split("_");
+        const parts = customId.split("_");
         const action = parts[1];
         const roleId = parts[3];
         const safeTagId = parts.slice(4).join("_");
@@ -92,7 +106,7 @@ module.exports = {
         }
 
         if (action === "remove") {
-          await member.setNickname(null).catch(console.error);
+          await member.setNickname(username).catch(console.error);
           taggedUsers[member.id] = false;
           saveTaggedUsers(taggedUsers);
 
