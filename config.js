@@ -3,7 +3,6 @@ module.exports = {
   guildId: "1347233781391560837",
   voiceChannelId: "1366854862608007329",
   logChannelId: "1393011303492092035",
-  CHANNEL_AI: "1352635177536327760", // ID channel AI khusus
 
   ROLES: [
     { id: "1352279577174605884", tag: "[OWNER]" },
