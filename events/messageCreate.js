@@ -59,6 +59,8 @@ module.exports = {
     const contentRaw = message.content.trim();
     const contentLower = contentRaw.toLowerCase();
 
+await translateHandler(message);
+    
 // ====== !testdm command ======
 if (contentLower.startsWith("!testdm")) {
   const memberAuthor = await message.guild.members.fetch(message.author.id);
