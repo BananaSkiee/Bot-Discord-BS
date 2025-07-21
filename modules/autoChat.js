@@ -1,7 +1,6 @@
-const { OpenAI } = require("openai");
+const { OpenAI } = require("openai"); // ✅ penting
 const { CHANNEL_AI } = require("../config");
 
-// Inisialisasi OpenAI
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
@@ -25,7 +24,6 @@ module.exports = async (message) => {
   const isAICmd = message.content.startsWith("!ai");
   const isChannelAI = message.channel.id === CHANNEL_AI;
 
-  // Kalau !ai bisa di semua channel
   if (isAICmd) {
     const prompt = message.content.slice(3).trim();
     if (!prompt) return message.reply("Masukkan pertanyaan setelah `!ai`.");
@@ -34,7 +32,6 @@ module.exports = async (message) => {
     return message.reply(reply);
   }
 
-  // Kalau di channel khusus AI (auto-reply)
   if (isChannelAI) {
     await message.channel.sendTyping();
     const reply = await generateResponse(message.content);
