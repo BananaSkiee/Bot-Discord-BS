@@ -9,7 +9,6 @@ const stickyHandler = require("./sticky");
 const updateOnline = require("./online");
 const autoGreeting = require("./modules/autoGreeting");
 const updateTimeChannel = require("./modules/updateTimeChannel");
-const buttonHandler = require("./events/interactionCreate");
 
 const client = new Client({
   intents: [
@@ -44,10 +43,6 @@ fs.readdirSync("./events").forEach((file) => {
 // 🟩 Slash Commands + 🟦 Button Handler
 client.on("interactionCreate", async (interaction) => {
   try {
-    if (interaction.isButton()) {
-      return buttonHandler(interaction, client);
-    }
-
     if (!interaction.isChatInputCommand()) return;
 
     const command = client.commands.get(interaction.commandName);
