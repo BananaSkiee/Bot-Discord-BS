@@ -3,6 +3,10 @@ const path = require("path");
 const { ActionRowBuilder, ButtonBuilder, ButtonStyle } = require("discord.js");
 
 const filePath = path.join(__dirname, "../data/taggedUsers.json");
+// Load data taggedUsers.json
+const taggedUsers = fs.existsSync(filePath)
+  ? JSON.parse(fs.readFileSync(filePath, "utf8"))
+  : {};
 
 const ROLES = [
   { id: process.env.ROLE_1_ID, tag: "[OWNER]" },
@@ -55,21 +59,21 @@ console.log("📋 ROLES:", ROLES);
   : "Tanpa Nama";
     const displayName = newMember.user.globalName ?? newMember.user.username;
 
-    const row = new ActionRowBuilder().addComponents(
-      new ButtonBuilder()
-        .setCustomId("use_tag")
-        .setLabel(`Ya, pakai tag ${matchingRole.tag}`)
-        .setStyle(ButtonStyle.Success),
-      new ButtonBuilder()
-        .setCustomId("remove_tag")
-        .setLabel("Tidak, tanpa tag")
-        .setStyle(ButtonStyle.Secondary)
-    );
+const row = new ActionRowBuilder().addComponents(
+  new ButtonBuilder()
+    .setCustomId("use_tag")
+    .setLabel(`Ya, pakai tag ${matchingRole.tag}`)
+    .setStyle(ButtonStyle.Success),
+  new ButtonBuilder()
+    .setCustomId("remove_tag")
+    .setLabel("Tidak, tanpa tag")
+    .setStyle(ButtonStyle.Secondary)
+);
 
-    try {
-      await newMember.send({
-        content: `✨ *Salam hangat, ${displayName}.*
-        
+try {
+  await newMember.send({
+    content: `✨ *Salam hangat, ${displayName}.*
+
 🔰 Kamu menerima tag khusus: \`${matchingRole.tag}\`  
 📛 Diberikan karena kamu memiliki role: \`${roleDisplay}\`
 
@@ -79,14 +83,11 @@ Contoh: \`${matchingRole.tag} ${displayName}\`
 ───────────────────────────
 
 Silakan pilih opsi di bawah ini: 👇`,
-        components: [row],
-      });
+    components: [row],
+  });
 
-      taggedUsers[newMember.id] = null;
-      fs.writeFileSync(filePath, JSON.stringify(taggedUsers, null, 2));
-      console.log(`✅ DM dikirim ke ${newMember.user.tag}`);
-    } catch (err) {
-      console.error("❌ Gagal mengirim DM:", err.message);
-    }
+  console.log(`✅ DM dikirim ke ${newMember.user.tag}`);
+} catch (err) {
+  console.error("❌ Gagal mengirim DM:", err.message);                                         
   }
 };
