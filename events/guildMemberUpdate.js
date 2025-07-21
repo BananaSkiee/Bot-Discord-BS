@@ -45,6 +45,8 @@ module.exports = {
   async execute(oldMember, newMember) {
     // Cek role yang baru ditambahkan
     const addedRoles = newMember.roles.cache.filter(r => !oldMember.roles.cache.has(r.id));
+    console.log("🧪 Added roles:", addedRoles.map(r => `${r.name} (${r.id})`).join(", "));
+console.log("📋 ROLES:", ROLES);
     const matchingRole = ROLES.find(r => addedRoles.has(r.id));
     if (!matchingRole) return;
     const highestDisplayRole = newMember.roles.highest;
