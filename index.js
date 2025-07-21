@@ -69,7 +69,7 @@ client.on("interactionCreate", async (interaction) => {
 client.on("messageCreate", async (message) => {
 
   if (message.author.bot || !message.content.startsWith("!")) return;
-
+  
   const args = message.content.slice(1).trim().split(/ +/);
   const commandName = args.shift().toLowerCase();
 
@@ -87,6 +87,7 @@ client.on("messageCreate", async (message) => {
 // 📌 Sticky Message Handler
 client.on("messageCreate", async (message) => {
   if (message.author.bot) return;
+  await autoChat(message);
   stickyHandler(client, message);
 });
 
