@@ -32,17 +32,7 @@ module.exports = {
       taggedUsers = {};
     }
 
-    // ========== TOMBOL ❌ UMUM ==========
-    if (interaction.customId === "remove_tag") {
-      await member.setNickname(null).catch(console.error);
-      taggedUsers[member.id] = false;
-      saveTaggedUsers(taggedUsers);
 
-      return interaction.reply({
-        content: "✅ Nama kamu dikembalikan menjadi \`${username}\`",
-        ephemeral: true,
-      }).catch(console.error);
-    }
 
     // ========== TOMBOL ✅ UMUM ==========
     if (interaction.customId === "use_tag") {
