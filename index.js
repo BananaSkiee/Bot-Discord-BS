@@ -9,6 +9,7 @@ const stickyHandler = require("./sticky");
 const updateOnline = require("./online");
 const autoGreeting = require("./modules/autoGreeting");
 const updateTimeChannel = require("./modules/updateTimeChannel");
+const buttonHandler = require("./events/interactionCreate");
 
 const client = new Client({
   intents: [
