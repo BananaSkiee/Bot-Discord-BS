@@ -9,7 +9,6 @@ const {
 const countValidator = require("../modules/countValidator");
 const handleHapusTag = require("../modules/hapusTagCommand");
 const translateHandler = require("../modules/translate");
-const autoChat = require("../modules/autoChat");
 
 const filePath = path.join(__dirname, "../data/taggedUsers.json");
 
