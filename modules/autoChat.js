@@ -1,21 +1,19 @@
-const { Configuration, OpenAIApi } = require("openai");
+const OpenAI = require("openai");
 const { CHANNEL_AI } = require("../config");
 
-// Konfigurasi OpenAI
-const configuration = new Configuration({
+// Inisialisasi OpenAI dengan API Key
+const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
-
-const openai = new OpenAIApi(configuration);
 
 // Fungsi untuk menghasilkan respon AI
 async function generateResponse(prompt) {
   try {
-    const completion = await openai.createChatCompletion({
+    const completion = await openai.chat.completions.create({
       model: "gpt-3.5-turbo",
       messages: [{ role: "user", content: prompt }],
     });
-    return completion.data.choices[0].message.content;
+    return completion.choices[0].message.content;
   } catch (error) {
     console.error("Error saat generateResponse:", error);
     return "❌ Terjadi error saat menjawab.";
