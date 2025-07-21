@@ -1,4 +1,4 @@
-const OpenAI = require("openai");
+const { OpenAI } = require("openai");
 const { CHANNEL_AI } = require("../config");
 
 // Inisialisasi OpenAI
