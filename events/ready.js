@@ -5,6 +5,7 @@ const joinvoice = require("../modules/joinvoice");
 const countValidator = require("../modules/countValidator");
 const textCounter = require("../modules/textCounter");
 const simulateBTC = require("../modules/cryptoSimulator");
+const updateCryptoMessage = require("../modules/updateCrypto");
 
 module.exports = {
   name: "ready",
@@ -29,6 +30,11 @@ module.exports = {
     countValidator(client);
 
     simulateBTC(client);
+
+    setInterval(() => {
+  const newContent = "📈 BTC: $65,000 (+0.4%)"; // atau generate dari API grafikmu
+  updateCryptoMessage(client, newContent);
+}, 60_000);
 
     // 🔊 Join voice channel saat online
     try {
