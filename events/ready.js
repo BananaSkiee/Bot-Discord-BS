@@ -28,7 +28,7 @@ module.exports = {
     // 🔢 Counter
     countValidator(client);
 
-    startCryptoSimulation(client);
+    simulateBTC(client);
 
     // 🔊 Join voice channel saat online
     try {
