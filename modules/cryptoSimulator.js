@@ -1,21 +1,34 @@
+const fs = require("fs");
+const path = require("path");
 const generateTextGraph = require("./generateTextGraph");
 
 let hargaData = [64000, 64500, 64200, 64800, 65000, 64900, 65500];
-let messageToEdit = null;
-const CHANNEL_ID = "1397169936467755151"; // Ganti ke channel kamu
+const CHANNEL_ID = "1397169936467755151";
+const DATA_FILE = path.join(__dirname, "../data/cryptoMessage.json");
 
 function getNextDelay() {
-  // Delay antara 5–15 detik biar mirip pasar asli
   return Math.floor(Math.random() * 10000) + 5000;
 }
 
 function getPriceChange() {
-  // Simulasi naik turun halus dan probabilistik
   const chance = Math.random();
-  if (chance < 0.4) return Math.floor(Math.random() * 50);    // Naik kecil
-  if (chance < 0.7) return Math.floor(Math.random() * -50);   // Turun kecil
-  if (chance < 0.85) return Math.floor(Math.random() * 150);  // Naik besar
-  return Math.floor(Math.random() * -150);                    // Turun besar
+  if (chance < 0.4) return Math.floor(Math.random() * 50);
+  if (chance < 0.7) return Math.floor(Math.random() * -50);
+  if (chance < 0.85) return Math.floor(Math.random() * 150);
+  return Math.floor(Math.random() * -150);
+}
+
+function saveMessageId(id) {
+  fs.writeFileSync(DATA_FILE, JSON.stringify({ messageId: id }, null, 2));
+}
+
+function loadMessageId() {
+  try {
+    const data = fs.readFileSync(DATA_FILE, "utf8");
+    return JSON.parse(data).messageId;
+  } catch {
+    return null;
+  }
 }
 
 async function updateHarga(client) {
@@ -32,19 +45,29 @@ async function updateHarga(client) {
     const channel = await client.channels.fetch(CHANNEL_ID);
     if (!channel || !channel.isTextBased()) return;
 
-    if (!messageToEdit) {
-      messageToEdit = await channel.send("```" + chart + "```");
+    const messageId = loadMessageId();
+    let message;
+
+    if (messageId) {
+      try {
+        message = await channel.messages.fetch(messageId);
+        await message.edit("```" + chart + "```");
+      } catch (e) {
+        message = await channel.send("```" + chart + "```");
+        saveMessageId(message.id);
+      }
     } else {
-      await messageToEdit.edit("```" + chart + "```");
+      message = await channel.send("```" + chart + "```");
+      saveMessageId(message.id);
     }
+
   } catch (err) {
-    console.error("❌ Gagal kirim grafik crypto:", err);
+    console.error("❌ Gagal kirim/edit grafik:", err);
   }
 
-  // Jadwalkan update selanjutnya
   setTimeout(() => updateHarga(client), getNextDelay());
 }
 
 module.exports = function startCryptoSimulation(client) {
-  updateHarga(client); // Mulai simulasi
+  updateHarga(client);
 };
