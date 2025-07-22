@@ -62,8 +62,15 @@ module.exports = {
 
 await translateHandler(message);
 
-    const args = message.content.slice(prefix.length).trim().split(/ +/);
-const command = args.shift()?.toLowerCase();
+if (!contentRaw.startsWith(prefix)) return;
+
+const [commandRaw, ...args] = contentRaw.slice(prefix.length).trim().split(/ +/);
+const command = commandRaw.toLowerCase();
+
+// Di dalam messageCreate:
+if (command === "meme") {
+  return memeCommand.execute(message);
+}
     
 // ====== !testdm command ======
 if (contentLower.startsWith("!testdm")) {
