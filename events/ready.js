@@ -16,7 +16,7 @@ module.exports = {
 
     // Update online VC
     await updateOnline(guild);
-    setInterval(() => updateOnline(guild), 60000);
+    setInterval(() => updateOnline(guild), 10000);
 
     // Sticky Message
     stickyHandler(client);
