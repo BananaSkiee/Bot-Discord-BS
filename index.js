@@ -10,6 +10,7 @@ const updateOnline = require("./online");
 const autoGreeting = require("./modules/autoGreeting");
 const updateTimeChannel = require("./modules/updateTimeChannel");
 const generateTextGraph = require('./modules/generateTextGraph');
+const startCryptoSimulation = require("./modules/cryptoSimulator");
 
 const client = new Client({
   intents: [
@@ -109,28 +110,6 @@ setInterval(() => {
 process.on("unhandledRejection", (err) => {
   console.error("🚨 Unhandled Error:", err);
 });
-
-const hargaData = [64000, 64500, 64200, 64800, 65000, 64900, 65500];
-const CHANNEL_ID = "1397169936467755151";
-let messageToEdit; // Tambahkan ini di luar interval
-
-setInterval(async () => {
-  const change = Math.floor(Math.random() * 600 - 300);
-  const last = hargaData[hargaData.length - 1];
-  hargaData.push(last + change);
-  if (hargaData.length > 20) hargaData.shift();
-
-  const chart = generateTextGraph(hargaData, "BTC");
-  const channel = await client.channels.fetch(CHANNEL_ID);
-  if (!channel || !channel.isTextBased()) return;
-
-  // Kirim pertama kali, lalu edit selanjutnya
-  if (!messageToEdit) {
-    messageToEdit = await channel.send("```" + chart + "```");
-  } else {
-    messageToEdit.edit("```" + chart + "```");
-  }
-}, 5000);
 
 // 🔐 Login bot
 client.login(config.token);
