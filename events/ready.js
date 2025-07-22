@@ -23,6 +23,9 @@ module.exports = {
     // Auto Greeting
     autoGreeting(client);
 
+    // 🔢 Counter
+    startCounter(client);
+
     // 🔊 Join voice channel saat online
     try {
       await joinvoice(client);
