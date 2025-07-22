@@ -126,7 +126,7 @@ setInterval(async () => {
   const channel = await client.channels.fetch(CHANNEL_ID);
   if (!channel || !channel.isTextBased()) return;
 
-  channel.send("```" + chart + "```");
+channel.send("```ansi\n" + chart + "\n```");
 }, 10000);
 
 // 🔐 Login bot
