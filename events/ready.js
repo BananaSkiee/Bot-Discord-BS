@@ -2,7 +2,7 @@ const updateOnline = require("../online");
 const stickyHandler = require("../sticky");
 const autoGreeting = require("../modules/autoGreeting");
 const joinvoice = require("../modules/joinvoice");
-const startCounter = require("../modules/textCounter");
+const countValidator = require("../modules/countValidator");
 
 module.exports = {
   name: "ready",
@@ -24,7 +24,7 @@ module.exports = {
     autoGreeting(client);
 
     // 🔢 Counter
-    startCounter(client);
+    countValidator(client);
 
     // 🔊 Join voice channel saat online
     try {
