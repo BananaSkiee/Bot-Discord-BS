@@ -4,7 +4,7 @@ const axios = require("axios");
 
 module.exports = async function autoSendMeme(channel) {
   try {
-    const res = await axios.get("https://meme-api.com/gimme"); // bebas pakai API lain
+    const res = await axios.get("https://meme-api.com/gimme/memeIndonesia"); // bebas pakai API lain
     const meme = res.data;
 
     const embed = new EmbedBuilder()
