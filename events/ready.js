@@ -30,13 +30,13 @@ module.exports = {
       console.error("❌ Gagal join voice channel:", err);
     }
 
-    // 📤 Auto kirim meme tiap jam
-    const memeChannel = client.channels.cache.get("1352404777513783336"); // 🔁 Ganti dengan ID channel-mu
-    if (memeChannel) {
-      autoSendMeme(memeChannel); // Kirim saat bot ready
-      setInterval(() => autoSendMeme(memeChannel), 3600000); // Kirim tiap 1 jam
-    } else {
-      console.warn("⚠️ Channel meme tidak ditemukan. Cek ID_CHANNEL_MEME");
+// 📤 Auto kirim meme tiap 2 jam
+const memeChannel = client.channels.cache.get("1352404777513783336"); // 🔁 Ganti dengan ID channel-mu
+if (memeChannel) {
+  autoSendMeme(memeChannel); // Kirim saat bot ready
+  setInterval(() => autoSendMeme(memeChannel), 7200000); // Kirim tiap 2 jam (7200000 ms)
+} else {
+  console.warn("⚠️ Channel meme tidak ditemukan. Cek ID_CHANNEL_MEME");
     }
   },
 };
