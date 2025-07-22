@@ -15,7 +15,7 @@ function generateTextGraph(data, symbol = "BTC") {
   for (let row = height - 1; row >= 0; row--) {
     let line = "";
     for (let col = 0; col < width; col++) {
-      line += normalized[col] >= row ? "█ " : "  ";
+      line += normalized[col] >= row ? " █" : "  ";
     }
     lines.push(line);
   }
