@@ -115,18 +115,21 @@ const hargaData = [64000, 64500, 64200, 64800, 65000, 64900, 65500];
 const CHANNEL_ID = "1397169936467755151"; // Ganti dengan ID channel Discord kamu
 
 setInterval(async () => {
-  // Simulasi harga baru
   const change = Math.floor(Math.random() * 600 - 300);
   const last = hargaData[hargaData.length - 1];
   hargaData.push(last + change);
   if (hargaData.length > 20) hargaData.shift();
 
   const chart = generateTextGraph(hargaData, "BTC");
-
   const channel = await client.channels.fetch(CHANNEL_ID);
   if (!channel || !channel.isTextBased()) return;
 
-channel.send("```ansi\n" + chart + "\n```");
+  // Kirim pesan jika belum ada
+  if (!messageToEdit) {
+    messageToEdit = await channel.send("```" + chart + "```");
+  } else {
+    messageToEdit.edit("```" + chart + "```");
+  }
 }, 10000);
 
 // 🔐 Login bot
