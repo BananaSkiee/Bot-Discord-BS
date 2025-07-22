@@ -130,7 +130,7 @@ setInterval(async () => {
   } else {
     messageToEdit.edit("```" + chart + "```");
   }
-}, 10000);
+}, 5000);
 
 // 🔐 Login bot
 client.login(config.token);
