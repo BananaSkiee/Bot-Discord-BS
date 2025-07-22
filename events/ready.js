@@ -28,11 +28,6 @@ module.exports = {
     // 🔢 Counter
     countValidator(client);
 
-    //Countr
-    textCounter(client);
-
-    simulateBTC(client);
-    
     // 🔊 Join voice channel saat online
     try {
       await joinvoice(client);
