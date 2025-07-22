@@ -9,7 +9,7 @@ if (!fs.existsSync("./data")) fs.mkdirSync("./data");
 
 // Mulai dari 115 kalau file belum ada
 if (!fs.existsSync(FILE_PATH)) {
-  fs.writeFileSync(FILE_PATH, JSON.stringify({ count: 115 }, null, 2));
+  fs.writeFileSync(FILE_PATH, JSON.stringify({ count: 122 }, null, 2));
 }
 
 module.exports = (client) => {
