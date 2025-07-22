@@ -9,6 +9,7 @@ const stickyHandler = require("./sticky");
 const updateOnline = require("./online");
 const autoGreeting = require("./modules/autoGreeting");
 const updateTimeChannel = require("./modules/updateTimeChannel");
+const renderGraph = require("./modules/renderGraph");
 
 const client = new Client({
   intents: [
@@ -108,6 +109,21 @@ setInterval(() => {
 process.on("unhandledRejection", (err) => {
   console.error("🚨 Unhandled Error:", err);
 });
+
+// Kirim gambar grafik BTC ke channel Discord setiap 30 detik
+const { AttachmentBuilder } = require('discord.js');
+
+setInterval(async () => {
+  try {
+    const buffer = await renderGraph(); // Harus mengembalikan Buffer PNG
+    const attachment = new AttachmentBuilder(buffer, { name: "btc-graph.png" });
+
+    const channel = await client.channels.fetch(process.env.CHANNEL_ID);
+    await channel.send({ files: [attachment] });
+  } catch (err) {
+    console.error("❌ Gagal kirim grafik:", err);
+  }
+}, 30 * 1000);
 
 // 🔐 Login bot
 client.login(config.token);
