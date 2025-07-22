@@ -2,7 +2,7 @@ const updateOnline = require("../online");
 const stickyHandler = require("../sticky");
 const autoGreeting = require("../modules/autoGreeting");
 const joinvoice = require("../modules/joinvoice");
-const startCounter = require("../modules/counter");
+const startCounter = require("../modules/textCounter");
 
 module.exports = {
   name: "ready",
