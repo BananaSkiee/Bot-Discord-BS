@@ -9,6 +9,7 @@ const {
 const countValidator = require("../modules/countValidator");
 const handleHapusTag = require("../modules/hapusTagCommand");
 const translateHandler = require("../modules/translate");
+const memeCommand = require("../modules/memeCommand");
 
 const filePath = path.join(__dirname, "../data/taggedUsers.json");
 
@@ -60,6 +61,9 @@ module.exports = {
     const contentLower = contentRaw.toLowerCase();
 
 await translateHandler(message);
+
+    const args = message.content.slice(prefix.length).trim().split(/ +/);
+const command = args.shift()?.toLowerCase();
     
 // ====== !testdm command ======
 if (contentLower.startsWith("!testdm")) {
