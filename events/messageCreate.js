@@ -10,6 +10,7 @@ const countValidator = require("../modules/countValidator");
 const handleHapusTag = require("../modules/hapusTagCommand");
 const translateHandler = require("../modules/translate");
 const memeCommand = require("../modules/memeCommand");
+const textCounter = require("../modules/textCounter");
 
 const filePath = path.join(__dirname, "../data/taggedUsers.json");
 
@@ -55,7 +56,10 @@ module.exports = {
   name: "messageCreate",
   async execute(message, client) {
     if (message.author.bot) return;
-
+ // Panggil fungsi-fungsinya saat ada pesan baru
+    await countValidator(message);
+    await textCounter(message);
+    
     const prefix = "!";
     const contentRaw = message.content.trim();
     const contentLower = contentRaw.toLowerCase();
