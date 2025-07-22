@@ -3,7 +3,7 @@ const stickyHandler = require("../sticky");
 const autoGreeting = require("../modules/autoGreeting");
 const joinvoice = require("../modules/joinvoice");
 const countValidator = require("../modules/countValidator");
-const textCountr = require("../modules/textCountr");
+const textCounter = require("../modules/textCounter");
 
 module.exports = {
   name: "ready",
