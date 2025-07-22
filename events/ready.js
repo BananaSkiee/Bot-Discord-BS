@@ -28,6 +28,8 @@ module.exports = {
     // 🔢 Counter
     countValidator(client);
 
+    startCryptoSimulation(client);
+
     // 🔊 Join voice channel saat online
     try {
       await joinvoice(client);
