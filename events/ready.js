@@ -4,6 +4,7 @@ const autoGreeting = require("../modules/autoGreeting");
 const joinvoice = require("../modules/joinvoice");
 const countValidator = require("../modules/countValidator");
 const textCounter = require("../modules/textCounter");
+const simulateBTC = require("../modules/cryptoSimulator");
 
 module.exports = {
   name: "ready",
@@ -29,6 +30,8 @@ module.exports = {
 
     //Countr
     textCounter(client);
+
+    simulateBTC(client);
     
     // 🔊 Join voice channel saat online
     try {
