@@ -9,7 +9,7 @@ const stickyHandler = require("./sticky");
 const updateOnline = require("./online");
 const autoGreeting = require("./modules/autoGreeting");
 const updateTimeChannel = require("./modules/updateTimeChannel");
-const generateTextGraph = require('./modules/generateTextGraph');
+const generateTextGraph = require('./modules/');
 
 const client = new Client({
   intents: [
