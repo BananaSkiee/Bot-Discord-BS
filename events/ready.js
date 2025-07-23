@@ -7,6 +7,7 @@ const textCounter = require("../modules/textCounter");
 const simulateBTC = require("../modules/cryptoSimulator");
 const updateCryptoMessage = require("../modules/updateCrypto");
 const autoSendMeme = require("../modules/autoMeme");
+const autoDelete = require("../modules/autoDeleteCrypto");
 
 module.exports = {
   name: "ready",
@@ -32,6 +33,9 @@ module.exports = {
 
     // Simulasi BTC
     simulateBTC(client);
+
+    // Auto Delete
+    autoDelete(message);
 
     // Update pesan grafik BTC
     setInterval(() => {
