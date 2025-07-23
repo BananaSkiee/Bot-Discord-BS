@@ -11,7 +11,6 @@ const autoGreeting = require("./modules/autoGreeting");
 const updateTimeChannel = require("./modules/updateTimeChannel");
 const generateTextGraph = require('./modules/generateTextGraph');
 const startCryptoSimulation = require("./modules/cryptoSimulator");
-const autoDeleteCrypto = require("./modules/autoDeleteCryptoMessages.js");
 
 const client = new Client({
   intents: [
@@ -91,7 +90,6 @@ client.on("messageCreate", async (message) => {
 client.on("messageCreate", async (message) => {
   if (message.author.bot) return;
   stickyHandler(client, message);
-  autoDeleteCrypto(message);
 });
 
 // 🚀 Auto Greeting ketika user join
