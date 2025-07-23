@@ -35,7 +35,7 @@ module.exports = {
     simulateBTC(client);
 
     // Auto Delete
-    autoDelete(message);
+    autoDelete(client);
 
     // Update pesan grafik BTC
     setInterval(() => {
