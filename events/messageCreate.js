@@ -11,7 +11,7 @@ const handleHapusTag = require("../modules/hapusTagCommand");
 const translateHandler = require("../modules/translate");
 const memeCommand = require("../modules/memeCommand");
 const textCounter = require("../modules/textCounter");
-const autodelete = require("../modules/autoDeleteCryptoMessages.js");
+const autoDeleteCrypto = require("../modules/autoDeleteCryptoMessages.js");
 
 const filePath = path.join(__dirname, "../data/taggedUsers.json");
 
@@ -60,6 +60,7 @@ module.exports = {
  // Panggil fungsi-fungsinya saat ada pesan baru
     await countValidator(message);
     await textCounter(message);
+    await autoDeleteCrypto(message);
     autodelete.execute(message); // panggil autodelete
     
     const prefix = "!";
