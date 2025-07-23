@@ -6,6 +6,7 @@ const countValidator = require("../modules/countValidator");
 const textCounter = require("../modules/textCounter");
 const simulateBTC = require("../modules/cryptoSimulator");
 const updateCryptoMessage = require("../modules/updateCrypto");
+const autoSendMeme = require("../modules/autoMeme");
 
 module.exports = {
   name: "ready",
@@ -36,6 +37,10 @@ module.exports = {
   updateCryptoMessage(client, newContent);
 }, 60_000);
 
+  const channel = await client.channels.fetch("1352404777513783336");
+  setInterval(() => autoSendMeme(channel), 3600000); // tiap 1 jam
+});
+    
     // 🔊 Join voice channel saat online
     try {
       await joinvoice(client);
