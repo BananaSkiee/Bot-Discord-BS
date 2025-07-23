@@ -11,7 +11,7 @@ const handleHapusTag = require("../modules/hapusTagCommand");
 const translateHandler = require("../modules/translate");
 const memeCommand = require("../modules/memeCommand");
 const textCounter = require("../modules/textCounter");
-const autodelete = require("../modules/autoDeleteCrypto.js");
+const autodelete = require("../modules/autoDeleteCryptoMessages.js");
 
 const filePath = path.join(__dirname, "../data/taggedUsers.json");
 
