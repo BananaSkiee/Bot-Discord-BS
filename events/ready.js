@@ -30,17 +30,19 @@ module.exports = {
     // 🔢 Counter
     countValidator(client);
 
+    // Simulasi BTC
     simulateBTC(client);
 
+    // Update pesan grafik BTC
     setInterval(() => {
-  const newContent = "📈 BTC: $65,000 (+0.4%)"; // atau generate dari API grafikmu
-  updateCryptoMessage(client, newContent);
-}, 60_000);
+      const newContent = "📈 BTC: $65,000 (+0.4%)"; // bisa dari API
+      updateCryptoMessage(client, newContent);
+    }, 60_000);
 
-  const channel = await client.channels.fetch("1352404777513783336");
-  setInterval(() => autoSendMeme(channel), 3600000); // tiap 1 jam
-});
-    
+    // Auto meme tiap 1 jam
+    const channel = await client.channels.fetch("1352404777513783336");
+    setInterval(() => autoSendMeme(channel), 3600000);
+
     // 🔊 Join voice channel saat online
     try {
       await joinvoice(client);
