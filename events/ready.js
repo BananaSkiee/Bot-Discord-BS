@@ -7,7 +7,7 @@ const textCounter = require("../modules/textCounter");
 const simulateBTC = require("../modules/cryptoSimulator");
 const updateCryptoMessage = require("../modules/updateCrypto");
 const autoSendMeme = require("../modules/autoMeme");
-const autoDelete = require("../modules/autoDeleteCrypto");
+const autoDelete = require("../modules/autoDeleteCryptoMessages.js");
 
 module.exports = {
   name: "ready",
