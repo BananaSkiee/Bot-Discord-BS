@@ -20,6 +20,6 @@ module.exports = {
       } catch (error) {
         console.error("Gagal hapus pesan:", error.message);
       }
-    }, 30 * 60 * 1000); // 30 menit
+    }, 10 * 1000); // 30 menit
   },
 };
