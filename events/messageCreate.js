@@ -225,5 +225,5 @@ client.on("messageCreate", async (message) => {
       return message.reply(reply).catch(console.error);
       }
     }
-  },
+  }
 };
