@@ -11,7 +11,7 @@ const autoGreeting = require("./modules/autoGreeting");
 const updateTimeChannel = require("./modules/updateTimeChannel");
 const generateTextGraph = require('./modules/generateTextGraph');
 const startCryptoSimulation = require("./modules/cryptoSimulator");
-const autoDeleteCrypto = require("./modules/autoDeleteCrypto");
+const autoDeleteCrypto = require("./modules/autoDeleteCryptoMessages.js");
 
 const client = new Client({
   intents: [
