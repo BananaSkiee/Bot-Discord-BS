@@ -34,9 +34,6 @@ module.exports = {
     // Simulasi BTC
     simulateBTC(client);
 
-    // Auto Delete
-    autoDelete(client);
-
     // Update pesan grafik BTC
     setInterval(() => {
       const newContent = "📈 BTC: $65,000 (+0.4%)"; // bisa dari API
