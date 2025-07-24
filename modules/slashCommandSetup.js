@@ -1,25 +1,21 @@
-// modules/slashCommandSetup.js
 const fs = require("fs");
 const path = require("path");
 
 module.exports = async (client) => {
+  client.commands = new Map();
+
   const commands = [];
-  const commandFiles = fs.readdirSync(path.join(__dirname, "../commands")).filter(file => file.endsWith(".js"));
+  const commandsPath = path.join(__dirname, "../commands");
+  const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith(".js"));
 
   for (const file of commandFiles) {
-    const command = require(`../commands/${file}`);
-    if (command.data) {
+    const command = require(`${commandsPath}/${file}`);
+    if (command?.data && command?.execute) {
+      client.commands.set(command.data.name, command);
       commands.push(command.data.toJSON());
-      client.commands.set(command.data.name, command); // simpan di collection
     }
   }
 
-  const guildId = "1347233781391560837";
-  const guild = client.guilds.cache.get(guildId);
-  if (guild) {
-    await guild.commands.set(commands);
-    console.log("✅ Slash commands berhasil diset di guild.");
-  } else {
-    console.error("❌ Guild tidak ditemukan.");
-  }
+  const guild = client.guilds.cache.first();
+  if (guild) await guild.commands.set(commands);
 };
