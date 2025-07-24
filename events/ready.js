@@ -50,11 +50,41 @@ module.exports = {
       updateCryptoMessage(client, newContent);
     }, 60_000);
 
-    // Auto meme tiap 1 jam
-    const channel = await client.channels.fetch("1352404777513783336");
-    setInterval(() => autoSendMeme(channel), 3600000);
+    // Status berkelas berganti-ganti
+    const statuses = [
+      "🌌 Menembus batas kemungkinan",
+      "📖 Membaca alur takdir",
+      "🎧 Mendengarkan suara hati server",
+      "🧠 Belajar tanpa akhir",
+      "🗝️ Menjaga kedamaian digital",
+      "🕊️ Menyebar aura positif",
+      "⚙️ Melayani tanpa lelah",
+      "🌙 Diam tapi ada",
+      "🔮 Menerawang masa depan",
+      "🌟 Jadi cahaya di kegelapan",
+      "🛡️ Mengamankan dunia maya",
+      "📡 Terhubung dengan dimensi lain",
+      "⏳ Waktu terus berjalan... dan aku tetap di sini",
+    ];
 
-    // 🔊 Join voice channel saat online
+    let index = 0;
+    const updateStatus = () => {
+      const status = statuses[index % statuses.length];
+      client.user.setActivity(status, { type: 0 });
+      index++;
+    };
+    updateStatus();
+    setInterval(updateStatus, 60_000);
+
+    // ✅ Auto meme tiap 1 jam
+    try {
+      const channel = await client.channels.fetch("1352404777513783336");
+      setInterval(() => autoSendMeme(channel), 3600000);
+    } catch (err) {
+      console.error("❌ Gagal fetch channel untuk auto meme:", err);
+    }
+
+    // ✅ Join voice channel saat online
     try {
       await joinvoice(client);
     } catch (err) {
