@@ -11,7 +11,6 @@ function saveTaggedUsers(data) {
 module.exports = {
   name: "interactionCreate",
   async execute(interaction) {
-    if (!interaction.isButton()) return;
 
     try {
       console.log("👉 Tombol ditekan:", interaction.customId);
