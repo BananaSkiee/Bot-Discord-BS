@@ -8,6 +8,7 @@ const simulateBTC = require("../modules/cryptoSimulator");
 const updateCryptoMessage = require("../modules/updateCrypto");
 const autoSendMeme = require("../modules/autoMeme");
 const autoDelete = require("../modules/autoDeleteCryptoMessages.js");
+const slashCommandSetup = require("../modules/slashCommandSetup");
 
 module.exports = {
   name: "ready",
@@ -34,6 +35,8 @@ module.exports = {
     // Simulasi BTC
     simulateBTC(client);
 
+    await slashCommandSetup(client);
+    
     // Update pesan grafik BTC
     setInterval(() => {
       const newContent = "📈 BTC: $65,000 (+0.4%)"; // bisa dari API
