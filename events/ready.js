@@ -10,6 +10,8 @@ const autoSendMeme = require("../modules/autoMeme");
 const autoDelete = require("../modules/autoDeleteCryptoMessages.js");
 const slashCommandSetup = require("../modules/slashCommandSetup");
 
+require("../modules/slashCommandSetup")(client);
+
 module.exports = {
   name: "ready",
   once: true,
