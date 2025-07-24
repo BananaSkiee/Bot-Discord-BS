@@ -62,7 +62,8 @@ module.exports = {
     await countValidator(message);
     await textCounter(message);
     await autoDeleteCrypto(message);
-
+    await autoReply(message);
+    
     const prefix = "!";
     const contentRaw = message.content.trim();
     const contentLower = contentRaw.toLowerCase();
