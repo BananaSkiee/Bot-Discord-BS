@@ -1,5 +1,5 @@
 const { Events } = require("discord.js");
-const OpenAI = require("openai");
+const { OpenAI } = require("openai"); // ✅ pakai { OpenAI }
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
