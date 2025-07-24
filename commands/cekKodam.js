@@ -1,7 +1,9 @@
 const { SlashCommandBuilder } = require("discord.js");
 const OpenAI = require("openai");
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -28,10 +30,11 @@ module.exports = {
         max_tokens: 150,
       });
 
-      await interaction.editReply(`🔮 **Kodammu telah dibaca:**\n${res.choices[0].message.content}`);
-    } catch (e) {
-      console.error("❌ AI Error:", e);
+      const reply = res.choices?.[0]?.message?.content || "❌ Gagal membaca kodam.";
+      await interaction.editReply(`🔮 **Kodammu telah dibaca:**\n${reply}`);
+    } catch (error) {
+      console.error("❌ AI Error:", error);
       await interaction.editReply("❌ Gagal membaca kodam. Coba lagi nanti.");
     }
-  }
+  },
 };
