@@ -9,6 +9,7 @@ const updateCryptoMessage = require("../modules/updateCrypto");
 const autoSendMeme = require("../modules/autoMeme");
 const autoDelete = require("../modules/autoDeleteCryptoMessages.js");
 const slashCommandSetup = require("../modules/slashCommandSetup");
+const autoChat = require("../modules/autoChat");
 
 module.exports = {
   name: "ready",
@@ -40,6 +41,8 @@ module.exports = {
 
     // Simulasi BTC
     simulateBTC(client);
+
+    autoChat(client);
 
     // Setup slash commands
     await slashCommandSetup(client);
