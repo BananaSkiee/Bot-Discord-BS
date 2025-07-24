@@ -1,29 +1,38 @@
-const { Events } = require("discord.js");
-const { OpenAI } = require("openai"); // ✅ pakai { OpenAI }
+const { Configuration, OpenAIApi } = require("openai");
 
-const openai = new OpenAI({
+const configuration = new Configuration({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-module.exports = function (client) {
-  const channelId = process.env.AUTO_CHAT_CHANNEL_ID;
+const openai = new OpenAIApi(configuration);
 
-  client.on(Events.MessageCreate, async (message) => {
-    if (message.author.bot) return;
-    if (message.channel.id !== channelId) return;
+// Ganti dengan ID channel khusus kamu (contoh: "123456789012345678")
+const AI_CHANNEL_ID = "1352635177536327760";
 
-    try {
-      const completion = await openai.chat.completions.create({
-        messages: [{ role: "user", content: message.content }],
-        model: "gpt-3.5-turbo",
-      });
+module.exports = async (message) => {
+  // Cek: bukan bot, dan di channel AI yang ditentukan
+  if (message.author.bot || message.channel.id !== AI_CHANNEL_ID) return;
 
-      const reply = completion.choices[0]?.message?.content;
-      if (reply) {
-        message.reply(reply);
-      }
-    } catch (err) {
-      console.error("❌ Gagal generate AI response:", err);
+  try {
+    // Indikasi bot sedang mengetik
+    await message.channel.sendTyping();
+
+    const response = await openai.createChatCompletion({
+      model: "gpt-4o", // atau "gpt-3.5-turbo"
+      messages: [
+        { role: "system", content: "Kamu adalah asisten AI ramah di Discord server ini." },
+        { role: "user", content: message.content }
+      ],
+      temperature: 0.8,
+      max_tokens: 150,
+    });
+
+    const reply = response.data.choices?.[0]?.message?.content;
+    if (reply) {
+      await message.reply(reply);
     }
-  });
+  } catch (error) {
+    console.error("❌ AI error:", error.response?.data || error.message);
+    await message.reply("⚠️ Terjadi kesalahan saat menjawab.");
+  }
 };
