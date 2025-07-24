@@ -16,6 +16,21 @@ module.exports = async (client) => {
     }
   }
 
-  const guild = client.guilds.cache.first();
-  if (guild) await guild.commands.set(commands);
+  try {
+    // ✅ Versi untuk DEVELOPMENT (per guild)
+    const guild = client.guilds.cache.first();
+    if (guild) {
+      await guild.commands.set(commands);
+      console.log(`✅ Slash command berhasil didaftarkan di guild "${guild.name}" (${guild.id})`);
+    } else {
+      console.warn("⚠️ Tidak ada guild terdeteksi untuk register command.");
+    }
+
+    // ✅ Jika kamu ingin GLOBAL:
+    // await client.application.commands.set(commands);
+    // console.log(`🌐 Slash command global berhasil didaftarkan.`);
+    
+  } catch (error) {
+    console.error("❌ Gagal mendaftarkan slash command:", error);
+  }
 };
