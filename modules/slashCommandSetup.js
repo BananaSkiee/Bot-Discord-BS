@@ -14,7 +14,7 @@ module.exports = async (client) => {
     }
   }
 
-  const guildId = "YOUR_GUILD_ID";
+  const guildId = "1347233781391560837";
   const guild = client.guilds.cache.get(guildId);
   if (guild) {
     await guild.commands.set(commands);
