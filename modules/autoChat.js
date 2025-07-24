@@ -1,31 +1,29 @@
-const { Configuration, OpenAIApi } = require("openai");
+const { Events } = require("discord.js");
+const OpenAI = require("openai");
 
-const configuration = new Configuration({
+const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
-const openai = new OpenAIApi(configuration);
 
-const CHANNEL_ID = "1352635177536327760"; // ID channel khusus AI Chat
+module.exports = function (client) {
+  const channelId = process.env.AUTO_CHAT_CHANNEL_ID;
 
-module.exports = {
-  name: "messageCreate",
-  async execute(message) {
+  client.on(Events.MessageCreate, async (message) => {
     if (message.author.bot) return;
-    if (message.channel.id !== CHANNEL_ID) return;
+    if (message.channel.id !== channelId) return;
 
     try {
-      await message.channel.sendTyping(); // animasi ngetik
-
-      const completion = await openai.createChatCompletion({
-        model: "gpt-3.5-turbo",
+      const completion = await openai.chat.completions.create({
         messages: [{ role: "user", content: message.content }],
+        model: "gpt-3.5-turbo",
       });
 
-      const reply = completion.data.choices[0].message.content;
-      message.reply(reply);
-    } catch (error) {
-      console.error("❌ OpenAI error:", error);
-      message.reply("Maaf, ada error saat menghubungi AI.");
+      const reply = completion.choices[0]?.message?.content;
+      if (reply) {
+        message.reply(reply);
+      }
+    } catch (err) {
+      console.error("❌ Gagal generate AI response:", err);
     }
-  },
+  });
 };
