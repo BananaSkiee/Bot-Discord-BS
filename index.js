@@ -11,6 +11,7 @@ const autoGreeting = require("./modules/autoGreeting");
 const updateTimeChannel = require("./modules/updateTimeChannel");
 const generateTextGraph = require('./modules/generateTextGraph');
 const startCryptoSimulation = require("./modules/cryptoSimulator");
+require("./modules/slashCommandSetup")(client);
 
 const client = new Client({
   intents: [
