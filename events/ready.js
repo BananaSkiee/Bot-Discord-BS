@@ -10,22 +10,18 @@ const autoSendMeme = require("../modules/autoMeme");
 const autoDelete = require("../modules/autoDeleteCryptoMessages.js");
 const slashCommandSetup = require("../modules/slashCommandSetup");
 
-require("../modules/slashCommandSetup")(client);
-
 module.exports = {
   name: "ready",
   once: true,
   async execute(client) {
     console.log(`🤖 Bot siap sebagai ${client.user.tag}`);
 
-console.log(`🤖 Bot siap sebagai ${client.user.tag}`);
+    // Menampilkan semua server tempat bot bergabung
+    console.log(`🧩 Bot berada di ${client.guilds.cache.size} server:`);
+    client.guilds.cache.forEach((guild) => {
+      console.log(`- ${guild.name} (ID: ${guild.id})`);
+    });
 
-// Menampilkan semua server tempat bot bergabung
-console.log(`🧩 Bot berada di ${client.guilds.cache.size} server:`);
-client.guilds.cache.forEach((guild) => {
-  console.log(`- ${guild.name} (ID: ${guild.id})`);
-});
-    
     const guild = client.guilds.cache.first();
     if (!guild) return;
 
@@ -45,8 +41,9 @@ client.guilds.cache.forEach((guild) => {
     // Simulasi BTC
     simulateBTC(client);
 
+    // Setup slash commands
     await slashCommandSetup(client);
-    
+
     // Update pesan grafik BTC
     setInterval(() => {
       const newContent = "📈 BTC: $65,000 (+0.4%)"; // bisa dari API
