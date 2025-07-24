@@ -1,7 +1,8 @@
 const OpenAI = require("openai");
-const openai = new OpenAI(process.env.OPENAI_API_KEY); // versi 3.2.1
+const openai = OpenAI(process.env.OPENAI_API_KEY); // ✅ TANPA "new"
 
-const AI_CHANNEL_ID = "1352635177536327760"; // Ganti dengan ID channel kamu
+// ID channel tempat AI aktif
+const AI_CHANNEL_ID = "1352635177536327760";
 
 module.exports = async function autoChat(client) {
   client.on("messageCreate", async (message) => {
@@ -14,26 +15,16 @@ module.exports = async function autoChat(client) {
       const response = await openai.chat.completions.create({
         model: "gpt-3.5-turbo",
         messages: [
-          {
-            role: "system",
-            content: "Kamu adalah AI asisten pintar dan ramah di Discord.",
-          },
-          {
-            role: "user",
-            content: message.content,
-          },
+          { role: "system", content: "Kamu adalah AI ramah di server Discord." },
+          { role: "user", content: message.content },
         ],
       });
 
       const reply = response.choices?.[0]?.message?.content;
-      if (reply) {
-        message.reply(reply);
-      } else {
-        message.reply("❌ Gagal mendapatkan jawaban dari AI.");
-      }
-    } catch (error) {
-      console.error("❌ Error AI:", error);
-      message.reply("⚠️ Ada masalah saat mengakses AI.");
+      message.reply(reply || "❌ Tidak bisa menjawab.");
+    } catch (err) {
+      console.error("❌ Error AI:", err);
+      message.reply("⚠️ Gagal mengakses AI.");
     }
   });
 };
