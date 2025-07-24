@@ -12,8 +12,11 @@ module.exports = (client) => {
 
   setInterval(async () => {
     const now = new Date();
-    const hour = now.getHours();
-    const greeting = greetings.find(g => g.hour === hour);
+    
+    // Konversi waktu UTC ke WIB (GMT+7)
+    const wibHour = (now.getUTCHours() + 7) % 24;
+
+    const greeting = greetings.find(g => g.hour === wibHour);
     if (!greeting) return;
 
     const channel = await client.channels.fetch(channelId).catch(() => null);
