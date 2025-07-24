@@ -1,9 +1,11 @@
 const { SlashCommandBuilder } = require("discord.js");
-const OpenAI = require("openai"); // <- tanpa kurung kurawal {}
+const { Configuration, OpenAIApi } = require("openai"); // ✅ pakai kurung kurawal
 
-const openai = new OpenAI({
+const configuration = new Configuration({
   apiKey: process.env.OPENAI_API_KEY,
 });
+
+const openai = new OpenAIApi(configuration); // ✅ Bukan 'new OpenAI'
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -14,8 +16,8 @@ module.exports = {
     await interaction.deferReply();
 
     try {
-      const res = await openai.chat.completions.create({
-        model: "gpt-4o",
+      const res = await openai.createChatCompletion({
+        model: "gpt-4o", // atau gpt-3.5-turbo jika akun kamu tidak punya akses gpt-4o
         messages: [
           {
             role: "system",
@@ -30,10 +32,10 @@ module.exports = {
         max_tokens: 150,
       });
 
-      const reply = res.choices?.[0]?.message?.content || "❌ Gagal membaca kodam.";
+      const reply = res.data.choices?.[0]?.message?.content || "❌ Gagal membaca kodam.";
       await interaction.editReply(`🔮 **Kodammu telah dibaca:**\n${reply}`);
     } catch (error) {
-      console.error("❌ AI Error:", error);
+      console.error("❌ AI Error:", error.response?.data || error.message);
       await interaction.editReply("❌ Gagal membaca kodam. Coba lagi nanti.");
     }
   },
