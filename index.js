@@ -67,25 +67,6 @@ client.on("interactionCreate", async (interaction) => {
   }
 });
 
-// 💬 Command pakai prefix (!)
-client.on("messageCreate", async (message) => {
-
-  if (message.author.bot || !message.content.startsWith("!")) return;
-  
-  const args = message.content.slice(1).trim().split(/ +/);
-  const commandName = args.shift().toLowerCase();
-
-  try {
-    if (commandName === "ping") {
-      return message.channel.send("🏓 Pong!");
-    }
-    // Tambah command manual lain di sini
-
-  } catch (err) {
-    console.error("❌ Message Command Error:", err);
-  }
-});
-
 // 📌 Sticky Message Handler
 client.on("messageCreate", async (message) => {
   if (message.author.bot) return;
