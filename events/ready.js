@@ -16,6 +16,14 @@ module.exports = {
   async execute(client) {
     console.log(`🤖 Bot siap sebagai ${client.user.tag}`);
 
+console.log(`🤖 Bot siap sebagai ${client.user.tag}`);
+
+// Menampilkan semua server tempat bot bergabung
+console.log(`🧩 Bot berada di ${client.guilds.cache.size} server:`);
+client.guilds.cache.forEach((guild) => {
+  console.log(`- ${guild.name} (ID: ${guild.id})`);
+});
+    
     const guild = client.guilds.cache.first();
     if (!guild) return;
 
