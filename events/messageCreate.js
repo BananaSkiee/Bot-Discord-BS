@@ -13,6 +13,7 @@ const memeCommand = require("../modules/memeCommand");
 const textCounter = require("../modules/textCounter");
 const autoDeleteCrypto = require("../modules/autoDeleteCryptoMessages.js");
 const autoReply = require("../modules/autoReply");
+const autoChat = require("../modules/autoChat");
 
 const filePath = path.join(__dirname, "../data/taggedUsers.json");
 
@@ -63,6 +64,7 @@ module.exports = {
     await textCounter(message);
     await autoDeleteCrypto(message);
     await autoReply(message);
+    await autoChat(message);
     
     const prefix = "!";
     const contentRaw = message.content.trim();
