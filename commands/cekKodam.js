@@ -1,11 +1,8 @@
 const { SlashCommandBuilder } = require("discord.js");
-// SINTAKS YANG BENAR UNTUK GOOGLE GEMINI
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 
-// Inisialisasi Gemini dengan API Key dari Environment Variables
+// Inisialisasi Gemini
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-
-const openai = new OpenAIApi(configuration); // ✅ Bukan 'new OpenAI'
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -16,26 +13,18 @@ module.exports = {
     await interaction.deferReply();
 
     try {
-      const res = await openai.createChatCompletion({
-        model: "gpt-4o", // atau gpt-3.5-turbo jika akun kamu tidak punya akses gpt-4o
-        messages: [
-          {
-            role: "system",
-            content: "Kamu adalah dukun sakti nan mistis. Jawabanmu harus gaib, puitis, dan spiritual. Hanya 2–4 kalimat.",
-          },
-          {
-            role: "user",
-            content: "Tolong bacakan kodamku.",
-          },
-        ],
-        temperature: 1,
-        max_tokens: 150,
-      });
+      const model = genAI.getGenerativeModel({ model: "gemini-pro" });
 
-      const reply = res.data.choices?.[0]?.message?.content || "❌ Gagal membaca kodam.";
-      await interaction.editReply(`🔮 **Kodammu telah dibaca:**\n${reply}`);
+      const prompt = `Tolong bacakan kodamku.\n
+Kamu adalah dukun sakti nan mistis. Jawabanmu harus gaib, puitis, dan spiritual. Jawab hanya 2–4 kalimat.`;
+
+      const result = await model.generateContent(prompt);
+      const response = await result.response;
+      const text = response.text();
+
+      await interaction.editReply(`🔮 **Kodammu telah dibaca:**\n${text}`);
     } catch (error) {
-      console.error("❌ AI Error:", error.response?.data || error.message);
+      console.error("❌ Gemini Error:", error);
       await interaction.editReply("❌ Gagal membaca kodam. Coba lagi nanti.");
     }
   },
