@@ -1,9 +1,9 @@
 const { SlashCommandBuilder } = require("discord.js");
-const { Configuration, OpenAIApi } = require("openai"); // ✅ pakai kurung kurawal
+// SINTAKS YANG BENAR UNTUK GOOGLE GEMINI
+const { GoogleGenerativeAI } = require("@google/generative-ai");
 
-const configuration = new Configuration({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+// Inisialisasi Gemini dengan API Key dari Environment Variables
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 const openai = new OpenAIApi(configuration); // ✅ Bukan 'new OpenAI'
 
