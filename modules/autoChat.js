@@ -1,6 +1,6 @@
-const { OpenAI } = require("openai");
+const OpenAI = require("openai");
 
-const openai = new OpenAI({
+const openai = OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
@@ -13,7 +13,7 @@ module.exports = async (message) => {
     await message.channel.sendTyping();
 
     const response = await openai.chat.completions.create({
-      model: "gpt-4o", // atau "gpt-3.5-turbo"
+      model: "gpt-3.5-turbo", // atau "gpt-3.5-turbo"
       messages: [
         { role: "system", content: "Kamu adalah asisten AI ramah di Discord server ini." },
         { role: "user", content: message.content }
