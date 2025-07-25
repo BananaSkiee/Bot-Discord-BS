@@ -1,19 +1,23 @@
-const OpenAI = require("openai");
+const { Configuration, OpenAIApi } = require("openai");
 
-const openai = new OpenAI({
+const configuration = new Configuration({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
+const openai = new OpenAIApi(configuration);
+
 // Ganti dengan ID channel khusus kamu (contoh: "123456789012345678")
-const AI_CHANNEL_ID = "1352635177536327760"; // <- GANTI ID NYA BENERAN
+const AI_CHANNEL_ID = "1352635177536327760";
 
 module.exports = async (message) => {
+  // Cek: bukan bot, dan di channel AI yang ditentukan
   if (message.author.bot || message.channel.id !== AI_CHANNEL_ID) return;
 
   try {
+    // Indikasi bot sedang mengetik
     await message.channel.sendTyping();
 
-    const response = await openai.chat.completions.create({
+    const response = await openai.createChatCompletion({
       model: "gpt-4o", // atau "gpt-3.5-turbo"
       messages: [
         { role: "system", content: "Kamu adalah asisten AI ramah di Discord server ini." },
@@ -23,7 +27,7 @@ module.exports = async (message) => {
       max_tokens: 150,
     });
 
-    const reply = response.choices?.[0]?.message?.content;
+    const reply = response.data.choices?.[0]?.message?.content;
     if (reply) {
       await message.reply(reply);
     }
