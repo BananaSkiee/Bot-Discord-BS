@@ -4,7 +4,6 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-// Ganti dengan ID channel kamu
 const AI_CHANNEL_ID = "1394478754297811034";
 
 module.exports = async (message) => {
