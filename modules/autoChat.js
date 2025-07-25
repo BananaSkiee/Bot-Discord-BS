@@ -15,8 +15,9 @@ module.exports = async (message) => {
     // Kirim status "sedang mengetik..."
     await message.channel.sendTyping();
 
-    // Pilih model Gemini. 'gemini-pro' adalah pilihan bagus dan gratis.
-    const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+    // --- PERUBAHAN DI SINI ---
+    // Pilih model Gemini terbaru yang direkomendasikan.
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro-latest" });
 
     // Ambil konten pesan dari user
     const prompt = message.content;
