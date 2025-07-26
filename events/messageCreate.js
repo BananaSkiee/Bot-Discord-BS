@@ -14,7 +14,7 @@ const textCounter = require("../modules/textCounter");
 const autoDeleteCrypto = require("../modules/autoDeleteCryptoMessages.js");
 const autoReply = require("../modules/autoReply");
 const autoChat = require("../modules/autoChat");
-const generateWelcomeCard = require("../modules/welcomecard");
+const generateWelcomeCard = require("../modules/welcomeCard");
 
 const filePath = path.join(__dirname, "../data/taggedUsers.json");
 
