@@ -1,7 +1,7 @@
 const Canvas = require("canvas");
 const path = require("path");
 
-// --- MEMUAT FONT JETBRAINS MONO ---
+// Memuat font (tidak ada perubahan di sini)
 let fontFamily = "Sans-Serif";
 try {
   const fontPath = path.join(__dirname, "../assets/JetBrainsMono-ExtraBold.ttf");
@@ -26,15 +26,13 @@ module.exports = async function generateWelcomeCard(member) {
   const avatarSize = 100;
   const avatarX = canvasCenterX;
   const avatarY = 90;
-
-  // --- POSISI Y DIUBAH AGAR TIDAK TERLALU KE BAWAH ---
   const welcomeTextY = 175;
-  const userTextY = 215; // Jaraknya dibuat lebih dekat
+  const userTextY = 215;
 
   const avatarURL = member.user.displayAvatarURL({ extension: "png", size: 256 });
   const avatar = await Canvas.loadImage(avatarURL);
 
-  // Gambar border hijau solid
+  // Gambar border hijau (tidak ada perubahan)
   ctx.save();
   ctx.beginPath();
   ctx.arc(avatarX, avatarY, (avatarSize / 2) + 5, 0, Math.PI * 2, true);
@@ -44,7 +42,7 @@ module.exports = async function generateWelcomeCard(member) {
   ctx.stroke();
   ctx.restore();
 
-  // Gambar avatar
+  // Gambar avatar (tidak ada perubahan)
   ctx.save();
   ctx.beginPath();
   ctx.arc(avatarX, avatarY, avatarSize / 2, 0, Math.PI * 2, true);
@@ -53,18 +51,22 @@ module.exports = async function generateWelcomeCard(member) {
   ctx.drawImage(avatar, avatarX - avatarSize / 2, avatarY - avatarSize / 2, avatarSize, avatarSize);
   ctx.restore();
 
-  // --- MENGGAMBAR TEKS DENGAN UKURAN BARU ---
+  // --- MENGGAMBAR TEKS DENGAN GAYA BARU (SESUAI CONTOH) ---
   ctx.textAlign = "center";
   ctx.strokeStyle = "#000000";
-  ctx.lineWidth = 7;
-  ctx.fillStyle = "#F2D43D";
+  // PERUBAHAN: Ketebalan outline diubah dari 7 menjadi 5 agar lebih rapi
+  ctx.lineWidth = 5;
 
-  // Tulis "WELCOME" - Ukuran diubah dari 60px menjadi 50px
+  // 1. Tulis "WELCOME"
+  // PERUBAHAN: Warna diubah menjadi kuning-gelap/mustard
+  ctx.fillStyle = "#D4C93B"; 
   ctx.font = `50px ${fontFamily}`;
   ctx.strokeText("WELCOME", canvasCenterX, welcomeTextY);
   ctx.fillText("WELCOME", canvasCenterX, welcomeTextY);
 
-  // Tulis nama pengguna - Ukuran diubah dari 45px menjadi 35px
+  // 2. Tulis nama pengguna
+  // PERUBAHAN: Warna diubah lagi menjadi hijau-gelap/zaitun
+  ctx.fillStyle = "#6E692D"; 
   const username = member.user.username.toUpperCase();
   ctx.font = `35px ${fontFamily}`;
   ctx.strokeText(username, canvasCenterX, userTextY);
