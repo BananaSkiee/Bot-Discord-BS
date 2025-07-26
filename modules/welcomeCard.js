@@ -1,37 +1,74 @@
 const Canvas = require("canvas");
 const path = require("path");
 
-// KITA TIDAK AKAN MENCOBA MEMUAT FONT KUSTOM SAMA SEKALI UNTUK TES INI
+// --- MEMUAT FONT JETBRAINS MONO ---
+let fontFamily = "Sans-Serif";
+try {
+  // NAMA FILE DIUBAH MENJADI JETBRAINS MONO
+  const fontPath = path.join(__dirname, "../assets/JetBrainsMono-ExtraBold.ttf");
+  
+  // Kita beri nama keluarga "CustomFont" lagi
+  Canvas.registerFont(fontPath, { family: "CustomFont" });
+  fontFamily = "CustomFont";
+  console.log("Font 'JetBrainsMono-ExtraBold.ttf' berhasil dimuat.");
+} catch (error) {
+  console.error("GAGAL MEMUAT FONT: Pastikan file 'JetBrainsMono-ExtraBold.ttf' ada di dalam folder 'assets'.");
+  console.error(error); 
+}
+
 
 module.exports = async function generateWelcomeCard(member) {
   const canvas = Canvas.createCanvas(700, 250);
   const ctx = canvas.getContext("2d");
 
-  // Gambar Latar Belakang
   const background = await Canvas.loadImage(path.join(__dirname, "../assets/bg.jpeg"));
   ctx.drawImage(background, 0, 0, canvas.width, canvas.height);
 
   const canvasCenterX = canvas.width / 2;
+  const avatarSize = 100;
+  const avatarX = canvasCenterX;
+  const avatarY = 90;
+  const welcomeTextY = 180;
+  const userTextY = 225;
 
-  // --- MENGGAMBAR TEKS DIAGNOSTIK ---
-  // Kita akan menggambar teks yang sangat sederhana dengan font sistem
+  const avatarURL = member.user.displayAvatarURL({ extension: "png", size: 256 });
+  const avatar = await Canvas.loadImage(avatarURL);
+
+  // Gambar border hijau solid
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(avatarX, avatarY, (avatarSize / 2) + 5, 0, Math.PI * 2, true);
+  ctx.closePath();
+  ctx.strokeStyle = '#6EEB54';
+  ctx.lineWidth = 6;
+  ctx.stroke();
+  ctx.restore();
+
+  // Gambar avatar
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(avatarX, avatarY, avatarSize / 2, 0, Math.PI * 2, true);
+  ctx.closePath();
+  ctx.clip();
+  ctx.drawImage(avatar, avatarX - avatarSize / 2, avatarY - avatarSize / 2, avatarSize, avatarSize);
+  ctx.restore();
+
+  // --- MENGGAMBAR TEKS DENGAN FONT BARU ---
   ctx.textAlign = "center";
-  ctx.fillStyle = "#FFFFFF"; // Teks putih sederhana
-  ctx.strokeStyle = "#000000"; // Outline hitam sederhana
-  ctx.lineWidth = 4;
-  
-  // Gunakan font sistem yang paling umum: "Arial"
-  // Jika Arial gagal, semua font kustom juga pasti akan gagal.
-  ctx.font = `60px Arial`; 
+  ctx.strokeStyle = "#000000";
+  ctx.lineWidth = 7;
+  ctx.fillStyle = "#F2D43D";
 
-  ctx.strokeText("TES FONT", canvasCenterX, 180); // Gambar outline
-  ctx.fillText("TES FONT", canvasCenterX, 180); // Gambar isi
+  // Tulis "WELCOME"
+  ctx.font = `60px ${fontFamily}`;
+  ctx.strokeText("WELCOME", canvasCenterX, welcomeTextY);
+  ctx.fillText("WELCOME", canvasCenterX, welcomeTextY);
 
+  // Tulis nama pengguna
   const username = member.user.username.toUpperCase();
-  ctx.font = `45px Arial`;
-  ctx.strokeText(username, canvasCenterX, 225);
-  ctx.fillText(username, canvasCenterX, 225);
-
+  ctx.font = `45px ${fontFamily}`;
+  ctx.strokeText(username, canvasCenterX, userTextY);
+  ctx.fillText(username, canvasCenterX, userTextY);
 
   return canvas.toBuffer("image/png");
 };
