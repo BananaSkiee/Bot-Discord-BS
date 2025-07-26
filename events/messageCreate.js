@@ -83,34 +83,24 @@ if (command === "meme") {
   return memeCommand.execute(message);
 }
 
-// ====== !testwelcome command ======
+// ========== !testwelcome ==========
 if (command === "testwelcome") {
-  try {
-    // Ambil data member dari author yang mengetik command
-    const memberAuthor = await message.guild.members.fetch(message.author.id);
+  const generateWelcomeCard = require("../modules/welcomeCard");
+  const memberAuthor = await message.guild.members.fetch(message.author.id);
+  const buffer = await generateWelcomeCard(memberAuthor);
 
-    // Import module generateWelcomeCard (pastikan sudah di-import di atas agar tidak duplikat!)
-    const buffer = await generateWelcomeCard(memberAuthor);
-
-    // Fetch target channel dari ID yang disimpan di .env
-    const targetChannel = await client.channels.fetch(process.env.CHANNEL_ID);
-    if (!targetChannel) {
-      return message.reply("❌ Channel welcome tidak ditemukan.");
-    }
-
-    // Kirim kartu welcome ke channel target
-    await targetChannel.send({
-      content: `🎉 Selamat datang, <@${memberAuthor.id}>!`,
-      files: [{ attachment: buffer, name: "welcome-card.png" }],
-    });
-
-    // Konfirmasi ke user bahwa kartu welcome sudah dikirim
-    return message.reply("✅ Kartu welcome sudah dikirim ke channel.");
-  } catch (error) {
-    console.error("❌ Gagal kirim welcome card:", error);
-    return message.reply("⚠️ Terjadi kesalahan saat membuat kartu welcome.");
+  const targetChannel = await client.channels.fetch(process.env.CHANNEL_ID);
+  if (!targetChannel) {
+    return message.reply("❌ Channel welcome tidak ditemukan.");
   }
-}
+
+  await targetChannel.send({
+    content: `🎉 Selamat datang, <@${memberAuthor.id}>!`,
+    files: [{ attachment: buffer, name: "welcome-card.png" }],
+  });
+
+  return message.reply("✅ Kartu welcome sudah dikirim ke channel.");
+}    
     
 // ====== !testdm command ======
 if (contentLower.startsWith("!testdm")) {
