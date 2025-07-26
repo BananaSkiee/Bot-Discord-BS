@@ -1,20 +1,17 @@
 const Canvas = require("canvas");
 const path = require("path");
 
-// --- MEMUAT FONT DENGAN NAMA DAN FORMAT YANG BENAR ---
+// --- MEMUAT FONT DARI LOKASI YANG SUDAH ANDA KONFIRMASI ---
 let fontFamily = "Sans-Serif";
 try {
-  // NAMA FILE DAN EKSTENSI DIUBAH AGAR SESUAI DENGAN PERMINTAAN ANDA
   const fontPath = path.join(__dirname, "../assets/ggsansextrabold.woff2");
   
-  // Daftarkan font dengan nama keluarga "DiscordFont"
   Canvas.registerFont(fontPath, { family: "DiscordFont" });
   fontFamily = "DiscordFont";
   console.log("Font 'ggsansextrabold.woff2' berhasil dimuat.");
 } catch (error) {
-  // Pesan error ini akan muncul jika file tidak ditemukan
   console.error("GAGAL MEMUAT FONT: Pastikan file 'ggsansextrabold.woff2' ada di dalam folder 'assets'.");
-  console.error(error); // Cetak error lengkap untuk debugging
+  console.error(error);
 }
 
 
