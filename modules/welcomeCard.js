@@ -1,7 +1,7 @@
 const Canvas = require("canvas");
 const path = require("path");
 
-// Logika untuk memuat font kustom (tidak diubah, sudah benar)
+// Logika untuk memuat font kustom (tidak diubah)
 let fontFamily = "Sans-Serif";
 try {
   const fontPath = path.join(__dirname, "../assets/Bangers-Regular.ttf");
@@ -21,31 +21,30 @@ module.exports = async function generateWelcomeCard(member) {
   const background = await Canvas.loadImage(path.join(__dirname, "../assets/bg.jpeg"));
   ctx.drawImage(background, 0, 0, canvas.width, canvas.height);
 
-  // --- PENGATURAN POSISI BARU (DI TENGAH) ---
-  const canvasCenterX = canvas.width / 2; // Titik tengah horizontal canvas adalah 350
-
-  // Posisi Avatar di tengah atas
+  // Pengaturan Posisi Tengah (tidak diubah)
+  const canvasCenterX = canvas.width / 2;
   const avatarSize = 100;
-  const avatarX = canvasCenterX; // Atur posisi X ke tengah canvas
-  const avatarY = 90;            // Atur posisi Y agak ke atas
+  const avatarX = canvasCenterX;
+  const avatarY = 90;
+  const welcomeTextY = 180;
+  const userTextY = 225;
 
-  // Posisi Teks di bawah avatar
-  const welcomeTextY = 180; // Posisi Y untuk "WELCOME"
-  const userTextY = 225;    // Posisi Y untuk nama user
-
-  // --- MENGGAMBAR AVATAR PENGGUNA ---
+  // Memuat Avatar
   const avatarURL = member.user.displayAvatarURL({ extension: "png", size: 256 });
   const avatar = await Canvas.loadImage(avatarURL);
 
-  // 1. Gambar border hijau putus-putus
+  // --- MENGGAMBAR AVATAR PENGGUNA ---
+
+  // 1. Gambar border hijau SOLID
   ctx.save();
   ctx.beginPath();
   ctx.arc(avatarX, avatarY, (avatarSize / 2) + 5, 0, Math.PI * 2, true);
   ctx.closePath();
   ctx.strokeStyle = '#6EEB54';
   ctx.lineWidth = 6;
-  ctx.setLineDash([10, 7]);
-  ctx.stroke();
+  // baris di bawah ini dihapus untuk membuat garis menjadi solid
+  // ctx.setLineDash([10, 7]); 
+  ctx.stroke(); // Sekarang akan menggambar garis yang menyambung
   ctx.restore();
 
   // 2. Gambar avatar di dalamnya
@@ -58,23 +57,20 @@ module.exports = async function generateWelcomeCard(member) {
   ctx.restore();
 
   // --- MENGGAMBAR TEKS SELAMAT DATANG ---
-  // Pastikan teks diatur ke rata tengah! Ini penting!
   ctx.textAlign = "center";
-  
-  // Atur gaya teks
   ctx.strokeStyle = "#000000";
   ctx.lineWidth = 7;
   ctx.fillStyle = "#F2D43D";
 
-  // Tulis "WELCOME"
+  // Tulis "WELCOME" (di atas)
   ctx.font = `bold 60px ${fontFamily}`;
-  ctx.strokeText("WELCOME", canvasCenterX, welcomeTextY); // Gunakan X tengah dan Y yang sudah ditentukan
+  ctx.strokeText("WELCOME", canvasCenterX, welcomeTextY);
   ctx.fillText("WELCOME", canvasCenterX, welcomeTextY);
 
-  // Tulis nama pengguna
+  // Tulis nama pengguna (di bawahnya)
   const username = member.user.username.toUpperCase();
   ctx.font = `bold 45px ${fontFamily}`;
-  ctx.strokeText(username, canvasCenterX, userTextY); // Gunakan X tengah dan Y yang sudah ditentukan
+  ctx.strokeText(username, canvasCenterX, userTextY);
   ctx.fillText(username, canvasCenterX, userTextY);
 
   return canvas.toBuffer("image/png");
