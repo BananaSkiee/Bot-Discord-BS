@@ -5,11 +5,11 @@ module.exports = async function generateWelcomeCard(member) {
   const canvas = Canvas.createCanvas(700, 250);
   const ctx = canvas.getContext("2d");
 
-  // Load background
+  // Background
   const background = await Canvas.loadImage(path.join(__dirname, "../assets/bg.jpeg"));
   ctx.drawImage(background, 0, 0, canvas.width, canvas.height);
 
-  // Draw circle avatar
+  // Avatar
   const avatarURL = member.user.displayAvatarURL({ extension: "png", size: 256 });
   const avatar = await Canvas.loadImage(avatarURL);
 
@@ -19,25 +19,18 @@ module.exports = async function generateWelcomeCard(member) {
 
   ctx.save();
   ctx.beginPath();
-  ctx.arc(
-    avatarX + avatarSize / 2, // center X
-    avatarY + avatarSize / 2, // center Y
-    avatarSize / 2,           // radius
-    0,
-    Math.PI * 2,
-    true
-  );
+  ctx.arc(avatarX + avatarSize / 2, avatarY + avatarSize / 2, avatarSize / 2, 0, Math.PI * 2, true);
   ctx.closePath();
   ctx.clip();
-
   ctx.drawImage(avatar, avatarX, avatarY, avatarSize, avatarSize);
   ctx.restore();
 
-  // Draw text
+  // Text di tengah
   ctx.font = "bold 32px Sans";
   ctx.fillStyle = "#ffffff";
-  ctx.textAlign = "left";
-  ctx.fillText(`Welcome, ${member.user.username}!`, 250, 140);
+  ctx.textAlign = "center"; // Tengah horizontal
+  ctx.textBaseline = "middle"; // Tengah vertical (opsional)
+  ctx.fillText(`Welcome, ${member.user.username}!`, canvas.width / 2, canvas.height / 2);
 
   return canvas.toBuffer("image/png");
 };
