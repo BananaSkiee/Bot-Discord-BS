@@ -14,7 +14,7 @@ const textCounter = require("../modules/textCounter");
 const autoDeleteCrypto = require("../modules/autoDeleteCryptoMessages.js");
 const autoReply = require("../modules/autoReply");
 const autoChat = require("../modules/autoChat");
-
+const generateWelcomeCard = require("../modules/welcomecard");
 const filePath = path.join(__dirname, "../data/taggedUsers.json");
 
 const ADMIN_ROLE_ID = "1352279577174605884";
@@ -80,6 +80,35 @@ const command = commandRaw.toLowerCase();
 // Di dalam messageCreate:
 if (command === "meme") {
   return memeCommand.execute(message);
+}
+
+// ====== !testwelcome command ======
+if (command === "testwelcome") {
+  try {
+    // Ambil data member dari author yang mengetik command
+    const memberAuthor = await message.guild.members.fetch(message.author.id);
+
+    // Import module generateWelcomeCard (pastikan sudah di-import di atas agar tidak duplikat!)
+    const buffer = await generateWelcomeCard(memberAuthor);
+
+    // Fetch target channel dari ID yang disimpan di .env
+    const targetChannel = await client.channels.fetch(process.env.CHANNEL_ID);
+    if (!targetChannel) {
+      return message.reply("❌ Channel welcome tidak ditemukan.");
+    }
+
+    // Kirim kartu welcome ke channel target
+    await targetChannel.send({
+      content: `🎉 Selamat datang, <@${memberAuthor.id}>!`,
+      files: [{ attachment: buffer, name: "welcome-card.png" }],
+    });
+
+    // Konfirmasi ke user bahwa kartu welcome sudah dikirim
+    return message.reply("✅ Kartu welcome sudah dikirim ke channel.");
+  } catch (error) {
+    console.error("❌ Gagal kirim welcome card:", error);
+    return message.reply("⚠️ Terjadi kesalahan saat membuat kartu welcome.");
+  }
 }
     
 // ====== !testdm command ======
