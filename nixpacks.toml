@@ -1,8 +1,10 @@
+# nixpacks.toml (VERSI YANG BENAR UNTUK NODE-CANVAS)
+
 [phases.setup]
-nixPkgs = ["nodejs"]
-
-[phases.build]
-cmds = ["npm install"]
-
-[start]
-cmd = "node index.js"
+nixPkgs = [
+    "pkgs.cairo",
+    "pkgs.pango",
+    "pkgs.libjpeg",
+    "pkgs.giflib",
+    "pkgs.librsvg"
+]
