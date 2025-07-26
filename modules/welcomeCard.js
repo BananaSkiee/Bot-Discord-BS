@@ -4,10 +4,8 @@ const path = require("path");
 // --- MEMUAT FONT JETBRAINS MONO ---
 let fontFamily = "Sans-Serif";
 try {
-  // NAMA FILE DIUBAH MENJADI JETBRAINS MONO
   const fontPath = path.join(__dirname, "../assets/JetBrainsMono-ExtraBold.ttf");
   
-  // Kita beri nama keluarga "CustomFont" lagi
   Canvas.registerFont(fontPath, { family: "CustomFont" });
   fontFamily = "CustomFont";
   console.log("Font 'JetBrainsMono-ExtraBold.ttf' berhasil dimuat.");
@@ -28,8 +26,10 @@ module.exports = async function generateWelcomeCard(member) {
   const avatarSize = 100;
   const avatarX = canvasCenterX;
   const avatarY = 90;
-  const welcomeTextY = 180;
-  const userTextY = 225;
+
+  // --- POSISI Y DIUBAH AGAR TIDAK TERLALU KE BAWAH ---
+  const welcomeTextY = 175;
+  const userTextY = 215; // Jaraknya dibuat lebih dekat
 
   const avatarURL = member.user.displayAvatarURL({ extension: "png", size: 256 });
   const avatar = await Canvas.loadImage(avatarURL);
@@ -53,20 +53,20 @@ module.exports = async function generateWelcomeCard(member) {
   ctx.drawImage(avatar, avatarX - avatarSize / 2, avatarY - avatarSize / 2, avatarSize, avatarSize);
   ctx.restore();
 
-  // --- MENGGAMBAR TEKS DENGAN FONT BARU ---
+  // --- MENGGAMBAR TEKS DENGAN UKURAN BARU ---
   ctx.textAlign = "center";
   ctx.strokeStyle = "#000000";
   ctx.lineWidth = 7;
   ctx.fillStyle = "#F2D43D";
 
-  // Tulis "WELCOME"
-  ctx.font = `60px ${fontFamily}`;
+  // Tulis "WELCOME" - Ukuran diubah dari 60px menjadi 50px
+  ctx.font = `50px ${fontFamily}`;
   ctx.strokeText("WELCOME", canvasCenterX, welcomeTextY);
   ctx.fillText("WELCOME", canvasCenterX, welcomeTextY);
 
-  // Tulis nama pengguna
+  // Tulis nama pengguna - Ukuran diubah dari 45px menjadi 35px
   const username = member.user.username.toUpperCase();
-  ctx.font = `45px ${fontFamily}`;
+  ctx.font = `35px ${fontFamily}`;
   ctx.strokeText(username, canvasCenterX, userTextY);
   ctx.fillText(username, canvasCenterX, userTextY);
 
