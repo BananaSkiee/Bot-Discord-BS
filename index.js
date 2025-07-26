@@ -11,7 +11,7 @@ const autoGreeting = require("./modules/autoGreeting");
 const updateTimeChannel = require("./modules/updateTimeChannel");
 const generateTextGraph = require('./modules/generateTextGraph');
 const startCryptoSimulation = require("./modules/cryptoSimulator");
-const welcomecard = require("./modules/welcomecard");
+const welcomecard = require("./modules/welcomeCard");
 
 
 const client = new Client({
