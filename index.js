@@ -11,6 +11,8 @@ const autoGreeting = require("./modules/autoGreeting");
 const updateTimeChannel = require("./modules/updateTimeChannel");
 const generateTextGraph = require('./modules/generateTextGraph');
 const startCryptoSimulation = require("./modules/cryptoSimulator");
+const welcomecard = require("./modules/welcomecard");
+
 
 const client = new Client({
   intents: [
@@ -76,7 +78,17 @@ client.on("messageCreate", async (message) => {
 
 // 🚀 Auto Greeting ketika user join
 client.on("guildMemberAdd", async (member) => {
+  // 1. Jalankan greeting tambahan (opsional)
   autoGreeting(client, member);
+
+  // 2. Kirim pesan selamat datang di system channel
+  const channel = member.guild.systemChannel;
+  if (channel) {
+    channel.send(`Selamat datang <@${member.id}>!`);
+  }
+
+  // 3. Kirim kartu welcome (gambar)
+  welcomecard(member);
 });
 
 // 🔁 Update jumlah user online di VC
