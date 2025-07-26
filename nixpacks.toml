@@ -6,3 +6,12 @@ cmds = ["npm install"]
 
 [start]
 cmd = "node index.js"
+
+[phases.setup]
+nixPkgs = [
+    "pkgs.cairo",
+    "pkgs.pango",
+    "pkgs.libjpeg",
+    "pkgs.giflib",
+    "pkgs.librsvg"
+]
