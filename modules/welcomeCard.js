@@ -1,17 +1,20 @@
 const Canvas = require("canvas");
 const path = require("path");
 
-// --- MEMUAT FONT NOTO SANS YANG LEBIH LENGKAP ---
-let fontFamily = "Sans-Serif"; // Font default jika gagal
+// --- MEMUAT FONT DENGAN NAMA DAN FORMAT YANG BENAR ---
+let fontFamily = "Sans-Serif";
 try {
-  // Ganti nama file font menjadi NotoSans-Bold.ttf
-  const fontPath = path.join(__dirname, "../assets/NotoSans-Bold.ttf");
-  // Daftarkan font dengan nama keluarga "CompleteFont"
-  Canvas.registerFont(fontPath, { family: "CompleteFont" });
-  fontFamily = "CompleteFont";
-  console.log("Font lengkap 'NotoSans-Bold.ttf' berhasil dimuat.");
+  // NAMA FILE DAN EKSTENSI DIUBAH AGAR SESUAI DENGAN PERMINTAAN ANDA
+  const fontPath = path.join(__dirname, "../assets/ggsansextrabold.woff2");
+  
+  // Daftarkan font dengan nama keluarga "DiscordFont"
+  Canvas.registerFont(fontPath, { family: "DiscordFont" });
+  fontFamily = "DiscordFont";
+  console.log("Font 'ggsansextrabold.woff2' berhasil dimuat.");
 } catch (error) {
-  console.warn("PERINGATAN: Gagal memuat font NotoSans-Bold.ttf. Pastikan file sudah ada di folder 'assets'.");
+  // Pesan error ini akan muncul jika file tidak ditemukan
+  console.error("GAGAL MEMUAT FONT: Pastikan file 'ggsansextrabold.woff2' ada di dalam folder 'assets'.");
+  console.error(error); // Cetak error lengkap untuk debugging
 }
 
 
@@ -51,15 +54,14 @@ module.exports = async function generateWelcomeCard(member) {
   ctx.drawImage(avatar, avatarX - avatarSize / 2, avatarY - avatarSize / 2, avatarSize, avatarSize);
   ctx.restore();
 
-  // --- MENGGAMBAR TEKS DENGAN FONT LENGKAP ---
+  // --- MENGGAMBAR TEKS DENGAN FONT DISCORD ---
   ctx.textAlign = "center";
   ctx.strokeStyle = "#000000";
   ctx.lineWidth = 7;
   ctx.fillStyle = "#F2D43D";
 
   // Tulis "WELCOME"
-  // Gunakan variabel fontFamily yang sekarang merujuk ke "CompleteFont" (Noto Sans)
-  ctx.font = `60px ${fontFamily}`; // Ukuran font sudah diatur oleh file 'Bold'
+  ctx.font = `60px ${fontFamily}`;
   ctx.strokeText("WELCOME", canvasCenterX, welcomeTextY);
   ctx.fillText("WELCOME", canvasCenterX, welcomeTextY);
 
