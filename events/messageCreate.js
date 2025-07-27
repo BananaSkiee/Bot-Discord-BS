@@ -110,6 +110,7 @@ function getRandomColor() {
   return color;
 }
 
+const joinTime = message.member?.joinedTimestamp || Date.now();
 const duration = formatDuration(Date.now() - joinTime);
 
 const testEmbed = new EmbedBuilder()
