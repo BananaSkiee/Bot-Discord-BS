@@ -58,7 +58,7 @@ module.exports = async function generateWelcomeCard(member) {
   ctx.fillStyle = "#F1C40F"; 
   ctx.font = `45px ${fontFamily}`;
   // PERUBAHAN: Baris di bawah ini dihapus untuk menghilangkan outline hitam
-  // ctx.strokeText("WELCOME", canvasCenterX, welcomeTextY); 
+  ctx.strokeText("WELCOME", canvasCenterX, welcomeTextY); 
   ctx.fillText("WELCOME", canvasCenterX, welcomeTextY);
 
   // 2. Tulis nama pengguna
@@ -66,7 +66,7 @@ module.exports = async function generateWelcomeCard(member) {
   const username = member.user.username.toUpperCase();
   ctx.font = `28px ${fontFamily}`;
   // PERUBAHAN: Baris di bawah ini dihapus untuk menghilangkan outline hitam
-  // ctx.strokeText(username, canvasCenterX, userTextY);
+  ctx.strokeText(username, canvasCenterX, userTextY);
   ctx.fillText(username, canvasCenterX, userTextY);
 
   return canvas.toBuffer("image/png");
