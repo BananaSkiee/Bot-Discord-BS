@@ -4,7 +4,7 @@ const path = require("path");
 // Memuat font gg sans
 let fontFamily = "Sans-Serif";
 try {
-  const fontPath = path.join(__dirname, "../assets/JetBrainsMono-SemiBold.ttf");
+  const fontPath = path.join(__dirname, "../assets/Lato-Black.ttf");
   
   Canvas.registerFont(fontPath, { family: "DiscordFont" });
   fontFamily = "DiscordFont";
