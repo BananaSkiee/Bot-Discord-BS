@@ -51,7 +51,8 @@ const welcomeMessages = [
 
 function getRandomWelcome(username) {
   const index = Math.floor(Math.random() * welcomeMessages.length);
-  return welcomeMessages[index](username);
+  const template = welcomeMessages[index];
+  return template.replace(/\$\{username\}/g, username);
 }
 
 module.exports = getRandomWelcome;
