@@ -4,7 +4,7 @@ const path = require("path");
 // Memuat font (tidak ada perubahan di sini)
 let fontFamily = "Sans-Serif";
 try {
-  const fontPath = path.join(__dirname, "../assets/JetBrainsMono-ExtraBold.ttf");
+  const fontPath = path.join(__dirname, "../assets/JetBrainsMono-Bold.ttf");
   
   Canvas.registerFont(fontPath, { family: "CustomFont" });
   fontFamily = "CustomFont";
