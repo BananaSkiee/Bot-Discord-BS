@@ -83,55 +83,75 @@ if (command === "meme") {
   return memeCommand.execute(message);
 }
 
-// GANTI BAGIAN LAMA DI messageCreate.js ANDA DENGAN INI
+// GANTI BLOK LAMA !testwelcome DI messageCreate.js ANDA DENGAN INI
 
-// Impor AttachmentBuilder dan EmbedBuilder di bagian paling atas file, jika belum ada
-const { AttachmentBuilder, EmbedBuilder } = require('discord.js');
-const generateWelcomeCard = require("../modules/welcomeCard");
+if (command === 'testwelcome') { // Menggunakan 'command' dari struktur kode Anda
+    if (message.author.bot) return;
 
-// ... (kode lain di dalam event messageCreate) ...
+    const member = message.member;
+    const channel = message.channel; // Tes akan dikirim di channel saat ini
 
-// Ini adalah contoh jika perintah Anda adalah "!testwelcome"
-if (message.content.toLowerCase() === '!testwelcome') {
+    // --- ID CHANNEL UNTUK TOMBOL ---
+    const rulesChannelId   = '1352326247186694164';
+    const rolesChannelId   = '1352823970054803509';
+    const helpChannelId    = '1352326787367047188';
+    // ------------------------------------
+    
+    try {
+        const imageBuffer = await generateWelcomeCard(member);
+        const attachment = new AttachmentBuilder(imageBuffer, { name: 'welcome-card.png' });
 
-  // Ambil data member dari pengirim pesan
-  const memberAuthor = await message.guild.members.fetch(message.author.id);
-  
-  // Ambil channel target dari environment variables
-  const targetChannel = await client.channels.fetch(process.env.CHANNEL_ID);
-  if (!targetChannel) {
-    return message.reply("❌ Channel welcome tidak ditemukan.");
-  }
+        // BUAT EMBED DAN TOMBOL LENGKAP
+        const testEmbed = new EmbedBuilder()
+            .setColor('#F1C40F') // Warna kuning untuk tes
+            .setAuthor({ name: `[TES] Welcome, ${member.user.username}`, iconURL: member.user.displayAvatarURL() })
+            .setDescription(
+                `Welcome <@${member.id}> to **${member.guild.name}**!\n\n` +
+                `>>> ››› Read the rules in <#${rulesChannelId}>\n` +
+                `>>> ››› Choose your roles in <#${rolesChannelId}>\n` +
+                `>>> ››› Need assistance? Visit <#${helpChannelId}>`
+            )
+            .setImage('attachment://welcome-card.png');
 
-  try {
-    // 1. Buat gambar kartu
-    const buffer = await generateWelcomeCard(memberAuthor);
-    const attachment = new AttachmentBuilder(buffer, { name: "welcome-card.png" });
+        const row = new ActionRowBuilder()
+            .addComponents(
+                new ButtonBuilder()
+                    .setLabel('Rules')
+                    .setEmoji('📖')
+                    .setStyle(ButtonStyle.Link)
+                    .setURL(`https://discord.com/channels/${member.guild.id}/${rulesChannelId}`),
+                
+                new ButtonBuilder()
+                    .setLabel('Verified')
+                    .setEmoji('🎭')
+                    .setStyle(ButtonStyle.Link)
+                    .setURL(`https://discord.com/channels/${member.guild.id}/${rolesChannelId}`),
 
-    // 2. BUAT EMBED BARU UNTUK TES
-    const testEmbed = new EmbedBuilder()
-        .setColor('#F1C40F') // Warna kuning untuk tes
-        .setAuthor({ name: `TES KARTU SELAMAT DATANG`, iconURL: message.guild.iconURL() })
-        .setDescription(`Ini adalah contoh kartu yang akan diterima oleh **${memberAuthor.user.username}**.`)
-        .setImage('attachment://welcome-card.png'); // Menampilkan gambar di dalam embed
+                new ButtonBuilder()
+                    .setLabel('Bantuan')
+                    .setEmoji('❓')
+                    .setStyle(ButtonStyle.Link)
+                    .setURL(`https://discord.com/channels/${member.guild.id}/${helpChannelId}`)
+            );
+        
+        // Kirim pesan tes ke channel tempat command dijalankan
+        await channel.send({ 
+            embeds: [testEmbed], 
+            files: [attachment], 
+            components: [row] 
+        });
 
-    // 3. Kirim pesan ke channel target dengan embed dan gambar
-    await targetChannel.send({
-      content: `Test welcome card untuk <@${memberAuthor.id}>`,
-      embeds: [testEmbed], // Kirim embed di sini
-      files: [attachment]  // Kirim gambar sebagai lampiran
-    });
+        // Hapus pesan perintah !testwelcome agar channel bersih (opsional)
+        if (message.deletable) {
+            await message.delete().catch(console.error);
+        }
 
-    // Beri balasan konfirmasi ke pengguna
-    return message.reply(`✅ Kartu welcome tes sudah dikirim ke channel ${targetChannel}.`);
-
-  } catch (error) {
-    console.error("ERROR SAAT TES WELCOME MANUAL:", error);
-    return message.reply("❌ Terjadi kesalahan saat membuat kartu tes.");
-  }
+    } catch (error) {
+        console.error("ERROR SAAT TES WELCOME MANUAL:", error);
+        message.reply('❌ Terjadi kesalahan saat membuat kartu tes.');
+    }
+    return; // Hentikan eksekusi setelah perintah ini selesai
 }
-
-// ... (sisa kode lain di messageCreate.js) ...
     
 // ====== !testdm command ======
 if (contentLower.startsWith("!testdm")) {
