@@ -1,44 +1,45 @@
-// File: events/guildMemberAdd.js (KODE FINAL YANG PALING BENAR)
+// --- BAGIAN INI UNTUK MENGGANTIKAN KODE LAMA ANDA DI INDEX.JS ---
 
-const { AttachmentBuilder, EmbedBuilder } = require('discord.js');
-const generateWelcomeCard = require('../modules/welcomeCard.js');
+// Impor AttachmentBuilder dan EmbedBuilder di bagian paling atas index.js
+const { Client, GatewayIntentBits, Collection, AttachmentBuilder, EmbedBuilder } = require("discord.js"); 
 
-module.exports = {
-    name: 'guildMemberAdd',
-    async execute(member) {
-        // Ganti dengan ID channel welcome Anda
-        const welcomeChannelId = '1394478754297811034';
-        
-        const welcomeChannel = member.guild.channels.cache.get(welcomeChannelId);
-        if (!welcomeChannel) {
-            return console.error(`GAGAL: Channel dengan ID ${welcomeChannelId} tidak ditemukan.`);
-        }
+// ... (kode Anda yang lain biarkan saja) ...
 
-        try {
-            // 1. Buat gambar kartu
-            const imageBuffer = await generateWelcomeCard(member);
-            const attachment = new AttachmentBuilder(imageBuffer, { name: 'welcome-card.png' });
+// 🚀 Pesan Selamat Datang (Welcome Card + Embed)
+client.on("guildMemberAdd", async (member) => {
+    // ===================================================================
+    // PENTING: Ganti dengan ID channel selamat datang Anda yang sebenarnya
+    const welcomeChannelId = '1394478754297811034';
+    // ===================================================================
 
-            // 2. Buat embed
-            const welcomeEmbed = new EmbedBuilder()
-                .setColor('#2ECC71')
-                .setAuthor({ name: `SELAMAT DATANG DI ${member.guild.name.toUpperCase()}`, iconURL: member.guild.iconURL() })
-                .setDescription(`Halo ${member.user}, semoga betah ya!`)
-                .setThumbnail(member.user.displayAvatarURL())
-                .setImage('attachment://welcome-card.png') // Ini menampilkan gambar di dalam embed
-                .setTimestamp()
-                .setFooter({ text: `Kamu adalah member ke-${member.guild.memberCount}` });
+    const welcomeChannel = member.guild.channels.cache.get(welcomeChannelId);
+    if (!welcomeChannel) {
+        return console.error(`[WELCOME] GAGAL: Channel dengan ID ${welcomeChannelId} tidak ditemukan.`);
+    }
 
-            // 3. Kirim pesan dengan embed dan file
-            // Pastikan formatnya seperti ini: { embeds: [...], files: [...] }
-            await welcomeChannel.send({
-                embeds: [welcomeEmbed],
-                files: [attachment]
-            });
-            console.log(`Pesan embed selamat datang untuk ${member.user.tag} berhasil terkirim.`);
+    try {
+        // 1. Panggil fungsi untuk membuat gambar kartunya
+        const imageBuffer = await welcomecard(member);
+        const attachment = new AttachmentBuilder(imageBuffer, { name: 'welcome-card.png' });
 
-        } catch (error) {
-            console.error(`TERJADI ERROR SAAT MENGIRIM EMBED:`, error);
-        }
-    },
-};
+        // 2. Buat embed yang akan dikirim
+        const welcomeEmbed = new EmbedBuilder()
+            .setColor('#2ECC71')
+            .setAuthor({ name: `SELAMAT DATANG DI ${member.guild.name.toUpperCase()}`, iconURL: member.guild.iconURL() })
+            .setImage('attachment://welcome-card.png') // Menampilkan gambar di dalam embed
+            .setTimestamp()
+            .setFooter({ text: `Kamu adalah member ke-${member.guild.memberCount}` });
+
+        // 3. Kirim pesan yang berisi embed dan gambar
+        await welcomeChannel.send({
+            content: `👋 Hey ${member.user}, selamat datang!`,
+            embeds: [welcomeEmbed],
+            files: [attachment]
+        });
+
+    } catch (error) {
+        console.error(`[WELCOME] GAGAL mengirim pesan selamat datang:`, error);
+    }
+});
+
+// ... (sisa kode Anda yang lain biarkan saja) ...
