@@ -83,24 +83,7 @@ if (command === "meme") {
   return memeCommand.execute(message);
 }
 
-// ========== !testwelcome ==========
-if (command === "testwelcome") {
-  const generateWelcomeCard = require("../modules/welcomeCard");
-  const memberAuthor = await message.guild.members.fetch(message.author.id);
-  const buffer = await generateWelcomeCard(memberAuthor);
 
-  const targetChannel = await client.channels.fetch(process.env.CHANNEL_ID);
-  if (!targetChannel) {
-    return message.reply("❌ Channel welcome tidak ditemukan.");
-  }
-
-  await targetChannel.send({
-    content: `🎉 Selamat datang, <@${memberAuthor.id}>!`,
-    files: [{ attachment: buffer, name: "welcome-card.png" }],
-  });
-
-  return message.reply("✅ Kartu welcome sudah dikirim ke channel.");
-}    
     
 // ====== !testdm command ======
 if (contentLower.startsWith("!testdm")) {
