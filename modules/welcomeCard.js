@@ -4,7 +4,7 @@ const path = require("path");
 // Memuat font gg sans
 let fontFamily = "Sans-Serif";
 try {
-  const fontPath = path.join(__dirname, "../assets/DejaVuSans-Bold.ttf");
+  const fontPath = path.join(__dirname, "../assets/JetBrainsMono-SemiBold.ttf");
   
   Canvas.registerFont(fontPath, { family: "DiscordFont" });
   fontFamily = "DiscordFont";
@@ -38,7 +38,7 @@ module.exports = async function generateWelcomeCard(member) {
   // ctx.arc(canvasCenterX, avatarY, (avatarSize / 2) + 5, 0, Math.PI * 2, true);
   ctx.closePath();
   ctx.strokeStyle = '#2ECC71'; 
-  ctx.lineWidth = 3;
+  ctx.lineWidth = 4;
   ctx.stroke();
   ctx.restore();
 
