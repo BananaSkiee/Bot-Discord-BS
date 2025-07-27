@@ -1,7 +1,10 @@
 const fs = require("fs");
 const path = require("path");
-// Tambahkan baris ini di bagian paling atas file messageCreate.js
-const { AttachmentBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
+const {
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+} = require("discord.js");
 
 const countValidator = require("../modules/countValidator");
 const handleHapusTag = require("../modules/hapusTagCommand");
@@ -93,33 +96,49 @@ if (command === 'testwelcome') { // Menggunakan 'command' dari struktur kode And
     const rolesChannelId   = '1352823970054803509';
     const helpChannelId    = '1352326787367047188';
     // ------------------------------------
-
+    
     try {
         const imageBuffer = await generateWelcomeCard(member);
         const attachment = new AttachmentBuilder(imageBuffer, { name: 'welcome-card.png' });
 
-        // --- MEMBUAT BLOK TEKS INFORMASI YANG RAPI ---
-        const infoBlock = "```" +
-          `${'Welcome'.padEnd(14)}: <@${member.id}>\n` +
-          `${'To Server'.padEnd(14)}: ${member.guild.name}\n` +
-          `${'Total Members'.padEnd(14)}: ${member.guild.memberCount}` +
-          "```";
-        
-        // --- MEMBUAT EMBED DENGAN GAYA BARU (INFO DI DALAM DESKRIPSI) ---
+        // BUAT EMBED DAN TOMBOL LENGKAP
         const testEmbed = new EmbedBuilder()
-            .setColor(0x2B2D31) // Warna abu-abu gelap agar menyatu
-            // PERBAIKAN KUNCI: Masukkan seluruh blok info ke dalam deskripsi
-            .setDescription(infoBlock)
+            .setColor('#F1C40F') // Warna kuning untuk tes
+            .setAuthor({ name: `[TES] Welcome, ${member.user.username}`, iconURL: member.user.displayAvatarURL() })
+            .setDescription(
+                `Welcome <@${member.id}> to **${member.guild.name}**!\n\n` +
+                `>>> ››› Read the rules in <#${rulesChannelId}>\n` +
+                `>>> ››› Choose your roles in <#${rolesChannelId}>\n` +
+                `>>> ››› Need assistance? Visit <#${helpChannelId}>`
+            )
             .setImage('attachment://welcome-card.png');
 
-        // Judul "WELCOME" yang warna-warni
-        const welcomeTitle = '✨ 𝐖 𝐄 𝐋 𝐂 𝐎 𝐌 𝐄 ✨';
+        const row = new ActionRowBuilder()
+            .addComponents(
+                new ButtonBuilder()
+                    .setLabel('Rules')
+                    .setEmoji('📖')
+                    .setStyle(ButtonStyle.Link)
+                    .setURL(`https://discord.com/channels/${member.guild.id}/${rulesChannelId}`),
+                
+                new ButtonBuilder()
+                    .setLabel('Verified')
+                    .setEmoji('🎭')
+                    .setStyle(ButtonStyle.Link)
+                    .setURL(`https://discord.com/channels/${member.guild.id}/${rolesChannelId}`),
 
-        // Kirim pesan dengan judul (content) dan embed (info + gambar)
+                new ButtonBuilder()
+                    .setLabel('Bantuan')
+                    .setEmoji('❓')
+                    .setStyle(ButtonStyle.Link)
+                    .setURL(`https://discord.com/channels/${member.guild.id}/${helpChannelId}`)
+            );
+        
+        // Kirim pesan tes ke channel tempat command dijalankan
         await channel.send({ 
-            content: `[TES] ${welcomeTitle}`, // Tambahkan [TES] untuk menandakan
             embeds: [testEmbed], 
-            files: [attachment]
+            files: [attachment], 
+            components: [row] 
         });
 
         // Hapus pesan perintah !testwelcome agar channel bersih (opsional)
@@ -133,7 +152,6 @@ if (command === 'testwelcome') { // Menggunakan 'command' dari struktur kode And
     }
     return; // Hentikan eksekusi setelah perintah ini selesai
 }
-// ... (sisa kode Anda yang lain) ...
     
 // ====== !testdm command ======
 if (contentLower.startsWith("!testdm")) {
