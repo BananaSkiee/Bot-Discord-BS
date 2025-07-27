@@ -3,6 +3,7 @@
 // PERUBAHAN: Tambahkan ActionRowBuilder, ButtonBuilder, dan ButtonStyle
 const { AttachmentBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
 const generateWelcomeCard = require('../modules/welcomeCard.js');
+const formatDuration = require('../modules/formatDuration');
 
 module.exports = {
     name: 'guildMemberAdd',
@@ -21,18 +22,29 @@ module.exports = {
             const imageBuffer = await generateWelcomeCard(member);
             const attachment = new AttachmentBuilder(imageBuffer, { name: 'welcome-card.png' });
 
-            // PERUBAHAN: Embed diubah agar mirip contoh VoxRegn
-            const welcomeEmbed = new EmbedBuilder()
-                .setColor('#2ECC71') // Anda bisa ganti warna ini jika mau
-                .setAuthor({ name: `Welcome, ${member.user.username}`, iconURL: member.user.displayAvatarURL() })
-                .setDescription(
-                    `Welcome <@${member.id}> to **${member.guild.name}**!\n\n` +
-                    `>>> ››› Read the rules in <#${rulesChannelId}>\n` +
-                    `>>> ››› Choose your roles in <#${rolesChannelId}>\n` +
-                    `>>> ››› Need assistance? Visit <#${helpChannelId}>`
-                )
-                .setImage('attachment://welcome-card.png');
+            // Fungsi warna acak HEX
+function getRandomColor() {
+  const letters = '0123456789ABCDEF';
+  let color = '#';
+  for (let i = 0; i < 6; i++) {
+    color += letters[Math.floor(Math.random() * 16)];
+  }
+  return color;
+}
 
+const joinTime = message.member?.joinedTimestamp || Date.now();
+const duration = formatDuration(Date.now() - joinTime);
+
+const testEmbed = new EmbedBuilder()
+  .setColor(getRandomColor())
+  .setTitle(`🕒 ${duration}`)
+  .setImage('attachment://welcome-card.png')
+  .setFooter({
+    text: '© Copyright | BananaSkiee Community',
+    iconURL: 'https://i.imgur.com/RGp8pqJ.jpeg',
+  })
+  .setTimestamp();
+            
             // BARU: Membuat baris tombol link
             const row = new ActionRowBuilder()
                 .addComponents(
