@@ -8,7 +8,7 @@ const greetings = [
 ];
 
 module.exports = (client) => {
-  const channelId = process.env.AUTO_CHAT_CHANNEL;
+  const channelId = process.env.GREETING_CHANNEL;
 
   setInterval(async () => {
     const now = new Date();
