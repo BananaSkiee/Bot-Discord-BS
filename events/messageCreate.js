@@ -101,12 +101,6 @@ if (command === 'testwelcome') { // Menggunakan 'command' dari struktur kode And
         const testEmbed = new EmbedBuilder()
             .setColor('#F1C40F') // Warna kuning untuk tes
             .setAuthor({ name: `[TES] Welcome, ${member.user.username}`, iconURL: member.user.displayAvatarURL() })
-            .setDescription(
-                `Welcome <@${member.id}> to **${member.guild.name}**!\n\n` +
-                `>>> ››› Read the rules in <#${rulesChannelId}>\n` +
-                `>>> ››› Choose your roles in <#${rolesChannelId}>\n` +
-                `>>> ››› Need assistance? Visit <#${helpChannelId}>`
-            )
             .setImage('attachment://welcome-card.png');
 
         const row = new ActionRowBuilder()
@@ -132,6 +126,9 @@ if (command === 'testwelcome') { // Menggunakan 'command' dari struktur kode And
         
         // Kirim pesan tes ke channel tempat command dijalankan
         await channel.send({ 
+            content: `${'Welcome'.padEnd(14)}: <@${member.id}>\n` +
+          `${'To Server'.padEnd(14)}: ${member.guild.name}\n` +
+          `${'Total Members'.padEnd(14)}: ${member.guild.memberCount}` +
             embeds: [testEmbed], 
             files: [attachment], 
             components: [row] 
