@@ -83,7 +83,55 @@ if (command === "meme") {
   return memeCommand.execute(message);
 }
 
+// GANTI BAGIAN LAMA DI messageCreate.js ANDA DENGAN INI
 
+// Impor AttachmentBuilder dan EmbedBuilder di bagian paling atas file, jika belum ada
+const { AttachmentBuilder, EmbedBuilder } = require('discord.js');
+const generateWelcomeCard = require("../modules/welcomeCard");
+
+// ... (kode lain di dalam event messageCreate) ...
+
+// Ini adalah contoh jika perintah Anda adalah "!testwelcome"
+if (message.content.toLowerCase() === '!testwelcome') {
+
+  // Ambil data member dari pengirim pesan
+  const memberAuthor = await message.guild.members.fetch(message.author.id);
+  
+  // Ambil channel target dari environment variables
+  const targetChannel = await client.channels.fetch(process.env.CHANNEL_ID);
+  if (!targetChannel) {
+    return message.reply("❌ Channel welcome tidak ditemukan.");
+  }
+
+  try {
+    // 1. Buat gambar kartu
+    const buffer = await generateWelcomeCard(memberAuthor);
+    const attachment = new AttachmentBuilder(buffer, { name: "welcome-card.png" });
+
+    // 2. BUAT EMBED BARU UNTUK TES
+    const testEmbed = new EmbedBuilder()
+        .setColor('#F1C40F') // Warna kuning untuk tes
+        .setAuthor({ name: `TES KARTU SELAMAT DATANG`, iconURL: message.guild.iconURL() })
+        .setDescription(`Ini adalah contoh kartu yang akan diterima oleh **${memberAuthor.user.username}**.`)
+        .setImage('attachment://welcome-card.png'); // Menampilkan gambar di dalam embed
+
+    // 3. Kirim pesan ke channel target dengan embed dan gambar
+    await targetChannel.send({
+      content: `Test welcome card untuk <@${memberAuthor.id}>`,
+      embeds: [testEmbed], // Kirim embed di sini
+      files: [attachment]  // Kirim gambar sebagai lampiran
+    });
+
+    // Beri balasan konfirmasi ke pengguna
+    return message.reply(`✅ Kartu welcome tes sudah dikirim ke channel ${targetChannel}.`);
+
+  } catch (error) {
+    console.error("ERROR SAAT TES WELCOME MANUAL:", error);
+    return message.reply("❌ Terjadi kesalahan saat membuat kartu tes.");
+  }
+}
+
+// ... (sisa kode lain di messageCreate.js) ...
     
 // ====== !testdm command ======
 if (contentLower.startsWith("!testdm")) {
