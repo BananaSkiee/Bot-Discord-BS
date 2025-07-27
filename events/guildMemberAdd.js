@@ -1,12 +1,19 @@
-// File: events/guildMemberAdd.js (KODE FINAL DENGAN KATA-KATA)
+// File: events/guildMemberAdd.js (VERSI FINAL DENGAN TOMBOL LINK)
 
-const { AttachmentBuilder, EmbedBuilder } = require('discord.js');
+// PERUBAHAN: Tambahkan ActionRowBuilder, ButtonBuilder, dan ButtonStyle
+const { AttachmentBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
 const generateWelcomeCard = require('../modules/welcomeCard.js');
 
 module.exports = {
     name: 'guildMemberAdd',
     async execute(member, client) {
+        // --- PENGATURAN ID (GANTI SESUAI SERVER ANDA) ---
         const welcomeChannelId = '1394478754297811034';
+        const rulesChannelId   = '1352326247186694164';
+        const rolesChannelId   = '1352823970054803509';
+        const helpChannelId    = '1352326787367047188';
+        // --------------------------------------------------
+
         const welcomeChannel = member.guild.channels.cache.get(welcomeChannelId);
         if (!welcomeChannel) return;
 
@@ -14,25 +21,49 @@ module.exports = {
             const imageBuffer = await generateWelcomeCard(member);
             const attachment = new AttachmentBuilder(imageBuffer, { name: 'welcome-card.png' });
 
-            // MEMBUAT EMBED DENGAN LENGKAP
+            // PERUBAHAN: Embed diubah agar mirip contoh VoxRegn
             const welcomeEmbed = new EmbedBuilder()
-                .setColor('#2ECC71')
-                // MENAMBAHKAN KEMBALI JUDUL DAN DESKRIPSI
-                .setAuthor({ name: `SELAMAT DATANG, ${member.user.username.toUpperCase()}!`, iconURL: member.user.displayAvatarURL() })
-                .setDescription(`Halo ${member.user}, selamat bergabung di **${member.guild.name}**! Semoga betah ya!`)
-                .setImage('attachment://welcome-card.png')
-                .setTimestamp()
-                .setFooter({ text: `Kamu adalah member ke-${member.guild.memberCount}` });
+                .setColor('#2ECC71') // Anda bisa ganti warna ini jika mau
+                .setAuthor({ name: `Welcome, ${member.user.username}`, iconURL: member.user.displayAvatarURL() })
+                .setDescription(
+                    `Welcome <@${member.id}> to **${member.guild.name}**!\n\n` +
+                    `>>> ››› Read the rules in <#${rulesChannelId}>\n` +
+                    `>>> ››› Choose your roles in <#${rolesChannelId}>\n` +
+                    `>>> ››› Need assistance? Visit <#${helpChannelId}>`
+                )
+                .setImage('attachment://welcome-card.png');
 
-            // Mengirim pesan dengan teks dan embed
+            // BARU: Membuat baris tombol link
+            const row = new ActionRowBuilder()
+                .addComponents(
+                    new ButtonBuilder()
+                        .setLabel('Rules')
+                        .setEmoji('📖') // Emoji bisa diganti atau dihapus
+                        .setStyle(ButtonStyle.Link)
+                        .setURL(`https://discord.com/channels/${member.guild.id}/${rulesChannelId}`),
+                    
+                    new ButtonBuilder()
+                        .setLabel('Verified')
+                        .setEmoji('🎭')
+                        .setStyle(ButtonStyle.Link)
+                        .setURL(`https://discord.com/channels/${member.guild.id}/${rolesChannelId}`),
+
+                    new ButtonBuilder()
+                        .setLabel('Bantuan')
+                        .setEmoji('❓')
+                        .setStyle(ButtonStyle.Link)
+                        .setURL(`https://discord.com/channels/${member.guild.id}/${helpChannelId}`)
+                );
+
+            // PERUBAHAN: Mengirim pesan lengkap dengan tombol
             await welcomeChannel.send({
-                content: `👋 Hey ${member.user}!`, // Teks mention di atas embed
                 embeds: [welcomeEmbed],
-                files: [attachment]
+                files: [attachment],
+                components: [row] // Menambahkan tombol ke pesan
             });
 
         } catch (error) {
-            console.error("ERROR SAAT MEMBUAT WELCOME EMBED OTOMATIS:", error);
+            console.error("ERROR SAAT MEMBUAT WELCOME EMBED DENGAN TOMBOL:", error);
         }
     },
 };
