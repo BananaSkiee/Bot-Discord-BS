@@ -82,14 +82,14 @@ if (command === "meme") {
 
 // GANTI BLOK LAMA !testwelcome DI messageCreate.js ANDA DENGAN INI
 
-if (command === 'testwelcome') { // Menggunakan 'command' dari struktur kode Anda
+if (command === 'w') { // Menggunakan 'command' dari struktur kode Anda
     if (message.author.bot) return;
 
     const member = message.member;
     const channel = message.channel; // Tes akan dikirim di channel saat ini
 
     // --- ID CHANNEL UNTUK TOMBOL ---
-    const rulesChannelId   = '1352311290432983182';
+    const rulesChannelId   = '1352326247186694164';
     const rolesChannelId   = '1352823970054803509';
     const helpChannelId    = '1352326787367047188';
     // ------------------------------------
