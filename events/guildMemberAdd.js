@@ -1,4 +1,4 @@
-// File: events/guildMemberAdd.js (INI KODE YANG BENAR)
+// File: events/guildMemberAdd.js (KODE FINAL DENGAN KATA-KATA)
 
 const { AttachmentBuilder, EmbedBuilder } = require('discord.js');
 const generateWelcomeCard = require('../modules/welcomeCard.js');
@@ -14,14 +14,25 @@ module.exports = {
             const imageBuffer = await generateWelcomeCard(member);
             const attachment = new AttachmentBuilder(imageBuffer, { name: 'welcome-card.png' });
 
+            // MEMBUAT EMBED DENGAN LENGKAP
             const welcomeEmbed = new EmbedBuilder()
                 .setColor('#2ECC71')
-                .setImage('attachment://welcome-card.png');
+                // MENAMBAHKAN KEMBALI JUDUL DAN DESKRIPSI
+                .setAuthor({ name: `SELAMAT DATANG, ${member.user.username.toUpperCase()}!`, iconURL: member.user.displayAvatarURL() })
+                .setDescription(`Halo ${member.user}, selamat bergabung di **${member.guild.name}**! Semoga betah ya!`)
+                .setImage('attachment://welcome-card.png')
+                .setTimestamp()
+                .setFooter({ text: `Kamu adalah member ke-${member.guild.memberCount}` });
 
-            await welcomeChannel.send({ embeds: [welcomeEmbed], files: [attachment] });
+            // Mengirim pesan dengan teks dan embed
+            await welcomeChannel.send({
+                content: `👋 Hey ${member.user}!`, // Teks mention di atas embed
+                embeds: [welcomeEmbed],
+                files: [attachment]
+            });
 
         } catch (error) {
-            console.error("ERROR SAAT MEMBUAT WELCOME CARD/EMBED:", error);
+            console.error("ERROR SAAT MEMBUAT WELCOME EMBED OTOMATIS:", error);
         }
     },
 };
