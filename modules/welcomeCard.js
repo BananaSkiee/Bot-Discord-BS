@@ -5,7 +5,7 @@ const path = require("path");
 let fontFamily = "Sans-Serif";
 try {
   // Pastikan nama file ini yang ada di folder assets Anda
-  const fontPath = path.join(__dirname, "../assets/JetBrainsMono-ExtraBold.ttf");
+  const fontPath = path.join(__dirname, "..assets/DejaVuSans-Bold.ttf");
   
   Canvas.registerFont(fontPath, { family: "DiscordFont" });
   fontFamily = "DiscordFont";
