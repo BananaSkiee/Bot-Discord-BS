@@ -25,10 +25,10 @@ module.exports = async function generateWelcomeCard(member) {
   const canvasCenterX = canvas.width / 2;
 
   // --- PERUBAHAN: UKURAN DAN POSISI DISESUAIKAN ---
-  const avatarSize = 110;    // Avatar dibuat lebih besar
+  const avatarSize = 111;    // Avatar dibuat lebih besar
   const avatarY = 85;       // Posisi avatar digeser sedikit ke atas
   const welcomeTextY = 170; // Posisi teks disesuaikan
-  const userTextY = 205;    // Jarak nama user dibuat lebih dekat ke "WELCOME"
+  const userTextY = 200;    // Jarak nama user dibuat lebih dekat ke "WELCOME"
 
   const avatarURL = member.user.displayAvatarURL({ extension: "png", size: 256 });
   const avatar = await Canvas.loadImage(avatarURL);
@@ -60,7 +60,7 @@ module.exports = async function generateWelcomeCard(member) {
   // 1. Tulis "WELCOME"
   ctx.fillStyle = "#F1C40F"; 
   // PERUBAHAN: Font dikecilkan agar proporsional dengan avatar baru
-  ctx.font = `50px ${fontFamily}`;
+  ctx.font = `40px ${fontFamily}`;
   ctx.strokeText("WELCOME", canvasCenterX, welcomeTextY);
   ctx.fillText("WELCOME", canvasCenterX, welcomeTextY);
 
@@ -68,7 +68,7 @@ module.exports = async function generateWelcomeCard(member) {
   ctx.fillStyle = "#E67E22"; 
   const username = member.user.username.toUpperCase();
   // PERUBAHAN: Font dikecilkan secara signifikan agar lebih mirip contoh
-  ctx.font = `30px ${fontFamily}`;
+  ctx.font = `20px ${fontFamily}`;
   ctx.strokeText(username, canvasCenterX, userTextY);
   ctx.fillText(username, canvasCenterX, userTextY);
 
