@@ -1,14 +1,19 @@
 const Canvas = require("canvas");
 const path = require("path");
 
+// Memuat font JetBrains Mono
 let fontFamily = "Sans-Serif";
 try {
   const fontPath = path.join(__dirname, "../assets/JetBrainsMono-ExtraBold.ttf");
+  
   Canvas.registerFont(fontPath, { family: "CustomFont" });
   fontFamily = "CustomFont";
+  console.log("Font 'JetBrainsMono-ExtraBold.ttf' berhasil dimuat.");
 } catch (error) {
+  console.error("GAGAL MEMUAT FONT: Pastikan file 'JetBrainsMono-ExtraBold.ttf' ada di dalam folder 'assets'.");
   console.error(error); 
 }
+
 
 module.exports = async function generateWelcomeCard(member) {
   const canvas = Canvas.createCanvas(700, 250);
@@ -27,7 +32,7 @@ module.exports = async function generateWelcomeCard(member) {
   const avatarURL = member.user.displayAvatarURL({ extension: "png", size: 256 });
   const avatar = await Canvas.loadImage(avatarURL);
 
-  // Gambar border (tidak diubah)
+  // Gambar border hijau
   ctx.save();
   ctx.beginPath();
   ctx.arc(avatarX, avatarY, (avatarSize / 2) + 5, 0, Math.PI * 2, true);
@@ -37,7 +42,7 @@ module.exports = async function generateWelcomeCard(member) {
   ctx.stroke();
   ctx.restore();
 
-  // Gambar avatar (tidak diubah)
+  // Gambar avatar
   ctx.save();
   ctx.beginPath();
   ctx.arc(avatarX, avatarY, avatarSize / 2, 0, Math.PI * 2, true);
@@ -46,18 +51,19 @@ module.exports = async function generateWelcomeCard(member) {
   ctx.drawImage(avatar, avatarX - avatarSize / 2, avatarY - avatarSize / 2, avatarSize, avatarSize);
   ctx.restore();
 
-  // --- MENGGAMBAR TEKS UNTUK PEMBUKTIAN ---
+  // --- MENGGAMBAR TEKS DENGAN GAYA FINAL (GIBRANP_) ---
   ctx.textAlign = "center";
   ctx.strokeStyle = "#000000";
-  ctx.lineWidth = 5;
-  ctx.fillStyle = "#FFFFFF"; // Kita buat putih agar jelas
+  ctx.lineWidth = 5; // Outline tipis
 
-  // --- INI BAGIAN PENTINGNYA ---
-  // Teks diubah menjadi "TES BERHASIL"
+  // 1. Tulis "WELCOME"
+  ctx.fillStyle = "#D4C93B"; // Warna kuning-gelap
   ctx.font = `50px ${fontFamily}`;
-  ctx.strokeText("TES BERHASIL", canvasCenterX, welcomeTextY);
-  ctx.fillText("TES BERHASIL", canvasCenterX, welcomeTextY);
+  ctx.strokeText("WELCOME", canvasCenterX, welcomeTextY);
+  ctx.fillText("WELCOME", canvasCenterX, welcomeTextY);
 
+  // 2. Tulis nama pengguna
+  ctx.fillStyle = "#6E692D"; // Warna hijau-gelap
   const username = member.user.username.toUpperCase();
   ctx.font = `35px ${fontFamily}`;
   ctx.strokeText(username, canvasCenterX, userTextY);
