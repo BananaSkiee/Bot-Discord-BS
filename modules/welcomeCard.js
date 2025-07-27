@@ -34,10 +34,11 @@ module.exports = async function generateWelcomeCard(member) {
   // Menggambar border lingkaran
   ctx.save();
   ctx.beginPath();
-  ctx.arc(canvasCenterX, avatarY, (avatarSize / 2) + 5, 0, Math.PI * 2, true);
+  ctx.arc(canvasCenterX, avatarY, (avatarSize / 2) + 1, 0, Math.PI * 2, true);
+  // ctx.arc(canvasCenterX, avatarY, (avatarSize / 2) + 5, 0, Math.PI * 2, true);
   ctx.closePath();
   ctx.strokeStyle = '#2ECC71'; 
-  ctx.lineWidth = 1;
+  ctx.lineWidth = 3;
   ctx.stroke();
   ctx.restore();
 
