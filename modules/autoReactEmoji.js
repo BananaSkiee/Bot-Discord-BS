@@ -1,7 +1,7 @@
 module.exports = async function autoReactEmoji(message) {
   if (message.author.bot) return;
 
-  const allowedChannelIds = ["123456789012345678"]; // Ganti dengan ID channel announcements kamu
+  const allowedChannelIds = ["1352331574376665178"]; // Ganti dengan ID channel announcements kamu
 
   if (!allowedChannelIds.includes(message.channel.id)) return;
 
