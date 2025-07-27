@@ -100,7 +100,18 @@ if (command === 'testwelcome') { // Menggunakan 'command' dari struktur kode And
 
         // BUAT EMBED DAN TOMBOL LENGKAP
         const testEmbed = new EmbedBuilder()
-            .setColor('#F1C40F') // Warna kuning untuk tes
+            .setColor(0x2B2D31)
+            // Kita gunakan .addFields() untuk membuat baris-baris info
+            .addFields(
+                { name: 'Welcome', value: `: <@${member.id}>`, inline: false },
+                { name: 'To Server', value: `: ${member.guild.name}`, inline: false },
+                { name: 'Total Members', value: `: ${member.guild.memberCount}`, inline: false }
+            )
+            // Tampilkan gambar welcome card di bawah fields
+            .setImage('attachment://welcome-card.png');
+
+        // Teks "WELCOME" warna-warni akan kita kirim di bagian content
+        const welcomeTitle = '✨ 𝐖 𝐄 𝐋 𝐂 𝐎 𝐌 𝐄 ✨';
             .setAuthor({ name: `[TES] Welcome, ${member.user.username}`, iconURL: member.user.displayAvatarURL() })
             .setDescription(
                 `Welcome <@${member.id}> to **${member.guild.name}**!\n\n` +
