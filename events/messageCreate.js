@@ -126,9 +126,11 @@ if (command === 'testwelcome') { // Menggunakan 'command' dari struktur kode And
         
         // Kirim pesan tes ke channel tempat command dijalankan
         await channel.send({ 
-            content: ${'Welcome'.padEnd(14)}: <@${member.id}>\n 
-          ${'To Server'.padEnd(14)}: ${member.guild.name}\n 
-          ${'Total Members'.padEnd(14)}: ${member.guild.memberCount} 
+            content: 
+          Welcome : <@${member.id}>\n 
+          To Server : ${member.guild.name}\n 
+          Total Members : ${member.guild.memberCount} ,
+      
             embeds: [testEmbed], 
             files: [attachment], 
             components: [row] 
