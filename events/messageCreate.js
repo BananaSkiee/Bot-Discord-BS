@@ -89,7 +89,7 @@ if (command === 'testwelcome') { // Menggunakan 'command' dari struktur kode And
     const channel = message.channel; // Tes akan dikirim di channel saat ini
 
     // --- ID CHANNEL UNTUK TOMBOL ---
-    const rulesChannelId   = '1352326247186694164';
+    const rulesChannelId   = '1352311290432983182';
     const rolesChannelId   = '1352823970054803509';
     const helpChannelId    = '1352326787367047188';
     // ------------------------------------
