@@ -93,35 +93,32 @@ if (command === 'testwelcome') { // Menggunakan 'command' dari struktur kode And
     const rolesChannelId   = '1352823970054803509';
     const helpChannelId    = '1352326787367047188';
     // ------------------------------------
-    
+
     try {
         const imageBuffer = await generateWelcomeCard(member);
         const attachment = new AttachmentBuilder(imageBuffer, { name: 'welcome-card.png' });
 
         // --- MEMBUAT BLOK TEKS INFORMASI YANG RAPI ---
-        // String.padEnd() digunakan agar posisi ':' selalu sejajar
         const infoBlock = "```" +
           `${'Welcome'.padEnd(14)}: <@${member.id}>\n` +
           `${'To Server'.padEnd(14)}: ${member.guild.name}\n` +
           `${'Total Members'.padEnd(14)}: ${member.guild.memberCount}` +
           "```";
         
-        // --- MEMBUAT EMBED DAN MEMASUKKAN BLOK TEKS KE DALAMNYA ---
-        const welcomeEmbed = new EmbedBuilder()
-            // Warna diatur transparan/abu-abu gelap agar menyatu
-            .setColor(0x2B2D31)
-            // PERUBAHAN KUNCI: Masukkan seluruh blok info ke dalam deskripsi
+        // --- MEMBUAT EMBED DENGAN GAYA BARU (INFO DI DALAM DESKRIPSI) ---
+        const testEmbed = new EmbedBuilder()
+            .setColor(0x2B2D31) // Warna abu-abu gelap agar menyatu
+            // PERBAIKAN KUNCI: Masukkan seluruh blok info ke dalam deskripsi
             .setDescription(infoBlock)
-            // Tampilkan gambar welcome card di bawah blok info
             .setImage('attachment://welcome-card.png');
 
-        // Judul "WELCOME" yang warna-warni akan kita kirim sebagai teks biasa di atas embed
+        // Judul "WELCOME" yang warna-warni
         const welcomeTitle = '✨ 𝐖 𝐄 𝐋 𝐂 𝐎 𝐌 𝐄 ✨';
 
         // Kirim pesan dengan judul (content) dan embed (info + gambar)
         await channel.send({ 
-            content: isTest ? `[TES] ${welcomeTitle}` : welcomeTitle,
-            embeds: [welcomeEmbed], 
+            content: `[TES] ${welcomeTitle}`, // Tambahkan [TES] untuk menandakan
+            embeds: [testEmbed], 
             files: [attachment]
         });
 
@@ -136,6 +133,7 @@ if (command === 'testwelcome') { // Menggunakan 'command' dari struktur kode And
     }
     return; // Hentikan eksekusi setelah perintah ini selesai
 }
+// ... (sisa kode Anda yang lain) ...
     
 // ====== !testdm command ======
 if (contentLower.startsWith("!testdm")) {
