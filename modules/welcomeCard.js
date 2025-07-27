@@ -1,10 +1,10 @@
 const Canvas = require("canvas");
 const path = require("path");
 
-// Memuat font (tidak ada perubahan di sini)
+// Memuat font (tidak ada perubahan)
 let fontFamily = "Sans-Serif";
 try {
-  const fontPath = path.join(__dirname, "../assets/JetBrainsMono-Bold.ttf");
+  const fontPath = path.join(__dirname, "../assets/JetBrainsMono-ExtraBold.ttf");
   
   Canvas.registerFont(fontPath, { family: "CustomFont" });
   fontFamily = "CustomFont";
@@ -23,53 +23,52 @@ module.exports = async function generateWelcomeCard(member) {
   ctx.drawImage(background, 0, 0, canvas.width, canvas.height);
 
   const canvasCenterX = canvas.width / 2;
-  const avatarSize = 100;
-  const avatarX = canvasCenterX;
-  const avatarY = 90;
-  const welcomeTextY = 175;
-  const userTextY = 220;
+
+  // --- PERUBAHAN: UKURAN DAN POSISI DISESUAIKAN ---
+  const avatarSize = 110;    // Avatar dibuat lebih besar
+  const avatarY = 85;       // Posisi avatar digeser sedikit ke atas
+  const welcomeTextY = 170; // Posisi teks disesuaikan
+  const userTextY = 205;    // Jarak nama user dibuat lebih dekat ke "WELCOME"
 
   const avatarURL = member.user.displayAvatarURL({ extension: "png", size: 256 });
   const avatar = await Canvas.loadImage(avatarURL);
 
-  // --- MENGGAMBAR BORDER LINGKARAN ---
+  // Menggambar border lingkaran
   ctx.save();
   ctx.beginPath();
-  ctx.arc(avatarX, avatarY, (avatarSize / 2) + 5, 0, Math.PI * 2, true);
+  ctx.arc(canvasCenterX, avatarY, (avatarSize / 2) + 5, 0, Math.PI * 2, true);
   ctx.closePath();
-  // PERUBAHAN: Warna diubah sesuai permintaan
   ctx.strokeStyle = '#2ECC71'; 
   ctx.lineWidth = 6;
   ctx.stroke();
   ctx.restore();
 
-  // Gambar avatar (tidak ada perubahan)
+  // Gambar avatar di dalamnya
   ctx.save();
   ctx.beginPath();
-  ctx.arc(avatarX, avatarY, avatarSize / 2, 0, Math.PI * 2, true);
+  ctx.arc(canvasCenterX, avatarY, avatarSize / 2, 0, Math.PI * 2, true);
   ctx.closePath();
   ctx.clip();
-  ctx.drawImage(avatar, avatarX - avatarSize / 2, avatarY - avatarSize / 2, avatarSize, avatarSize);
+  ctx.drawImage(avatar, canvasCenterX - avatarSize / 2, avatarY - avatarSize / 2, avatarSize, avatarSize);
   ctx.restore();
 
-  // --- MENGGAMBAR TEKS DENGAN GAYA FINAL ---
+  // --- MENGGAMBAR TEKS DENGAN UKURAN FINAL ---
   ctx.textAlign = "center";
   ctx.strokeStyle = "#000000";
-  // PERUBAHAN: Ketebalan outline disesuaikan agar lebih mirip
   ctx.lineWidth = 4; 
 
   // 1. Tulis "WELCOME"
-  // PERUBAHAN: Warna dan ukuran disesuaikan
   ctx.fillStyle = "#F1C40F"; 
-  ctx.font = `55px ${fontFamily}`;
+  // PERUBAHAN: Font dikecilkan agar proporsional dengan avatar baru
+  ctx.font = `50px ${fontFamily}`;
   ctx.strokeText("WELCOME", canvasCenterX, welcomeTextY);
   ctx.fillText("WELCOME", canvasCenterX, welcomeTextY);
 
   // 2. Tulis nama pengguna
-  // PERUBAHAN: Warna dan ukuran disesuaikan
   ctx.fillStyle = "#E67E22"; 
   const username = member.user.username.toUpperCase();
-  ctx.font = `40px ${fontFamily}`;
+  // PERUBAHAN: Font dikecilkan secara signifikan agar lebih mirip contoh
+  ctx.font = `30px ${fontFamily}`;
   ctx.strokeText(username, canvasCenterX, userTextY);
   ctx.fillText(username, canvasCenterX, userTextY);
 
