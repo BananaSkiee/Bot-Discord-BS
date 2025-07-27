@@ -98,47 +98,31 @@ if (command === 'testwelcome') { // Menggunakan 'command' dari struktur kode And
         const imageBuffer = await generateWelcomeCard(member);
         const attachment = new AttachmentBuilder(imageBuffer, { name: 'welcome-card.png' });
 
-        // BUAT EMBED DAN TOMBOL LENGKAP
-        const testEmbed = new EmbedBuilder()
+        // --- MEMBUAT BLOK TEKS INFORMASI YANG RAPI ---
+        // String.padEnd() digunakan agar posisi ':' selalu sejajar
+        const infoBlock = "```" +
+          `${'Welcome'.padEnd(14)}: <@${member.id}>\n` +
+          `${'To Server'.padEnd(14)}: ${member.guild.name}\n` +
+          `${'Total Members'.padEnd(14)}: ${member.guild.memberCount}` +
+          "```";
+        
+        // --- MEMBUAT EMBED DAN MEMASUKKAN BLOK TEKS KE DALAMNYA ---
+        const welcomeEmbed = new EmbedBuilder()
+            // Warna diatur transparan/abu-abu gelap agar menyatu
             .setColor(0x2B2D31)
-            // Kita gunakan .addFields() untuk membuat baris-baris info
-            .addFields(
-                { name: 'Welcome', value: `: <@${member.id}>`, inline: false },
-                { name: 'To Server', value: `: ${member.guild.name}`, inline: false },
-                { name: 'Total Members', value: `: ${member.guild.memberCount}`, inline: false }
-            )
-            // Tampilkan gambar welcome card di bawah fields
+            // PERUBAHAN KUNCI: Masukkan seluruh blok info ke dalam deskripsi
+            .setDescription(infoBlock)
+            // Tampilkan gambar welcome card di bawah blok info
             .setImage('attachment://welcome-card.png');
 
-        // Teks "WELCOME" warna-warni akan kita kirim di bagian content
+        // Judul "WELCOME" yang warna-warni akan kita kirim sebagai teks biasa di atas embed
         const welcomeTitle = '✨ 𝐖 𝐄 𝐋 𝐂 𝐎 𝐌 𝐄 ✨';
 
-        const row = new ActionRowBuilder()
-            .addComponents(
-                new ButtonBuilder()
-                    .setLabel('Rules')
-                    .setEmoji('📖')
-                    .setStyle(ButtonStyle.Link)
-                    .setURL(`https://discord.com/channels/${member.guild.id}/${rulesChannelId}`),
-                
-                new ButtonBuilder()
-                    .setLabel('Verified')
-                    .setEmoji('🎭')
-                    .setStyle(ButtonStyle.Link)
-                    .setURL(`https://discord.com/channels/${member.guild.id}/${rolesChannelId}`),
-
-                new ButtonBuilder()
-                    .setLabel('Bantuan')
-                    .setEmoji('❓')
-                    .setStyle(ButtonStyle.Link)
-                    .setURL(`https://discord.com/channels/${member.guild.id}/${helpChannelId}`)
-            );
-        
-        // Kirim pesan tes ke channel tempat command dijalankan
+        // Kirim pesan dengan judul (content) dan embed (info + gambar)
         await channel.send({ 
-            embeds: [testEmbed], 
-            files: [attachment], 
-            components: [row] 
+            content: isTest ? `[TES] ${welcomeTitle}` : welcomeTitle,
+            embeds: [welcomeEmbed], 
+            files: [attachment]
         });
 
         // Hapus pesan perintah !testwelcome agar channel bersih (opsional)
