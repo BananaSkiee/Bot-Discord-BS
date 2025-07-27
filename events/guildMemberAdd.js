@@ -32,7 +32,7 @@ function getRandomColor() {
   return color;
 }
 
-const message = getRandomWelcome(member.user.username);
+const message = getRandomQuote(member.user.username);
             
 const testEmbed = new EmbedBuilder()
   .setColor(getRandomColor())
