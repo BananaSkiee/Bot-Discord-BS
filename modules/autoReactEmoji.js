@@ -1,19 +1,30 @@
-module.exports = async function autoReactEmoji(message) {
-  if (message.author.bot) return;
+const allowedChannelIds = [
+  "1352339757660635197", // ganti dengan channel announcement atau channel target
+  "1352331574376665178"
+];
 
-  const allowedChannelIds = ["1352331574376665178"]; // Ganti dengan ID channel announcements kamu
+// List emoji (bebas mau berapa banyak)
+const emojiList = ["🔥", "💯", "😎", "🚀", "🎉", "👏", "✨", "🤖", "👍", "❤️"];
 
-  if (!allowedChannelIds.includes(message.channel.id)) return;
+module.exports = {
+  name: "autoReactEmoji",
 
-  // Daftar emoji untuk random react
-  const emojiList = ["🔥", "💯", "🎉", "✨", "👏", "👍", "😍", "😎", "🫡", "🚀"];
+  async execute(message) {
+    // Filter: hanya channel tertentu & bukan bot sendiri
+    if (message.author.bot || !allowedChannelIds.includes(message.channel.id)) return;
 
-  // Pilih emoji random
-  const randomEmoji = emojiList[Math.floor(Math.random() * emojiList.length)];
-
-  try {
-    await message.react(randomEmoji);
-  } catch (error) {
-    console.error("Gagal react:", error);
-  }
+    for (const emoji of emojiList) {
+      try {
+        await message.react(emoji);
+        await wait(300); // kasih delay dikit biar gak dianggap spam (300ms)
+      } catch (err) {
+        console.warn(`Gagal react emoji ${emoji}:`, err.message);
+      }
+    }
+  },
 };
+
+// Fungsi delay
+function wait(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
