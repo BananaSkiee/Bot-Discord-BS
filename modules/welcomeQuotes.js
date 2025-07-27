@@ -1,0 +1,57 @@
+const welcomeMessages = [
+  username => `🎉 Selamat datang di ${username}! Semoga harimu makin seru di sini!`,
+  username => `🔥 Yo ${username}, tempat ini cocok buat kamu yang suka rame-rame seru!`,
+  username => `🌟 ${username} telah mendarat! Ayo kita sambut dengan meriah!`,
+  username => `👋 Halo ${username}, jangan malu-malu, langsung aja ngobrol!`,
+  username => `🚀 ${username} join! Semoga makin betah di server ini ya!`,
+  username => `🎮 ${username}, siap main bareng? Ajak teman juga boleh~`,
+  username => `📢 ${username} baru masuk! Yuk kenalan dulu di #introduction~`,
+  username => `💬 ${username}, server ini bakal seru banget kalo kamu aktif!`,
+  username => `🎊 ${username}, semoga jadi member paling legend di sini!`,
+  username => `🌈 Hai ${username}, semoga ketemu banyak temen baru di sini!`,
+  username => `🍌 Selamat datang ${username}! Jangan lupa ambil cemilan di #general 😆`,
+  username => `🌻 ${username}, tempat ini jadi makin cerah karena kamu!`,
+  username => `💡 ${username}, ide-ide kamu ditunggu banget nih!`,
+  username => `✨ ${username}, selamat datang di komunitas penuh bintang!`,
+  username => `👑 ${username} datang membawa vibes positif!`,
+  username => `🧃 ${username}, yuk ngobrol bareng biar makin akrab!`,
+  username => `📸 ${username}, share momen serumu di #gallery dong!`,
+  username => `🎧 ${username}, ada banyak suara tawa menanti kamu di VC~`,
+  username => `🕹️ ${username}, join game bareng jangan lupa bilang ya!`,
+  username => `🗿 ${username} detected... auto jadi warga tetap!`,
+  username => `😎 ${username} join = makin keren servernya~`,
+  username => `📦 ${username} telah tiba dengan paket kejutan!`,
+  username => `🧩 ${username}, satu bagian penting dari puzzle komunitas ini!`,
+  username => `🎯 ${username}, ayo capai tujuan bareng komunitas solid ini!`,
+  username => `🎨 ${username}, ekspresikan dirimu sebebas mungkin di sini!`,
+  username => `📚 ${username}, setiap cerita punya awal. Ini cerita kamu!`,
+  username => `🍀 ${username}, kamu pembawa hoki buat server ini!`,
+  username => `🌟 ${username}, semoga jadi bintang paling terang di komunitas ini!`
+  username => `⚡ ${username} masuk... dan listrik server langsung nyala!`,
+  username => `🍕 ${username}, pizza udah disiapin di #general!`,
+  username => `🛸 ${username} turun dari langit! Warga sambut dia dong~`,
+  username => `🎤 ${username}, langsung aja ambil mic dan kenalan~`,
+  username => `📱 ${username}, chat kamu ditungguin loh di #ngobrol-bareng`,
+  username => `🧸 ${username}, welcome! Kamu bawa boneka atau vibes positif nih?`,
+  username => `🥤 ${username}, yuk santai dulu sambil minum es teh~`,
+  username => `🎈 ${username}, ada balon buat kamu di sini!`,
+  username => `🕶️ ${username} join = +100 coolness point buat server ini!`,
+  username => `🏝️ ${username}, selamat datang di pulau keseruan BananaSkiee~`,
+  username => `💎 ${username}, kamu kayak permata yang baru ditemukan!`,
+  username => `🦄 ${username}, kamu pasti unik banget~`,
+  username => `🎁 ${username}, kamu kayak hadiah tak terduga buat server ini~`,
+  username => `📀 ${username} putar lagu favoritmu, biar suasana makin hangat!`,
+  username => `🧃 ${username}, kamu udah masuk geng chill nih!`,
+  username => `📣 ${username}, langsung aja teriak "Hai!" di chat~`,
+  username => `🍿 ${username}, pas banget! Filmnya baru mulai~`,
+  username => `🎲 ${username}, siap-siap jadi bagian dari keseruan random ini!`,
+  username => `🌌 ${username}, kamu bintang baru di langit BananaSkiee!`,
+  username => `🌻 ${username}, kamu bikin server ini makin berwarna~`
+];
+
+function getRandomWelcome(username) {
+  const index = Math.floor(Math.random() * welcomeMessages.length);
+  return welcomeMessages[index](username);
+}
+
+module.exports = getRandomWelcome;
