@@ -112,14 +112,6 @@ if (command === 'testwelcome') { // Menggunakan 'command' dari struktur kode And
 
         // Teks "WELCOME" warna-warni akan kita kirim di bagian content
         const welcomeTitle = '✨ 𝐖 𝐄 𝐋 𝐂 𝐎 𝐌 𝐄 ✨';
-            .setAuthor({ name: `[TES] Welcome, ${member.user.username}`, iconURL: member.user.displayAvatarURL() })
-            .setDescription(
-                `Welcome <@${member.id}> to **${member.guild.name}**!\n\n` +
-                `>>> ››› Read the rules in <#${rulesChannelId}>\n` +
-                `>>> ››› Choose your roles in <#${rolesChannelId}>\n` +
-                `>>> ››› Need assistance? Visit <#${helpChannelId}>`
-            )
-            .setImage('attachment://welcome-card.png');
 
         const row = new ActionRowBuilder()
             .addComponents(
