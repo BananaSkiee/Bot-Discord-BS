@@ -1,11 +1,10 @@
 const Canvas = require("canvas");
 const path = require("path");
 
-// --- MEMUAT FONT GG SANS (FONT ASLI DISCORD) ---
+// Memuat font gg sans
 let fontFamily = "Sans-Serif";
 try {
-  // Pastikan nama file ini yang ada di folder assets Anda
-  const fontPath = path.join(__dirname, "../assets/DejaVuSans-Bold.ttf");
+  const fontPath = path.join(__dirname, "../assets/ggsans-ExtraBold.ttf");
   
   Canvas.registerFont(fontPath, { family: "DiscordFont" });
   fontFamily = "DiscordFont";
@@ -24,17 +23,15 @@ module.exports = async function generateWelcomeCard(member) {
   ctx.drawImage(background, 0, 0, canvas.width, canvas.height);
 
   const canvasCenterX = canvas.width / 2;
-
-  // --- PERUBAHAN FINAL: UKURAN & POSISI DISESUAIKAN TOTAL ---
-  const avatarSize = 115;    // Avatar diperbesar agar jadi fokus
-  const avatarY = 90;        // Posisi Y avatar disesuaikan
-  const welcomeTextY = 180;  // Teks diturunkan agar tidak kena avatar
-  const userTextY = 215;     // Posisi nama user di bawahnya
+  const avatarSize = 105;    
+  const avatarY = 90;        
+  const welcomeTextY = 175;  
+  const userTextY = 205;     
 
   const avatarURL = member.user.displayAvatarURL({ extension: "png", size: 256 });
   const avatar = await Canvas.loadImage(avatarURL);
 
-  // Menggambar border lingkaran (warna sudah benar)
+  // Menggambar border lingkaran
   ctx.save();
   ctx.beginPath();
   ctx.arc(canvasCenterX, avatarY, (avatarSize / 2) + 5, 0, Math.PI * 2, true);
@@ -53,24 +50,22 @@ module.exports = async function generateWelcomeCard(member) {
   ctx.drawImage(avatar, canvasCenterX - avatarSize / 2, avatarY - avatarSize / 2, avatarSize, avatarSize);
   ctx.restore();
 
-  // --- MENGGAMBAR TEKS DENGAN GAYA FINAL ---
+  // --- MENGGAMBAR TEKS (TANPA GARIS PINGGIR) ---
   ctx.textAlign = "center";
-  ctx.strokeStyle = "#000000";
-  ctx.lineWidth = 4; 
 
   // 1. Tulis "WELCOME"
   ctx.fillStyle = "#F1C40F"; 
-  // PERUBAHAN: Ukuran dikecilkan agar proporsional
   ctx.font = `45px ${fontFamily}`;
-  ctx.strokeText("WELCOME", canvasCenterX, welcomeTextY);
+  // PERUBAHAN: Baris di bawah ini dihapus untuk menghilangkan outline hitam
+  // ctx.strokeText("WELCOME", canvasCenterX, welcomeTextY); 
   ctx.fillText("WELCOME", canvasCenterX, welcomeTextY);
 
   // 2. Tulis nama pengguna
   ctx.fillStyle = "#E67E22"; 
   const username = member.user.username.toUpperCase();
-  // PERUBAHAN: Ukuran dikecilkan secara signifikan agar mirip contoh
   ctx.font = `28px ${fontFamily}`;
-  ctx.strokeText(username, canvasCenterX, userTextY);
+  // PERUBAHAN: Baris di bawah ini dihapus untuk menghilangkan outline hitam
+  // ctx.strokeText(username, canvasCenterX, userTextY);
   ctx.fillText(username, canvasCenterX, userTextY);
 
   return canvas.toBuffer("image/png");
