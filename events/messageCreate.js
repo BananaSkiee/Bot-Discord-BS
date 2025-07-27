@@ -11,6 +11,7 @@ const autoDeleteCrypto = require("../modules/autoDeleteCryptoMessages.js");
 const autoReply = require("../modules/autoReply");
 const autoChat = require("../modules/autoChat");
 const generateWelcomeCard = require("../modules/welcomeCard");
+const formatDuration = require('./modules/formatDuration');
 
 const filePath = path.join(__dirname, "../data/taggedUsers.json");
 
@@ -109,12 +110,15 @@ function getRandomColor() {
   return color;
 }
 
+const duration = formatDuration(Date.now() - joinTime);
+
 const testEmbed = new EmbedBuilder()
   .setColor(getRandomColor())
+  .setTitle(`🕒 ${duration}`)
   .setImage('attachment://welcome-card.png')
   .setFooter({
     text: '© Copyright | BananaSkiee Community',
-    iconURL: 'https://i.imgur.com/RGp8pqJ.jpeg', // gambar footer
+    iconURL: 'https://i.imgur.com/RGp8pqJ.jpeg',
   })
   .setTimestamp();
       
