@@ -1,10 +1,7 @@
 const fs = require("fs");
 const path = require("path");
-const {
-  ActionRowBuilder,
-  ButtonBuilder,
-  ButtonStyle,
-} = require("discord.js");
+// Tambahkan baris ini di bagian paling atas file messageCreate.js
+const { AttachmentBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
 
 const countValidator = require("../modules/countValidator");
 const handleHapusTag = require("../modules/hapusTagCommand");
