@@ -37,7 +37,7 @@ module.exports = async function generateWelcomeCard(member) {
   ctx.arc(canvasCenterX, avatarY, (avatarSize / 2) + 5, 0, Math.PI * 2, true);
   ctx.closePath();
   ctx.strokeStyle = '#2ECC71'; 
-  ctx.lineWidth = 5;
+  ctx.lineWidth = 1;
   ctx.stroke();
   ctx.restore();
 
