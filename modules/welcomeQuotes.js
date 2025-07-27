@@ -49,10 +49,10 @@ const welcomeMessages = [
   `🌻 \${username}, kamu bikin server ini makin berwarna~`
 ];
 
-function getRandomWelcome(username) {
+function getRandomQuote(username) {
   const index = Math.floor(Math.random() * welcomeMessages.length);
   const template = welcomeMessages[index];
   return template.replace(/\$\{username\}/g, username);
 }
 
-module.exports = getRandomWelcome;
+module.exports = getRandomQuote;
