@@ -80,15 +80,6 @@ client.on("messageCreate", async (message) => {
 client.on("guildMemberAdd", async (member) => {
   // 1. Jalankan greeting tambahan (opsional)
   autoGreeting(client, member);
-
-  // 2. Kirim pesan selamat datang di system channel
-  const channel = member.guild.systemChannel;
-  if (channel) {
-    channel.send(`Selamat datang <@${member.id}>!`);
-  }
-
-  // 3. Kirim kartu welcome (gambar)
-  welcomecard(member);
 });
 
 // 🔁 Update jumlah user online di VC
