@@ -26,7 +26,7 @@ module.exports = async function generateWelcomeCard(member) {
   const avatarSize = 105;    
   const avatarY = 90;        
   const welcomeTextY = 190;  
-  const userTextY = 205;     
+  const userTextY = 230;     
 
   const avatarURL = member.user.displayAvatarURL({ extension: "png", size: 256 });
   const avatar = await Canvas.loadImage(avatarURL);
