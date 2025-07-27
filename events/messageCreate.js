@@ -97,12 +97,27 @@ if (command === 'testwelcome') { // Menggunakan 'command' dari struktur kode And
         const imageBuffer = await generateWelcomeCard(member);
         const attachment = new AttachmentBuilder(imageBuffer, { name: 'welcome-card.png' });
 
-        // BUAT EMBED DAN TOMBOL LENGKAP
-        const testEmbed = new EmbedBuilder()
-            .setColor('#F1C40F') // Warna kuning untuk tes
-            .setAuthor({ name: `[TES] Welcome, ${member.user.username}`, iconURL: member.user.displayAvatarURL() })
-            .setImage('attachment://welcome-card.png');
+const { EmbedBuilder } = require('discord.js');
 
+// Fungsi warna acak HEX
+function getRandomColor() {
+  const letters = '0123456789ABCDEF';
+  let color = '#';
+  for (let i = 0; i < 6; i++) {
+    color += letters[Math.floor(Math.random() * 16)];
+  }
+  return color;
+}
+
+const testEmbed = new EmbedBuilder()
+  .setColor(getRandomColor())
+  .setImage('attachment://welcome-card.png')
+  .setFooter({
+    text: '© Copyright | BananaSkiee Community',
+    iconURL: 'https://i.imgur.com/RGp8pqJ.jpeg', // gambar footer
+  })
+  .setTimestamp();
+      
         const row = new ActionRowBuilder()
             .addComponents(
                 new ButtonBuilder()
@@ -126,7 +141,9 @@ if (command === 'testwelcome') { // Menggunakan 'command' dari struktur kode And
         
         // Kirim pesan tes ke channel tempat command dijalankan
         await channel.send({ 
-  content: `Welcome       : <@${member.id}>
+  content: `<a:BananaSkiee:1360541400382439475> <a:rflx:1361623860205715589> <a:rflx_e:1361624001939771413> <a:rflx_l:1361624056884887673> <a:rflx_c:1361624260434591855> <a:rflx_o:1361624335126626396> <a:rflx_m:1361624355771256956> <a:rflx_e:1361624001939771413> <a:BananaSkiee:1360541400382439475>
+  
+  Welcome       : <@${member.id}>
 To Server     : ${member.guild.name}
 Total Members : ${member.guild.memberCount}`,
   embeds: [testEmbed], 
