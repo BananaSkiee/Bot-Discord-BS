@@ -110,11 +110,11 @@ function getRandomColor() {
   return color;
 }
 
-const randomQuote = getRandomQuote();
+const message = getRandomWelcome(member.user.username);
 
 const testEmbed = new EmbedBuilder()
   .setColor(getRandomColor())
-  .setTitle(`${randomQuote}`)
+  .setTitle(`${message}`)
   .setImage('attachment://welcome-card.png')
   .setFooter({
     text: '© Copyright | BananaSkiee Community',
@@ -132,7 +132,7 @@ const testEmbed = new EmbedBuilder()
                 
                 new ButtonBuilder()
                     .setLabel('Verified')
-                    .setEmoji('🎭')
+                    .setEmoji('✅')
                     .setStyle(ButtonStyle.Link)
                     .setURL(`https://discord.com/channels/${member.guild.id}/${rolesChannelId}`),
 
