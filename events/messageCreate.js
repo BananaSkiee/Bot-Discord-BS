@@ -12,6 +12,7 @@ const autoReply = require("../modules/autoReply");
 const autoChat = require("../modules/autoChat");
 const generateWelcomeCard = require("../modules/welcomeCard");
 const getRandomQuote = require("../modules/welcomeQuotes"); // sesuaikan path-nya
+const autoEmoji = require("../modules/autoEmoji");
 
 const filePath = path.join(__dirname, "../data/taggedUsers.json");
 
@@ -63,6 +64,7 @@ module.exports = {
     await autoDeleteCrypto(message);
     await autoReply(message);
     await autoChat(message);
+    await autoEmoji(message);
     
     const prefix = "!";
     const contentRaw = message.content.trim();
