@@ -126,15 +126,13 @@ if (command === 'testwelcome') { // Menggunakan 'command' dari struktur kode And
         
         // Kirim pesan tes ke channel tempat command dijalankan
         await channel.send({ 
-            content: 
-          Welcome : <@${member.id}>\n 
-          To Server : ${member.guild.name}\n 
-          Total Members : ${member.guild.memberCount} ,
-      
-            embeds: [testEmbed], 
-            files: [attachment], 
-            components: [row] 
-        });
+  content: `Welcome       : <@${member.id}>
+To Server     : ${member.guild.name}
+Total Members : ${member.guild.memberCount}`,
+  embeds: [testEmbed], 
+  files: [attachment], 
+  components: [row] 
+});
 
         // Hapus pesan perintah !testwelcome agar channel bersih (opsional)
         if (message.deletable) {
