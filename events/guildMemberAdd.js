@@ -9,7 +9,7 @@ module.exports = {
     name: 'guildMemberAdd',
     async execute(member, client) {
         // --- PENGATURAN ID (GANTI SESUAI SERVER ANDA) ---
-        const welcomeChannelId = '1394478754297811034';
+        const welcomeChannelId = '1352311290432983182';
         const rulesChannelId   = '1352326247186694164';
         const rolesChannelId   = '1352823970054803509';
         const helpChannelId    = '1352326787367047188';
