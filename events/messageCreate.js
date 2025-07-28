@@ -66,7 +66,7 @@ module.exports = {
     await autoReply(message);
     await autoChat(message);
     await autoEmoji(message);
-    await autoReactEmoji(message);
+    autoReactEmoji.execute(message);
     
     const prefix = "!";
     const contentRaw = message.content.trim();
