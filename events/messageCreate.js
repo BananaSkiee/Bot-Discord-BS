@@ -14,7 +14,6 @@ const generateWelcomeCard = require("../modules/welcomeCard");
 const getRandomQuote = require("../modules/welcomeQuotes"); // sesuaikan path-nya
 const autoEmoji = require("../modules/autoEmoji");
 const autoReactEmoji = require("../modules/autoReactEmoji");
-const iconanim = require("../modules/iconAnim");
 
 const filePath = path.join(__dirname, "../data/taggedUsers.json");
 
@@ -85,21 +84,6 @@ const command = commandRaw.toLowerCase();
 if (command === "meme") {
   return memeCommand.execute(message);
 }
-
- // Command !iconanim start / stop
-if (command === "icon") {
-  if (args[0] === "start") {
-    iconanim.startAnimation(message.guild);
-    return message.reply("✅ Icon animation dimulai.");
-  } else if (args[0] === "stop") {
-    iconanim.stopAnimation();
-    return message.reply("⛔ Icon animation dihentikan.");
-  } else {
-    return message.reply("❓ Gunakan `!icon start` atau `!icon stop`.");
-  }
-}
-    
-// GANTI BLOK LAMA !testwelcome DI messageCreate.js ANDA DENGAN INI
 
 if (command === 'w') { // Menggunakan 'command' dari struktur kode Anda
     if (message.author.bot) return;
