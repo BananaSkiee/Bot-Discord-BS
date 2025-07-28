@@ -11,7 +11,7 @@ const autoDelete = require("../modules/autoDeleteCryptoMessages.js");
 const slashCommandSetup = require("../modules/slashCommandSetup");
 const autoChat = require("../modules/autoChat");
 const iconAnim = require("../modules/iconAnim");
-const autoNews = require('../modules/autoNews');
+const beritaModule = require("../modules/autoNews"); // ⬅️ Gunakan ini
 
 module.exports = {
   name: "ready",
@@ -50,7 +50,7 @@ module.exports = {
     await slashCommandSetup(client);
 
     // 🔁 Aktifkan auto berita SETELAH slash command siap
-    autoNews(client);
+    beritaModule(client);
 
     // 📈 Update pesan grafik BTC (1 menit)
     setInterval(() => {
@@ -86,11 +86,11 @@ module.exports = {
 
     // 🔄 Mulai animasi icon server setiap 5 menit
     iconAnim.startAutoAnimation(client);
-    
+
     // 📸 Auto meme setiap 3 jam
     try {
-      const channel = await client.channels.fetch("1352404777513783336");
-      setInterval(() => autoSendMeme(channel), 10_800_000); // 3 jam
+      const memeChannel = await client.channels.fetch("1352404777513783336");
+      setInterval(() => autoSendMeme(memeChannel), 10_800_000); // 3 jam
     } catch (err) {
       console.error("❌ Gagal fetch channel untuk auto meme:", err);
     }
@@ -101,5 +101,28 @@ module.exports = {
     } catch (err) {
       console.error("❌ Gagal join voice channel:", err);
     }
+
+    // 📰 Kirim berita setiap 8 jam
+    const beritaChannel = await client.channels.fetch("1352331574376665178");
+    const kirimBerita = async () => {
+      const berita = await beritaModule.getBeritaEmbed();
+      if (!berita) return;
+
+      const embed = {
+        title: berita.title,
+        url: berita.url,
+        description: berita.contentSnippet,
+        color: Math.floor(Math.random() * 0xffffff),
+        footer: {
+          text: `Sumber: ${berita.source}`
+        },
+        timestamp: berita.date
+      };
+
+      beritaChannel.send({ embeds: [embed] });
+    };
+
+    kirimBerita(); // kirim di awal
+    setInterval(kirimBerita, 8 * 60 * 60 * 1000); // setiap 8 jam
   },
 };
