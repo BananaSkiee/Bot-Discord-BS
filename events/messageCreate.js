@@ -67,6 +67,7 @@ module.exports = {
     await autoReply(message);
     await autoChat(message);
     await autoEmoji(message);
+    await iconanim.onMessage(message);
     autoReactEmoji.execute(message);
     
     const prefix = "!";
