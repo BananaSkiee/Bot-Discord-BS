@@ -86,7 +86,7 @@ if (command === "meme") {
 }
 
  // Command !iconanim start / stop
-if (command === "iconanim") {
+if (command === "icon") {
   return iconanim.execute(message, args);
 }
     
