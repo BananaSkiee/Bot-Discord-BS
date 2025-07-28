@@ -14,7 +14,6 @@ const generateWelcomeCard = require("../modules/welcomeCard");
 const getRandomQuote = require("../modules/welcomeQuotes"); // sesuaikan path-nya
 const autoEmoji = require("../modules/autoEmoji");
 const autoReactEmoji = require("../modules/autoReactEmoji");
-const iconAnim = require("../modules/iconAnim");
 
 const filePath = path.join(__dirname, "../data/taggedUsers.json");
 
@@ -286,11 +285,6 @@ Pilih salah satu opsi di bawah ini: 👇`,
     // ========== 4. HAPUS TAG ============
 if (contentLower.startsWith("!hapustag")) {
 return handleHapusTag(message);
-}
-    
-    // ========== 5. ICON ANIMATOR ============
-if (command === 'iconanim') {
-  return iconAnim.execute(message, args);
 }
     }
 };
