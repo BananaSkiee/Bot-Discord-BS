@@ -14,7 +14,7 @@ module.exports = {
 
     const command = args[0];
     const folderPath = path.join(__dirname, '../assets/icon-frames');
-    const frames = fs.readdirSync(folderPath).filter(f => f.endsWith('.png'));
+    const frames = fs.readdirSync(folderPath).filter(f => f.endsWith('.jpg')); // ← disesuaikan
 
     if (frames.length === 0) return message.reply('❌ Tidak ada frame di folder.');
 
