@@ -8,7 +8,10 @@ const emojiList = ["🔥", "💯", "😎", "🚀", "🎉", "👏", "✨", "🤖"
 
 module.exports = {
   name: "autoReactEmoji",
-
+  async execute(message) {
+    ...
+  }
+};
   async execute(message) {
     // Filter: hanya channel tertentu & bukan bot sendiri
     if (message.author.bot || !allowedChannelIds.includes(message.channel.id)) return;
