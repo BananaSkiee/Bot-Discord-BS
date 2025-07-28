@@ -1,4 +1,4 @@
-require("dotenv").config();
+ require("dotenv").config();
 const { Client, GatewayIntentBits, Collection } = require("discord.js");
 const fs = require("fs");
 const express = require("express");
@@ -29,7 +29,6 @@ require("./modules/slashCommandSetup")(client);
 client.commands = new Collection();
 
 client.once("ready", () => {
-  iconanim.startAutoAnimation(client);
 });
 
 // 🌐 Web server (Railway)
