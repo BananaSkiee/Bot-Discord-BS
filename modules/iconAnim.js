@@ -6,7 +6,7 @@ const fs = require("fs");
 const path = require("path");
 
 // Ambil semua gambar dari folder /assets/icons/
-const iconDir = path.join(__dirname, "../assets/icons");
+const iconDir = path.join(__dirname, "../assets/icon-frames");
 const icons = fs.readdirSync(iconDir).filter(file => file.endsWith(".png"));
 
 async function updateIcon(guild) {
