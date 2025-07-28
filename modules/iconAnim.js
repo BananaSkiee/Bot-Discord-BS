@@ -30,7 +30,7 @@ function startAutoAnimation(client) {
   const guild = client.guilds.cache.first(); // atau ambil ID spesifik
   if (!guild) return;
 
-  interval = setInterval(() => updateIcon(guild), 300000); // 5 menit
+  interval = setInterval(() => updateIcon(guild), 5 * 60 * 1000); // 5 menit
     }
 
 async function onMessage(message) {
