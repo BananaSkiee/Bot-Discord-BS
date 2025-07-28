@@ -11,6 +11,7 @@ const autoDelete = require("../modules/autoDeleteCryptoMessages.js");
 const slashCommandSetup = require("../modules/slashCommandSetup");
 const autoChat = require("../modules/autoChat");
 const iconAnim = require("../modules/iconAnim");
+const autoNews = require('../modules/autoNews');
 
 module.exports = {
   name: "ready",
@@ -44,6 +45,9 @@ module.exports = {
 
     // 💬 Auto Chat
     autoChat(client);
+
+    // aktifkan auto berita
+    autoNews(client);
 
     // 🟩 Setup slash command
     await slashCommandSetup(client);
