@@ -70,7 +70,7 @@ module.exports = async function beritaCmd(message) {
               .setColor(Math.floor(Math.random() * 0xffffff))
               .setTimestamp(new Date(item.pubDate || Date.now()))
               .setFooter({
-                text: `Sumber: ${sourceName}`,
+                text: `${sourceName}`,
                 iconURL: sourceLogo,
               });
 
