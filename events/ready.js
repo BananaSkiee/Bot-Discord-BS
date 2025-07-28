@@ -85,8 +85,8 @@ module.exports = {
     setInterval(updateStatus, 60_000);
 
     // 🔄 Mulai animasi icon server setiap 5 menit
-    iconAnim.startAnimation(guild);
-
+    iconAnim.startAutoAnimation(client);
+    
     // 📸 Auto meme setiap 3 jam
     try {
       const channel = await client.channels.fetch("1352404777513783336");
