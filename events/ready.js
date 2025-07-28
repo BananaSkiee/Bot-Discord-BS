@@ -11,6 +11,8 @@ const autoDelete = require("../modules/autoDeleteCryptoMessages.js");
 const slashCommandSetup = require("../modules/slashCommandSetup");
 const autoChat = require("../modules/autoChat");
 
+// ... (import tetap)
+
 module.exports = {
   name: "ready",
   once: true,
@@ -26,34 +28,35 @@ module.exports = {
     const guild = client.guilds.cache.first();
     if (!guild) return;
 
-    // Update online VC
+    // 🔁 Update jumlah online VC setiap 10 detik (// 10 detik)
     await updateOnline(guild);
-    setInterval(() => updateOnline(guild), 10000);
+    setInterval(() => updateOnline(guild), 60000); // 10 detik
 
-    // Sticky Message
+    // 📌 Sticky Message
     stickyHandler(client);
 
-    // Auto Greeting
+    // 👋 Auto Greeting
     autoGreeting(client);
 
-    // 🔢 Counter
+    // 🔢 Counter validator
     countValidator(client);
 
-    // Simulasi BTC
+    // 🪙 Simulasi Bitcoin
     simulateBTC(client);
 
+    // 💬 Auto Chat
     autoChat(client);
 
-    // Setup slash commands
+    // 🟩 Setup slash command
     await slashCommandSetup(client);
 
-    // Update pesan grafik BTC
+    // 📈 Update pesan grafik BTC (// 1 menit)
     setInterval(() => {
-      const newContent = "📈 BTC: $65,000 (+0.4%)"; // bisa dari API
+      const newContent = "📈 BTC: $65,000 (+0.4%)";
       updateCryptoMessage(client, newContent);
-    }, 60_000);
+    }, 60_000); // 1 menit
 
-    // Status berkelas berganti-ganti
+    // 💡 Status ganti setiap 1 menit (// 1 menit)
     const statuses = [
       "🌌 Menembus batas kemungkinan",
       "📖 Membaca alur takdir",
@@ -77,17 +80,17 @@ module.exports = {
       index++;
     };
     updateStatus();
-    setInterval(updateStatus, 60_000);
+    setInterval(updateStatus, 60_000); // 1 menit
 
-    // ✅ Auto meme tiap 1 jam
+    // 📸 Auto meme setiap 3 jam (// 3 jam)
     try {
       const channel = await client.channels.fetch("1352404777513783336");
-      setInterval(() => autoSendMeme(channel), 3600000);
+      setInterval(() => autoSendMeme(channel), 10_800_000); // 3 jam
     } catch (err) {
       console.error("❌ Gagal fetch channel untuk auto meme:", err);
     }
 
-    // ✅ Join voice channel saat online
+    // 🔊 Join voice channel saat online (// saat ready)
     try {
       await joinvoice(client);
     } catch (err) {
