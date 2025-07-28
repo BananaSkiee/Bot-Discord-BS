@@ -12,7 +12,6 @@ const updateTimeChannel = require("./modules/updateTimeChannel");
 const generateTextGraph = require('./modules/generateTextGraph');
 const startCryptoSimulation = require("./modules/cryptoSimulator");
 const welcomecard = require("./modules/welcomeCard");
-const iconAnim = require('./modules/iconAnim');
 
 const client = new Client({
   intents: [
