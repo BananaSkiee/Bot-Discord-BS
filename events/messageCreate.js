@@ -15,6 +15,7 @@ const getRandomQuote = require("../modules/welcomeQuotes"); // sesuaikan path-ny
 const autoEmoji = require("../modules/autoEmoji");
 const autoReactEmoji = require("../modules/autoReactEmoji");
 const iconanim = require("../modules/iconAnim");
+const beritaCmd = require("../modules/beritaCmd.js");
 
 const filePath = path.join(__dirname, "../data/taggedUsers.json");
 
@@ -86,6 +87,10 @@ if (command === "meme") {
   return memeCommand.execute(message);
 }
 
+  if (command === "berita") {
+    await beritaCmd(message);
+  }
+    
 if (command === 'w') { // Menggunakan 'command' dari struktur kode Anda
     if (message.author.bot) return;
 
