@@ -18,7 +18,7 @@ module.exports = {
 
     if (frames.length === 0) return message.reply('❌ Tidak ada frame di folder.');
 
-    const delay = 5000; // ganti icon tiap 5 detik
+    const delay = 10000; // ganti icon tiap 5 detik
 
     if (command === 'start') {
       if (animating) return message.reply('⚠️ Animasi sudah jalan.');
