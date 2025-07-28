@@ -4,17 +4,13 @@ const path = require('path');
 const folderPath = path.join(__dirname, '../assets/icon-frames');
 const frames = fs.readdirSync(folderPath).filter(f => f.endsWith('.png') || f.endsWith('.jpg'));
 
-let interval;
 let currentIndex = 0;
-let isRunning = false;
-let lastChange = 0;
-const cooldown = 5 * 60 * 1000; // 5 menit
+const cooldown = 5 * 1000; // 5 detik
 
 function getNextIcon() {
   const framePath = path.join(folderPath, frames[currentIndex]);
   const buffer = fs.readFileSync(framePath);
   currentIndex = (currentIndex + 1) % frames.length;
-  lastChange = Date.now();
   return buffer;
 }
 
@@ -29,34 +25,15 @@ async function updateIcon(guild) {
   }
 }
 
-function startAnimation(guild) {
-  if (isRunning || !guild) return;
-  isRunning = true;
+// Fungsi otomatis mulai animasi saat bot ready
+function startAutoAnimation(client) {
+  client.on('ready', async () => {
+    const guild = client.guilds.cache.first(); // Ubah kalau kamu punya banyak server
+    if (!guild) return console.log("❌ Guild tidak ditemukan.");
 
-  // Update tiap 5 menit
-  interval = setInterval(() => {
-    updateIcon(guild);
-  }, cooldown);
+    console.log(`🔁 Memulai animasi icon setiap ${cooldown / 1000} detik`);
+    setInterval(() => updateIcon(guild), cooldown);
+  });
 }
 
-function stopAnimation() {
-  isRunning = false;
-  if (interval) clearInterval(interval);
-}
-
-async function onMessage(message) {
-  if (
-    !isRunning || 
-    !message.guild || 
-    message.author.bot || 
-    Date.now() - lastChange < cooldown
-  ) return;
-
-  await updateIcon(message.guild);
-}
-
-module.exports = {
-  startAnimation,
-  stopAnimation,
-  onMessage,
-};
+module.exports = { startAutoAnimation };
