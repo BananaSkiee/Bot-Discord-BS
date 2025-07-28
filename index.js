@@ -12,7 +12,7 @@ const updateTimeChannel = require("./modules/updateTimeChannel");
 const generateTextGraph = require('./modules/generateTextGraph');
 const startCryptoSimulation = require("./modules/cryptoSimulator");
 const welcomecard = require("./modules/welcomeCard");
-
+const iconAnim = require('./modules/iconAnim');
 
 const client = new Client({
   intents: [
@@ -73,9 +73,20 @@ client.on("interactionCreate", async (interaction) => {
 // 📌 Sticky Message Handler
 client.on("messageCreate", async (message) => {
   if (message.author.bot) return;
-  stickyHandler(client, message);
-});
 
+  stickyHandler(client, message); // fitur sticky jalan duluan
+
+  // ✅ Tambahkan parser command manual
+  const prefix = "!";
+  if (!message.content.startsWith(prefix)) return;
+
+  const args = message.content.slice(prefix.length).trim().split(/ +/);
+  const command = args.shift().toLowerCase();
+
+  if (command === 'iconanim') {
+    iconAnim.execute(message, args);
+  }
+});
 // 🚀 Auto Greeting ketika user join
 client.on("guildMemberAdd", async (member) => {
   // 1. Jalankan greeting tambahan (opsional)
