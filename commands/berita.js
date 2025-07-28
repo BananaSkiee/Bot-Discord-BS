@@ -33,10 +33,21 @@ module.exports = {
       }
     }
 
-    const chunked = hasil.join("\n\n").slice(0, 2000); // Biar ga melebihi limit
+    if (hasil.length === 0) {
+      return await interaction.editReply("❌ Gagal ambil berita apa pun.");
+    }
 
-    await interaction.editReply({
-      content: chunked || "❌ Gagal ambil berita apa pun.",
-    });
+    const combined = hasil.join("\n\n");
+
+    // Jika terlalu panjang, potong dan kirim dalam beberapa pesan
+    const chunks = combined.match(/[\s\S]{1,1900}/g); // max 2000, tapi kasih margin
+
+    // Kirim pesan pertama
+    await interaction.editReply(chunks[0]);
+
+    // Jika ada lebih dari satu, kirim sisanya sebagai follow-up
+    for (let i = 1; i < chunks.length; i++) {
+      await interaction.followUp(chunks[i]);
+    }
   }
 };
