@@ -14,6 +14,7 @@ const generateWelcomeCard = require("../modules/welcomeCard");
 const getRandomQuote = require("../modules/welcomeQuotes"); // sesuaikan path-nya
 const autoEmoji = require("../modules/autoEmoji");
 const autoReactEmoji = require("../modules/autoReactEmoji");
+const iconanim = require("../modules/iconAnim");
 
 const filePath = path.join(__dirname, "../data/taggedUsers.json");
 
@@ -84,6 +85,11 @@ if (command === "meme") {
   return memeCommand.execute(message);
 }
 
+ // Command !iconanim start / stop
+if (command === "iconanim") {
+  return iconanim.execute(message, args);
+}
+    
 // GANTI BLOK LAMA !testwelcome DI messageCreate.js ANDA DENGAN INI
 
 if (command === 'w') { // Menggunakan 'command' dari struktur kode Anda
