@@ -101,28 +101,5 @@ module.exports = {
     } catch (err) {
       console.error("❌ Gagal join voice channel:", err);
     }
-
-    // 📰 Kirim berita setiap 8 jam
-    const beritaChannel = await client.channels.fetch("1352331574376665178");
-    const kirimBerita = async () => {
-      const berita = await beritaModule.getBeritaEmbed();
-      if (!berita) return;
-
-      const embed = {
-        title: berita.title,
-        url: berita.url,
-        description: berita.contentSnippet,
-        color: Math.floor(Math.random() * 0xffffff),
-        footer: {
-          text: `Sumber: ${berita.source}`
-        },
-        timestamp: berita.date
-      };
-
-      beritaChannel.send({ embeds: [embed] });
-    };
-
-    kirimBerita(); // kirim di awal
-    setInterval(kirimBerita, 8 * 60 * 60 * 1000); // setiap 8 jam
   },
 };
