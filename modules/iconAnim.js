@@ -24,14 +24,14 @@ module.exports = {
       return message.reply('❌ Tidak ada frame di folder `assets/icon-frames`.');
     }
 
-    const delay = 10000; // ganti icon setiap 10 detik (rekomendasi minimum)
-    
+    const delay = 5 * 60 * 1000; // 5 menit
+
     if (command === 'start') {
       if (animating) return message.reply('⚠️ Animasi sudah berjalan.');
 
       animating = true;
       let i = 0;
-      message.reply(`✅ Mulai animasi icon (${frames.length} frame, delay ${delay / 1000} detik).`);
+      message.reply(`✅ Mulai animasi icon (${frames.length} frame, delay ${delay / 1000 / 60} menit).`);
 
       animationInterval = setInterval(async () => {
         const frameName = frames[i];
@@ -44,19 +44,3 @@ module.exports = {
         } catch (err) {
           console.error('❌ Gagal set icon:', err);
           message.channel.send('❌ Gagal ganti icon (kemungkinan rate limit). Animasi dihentikan.');
-          clearInterval(animationInterval);
-          animating = false;
-        }
-
-        i = (i + 1) % frames.length;
-      }, delay);
-    }
-
-    if (command === 'stop') {
-      if (!animating) return message.reply('⚠️ Animasi belum berjalan.');
-      clearInterval(animationInterval);
-      animating = false;
-      message.reply('⏹️ Animasi icon dihentikan.');
-    }
-  }
-};
