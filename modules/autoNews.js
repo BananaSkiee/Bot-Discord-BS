@@ -1,3 +1,4 @@
+const { EmbedBuilder } = require("discord.js");
 const Parser = require("rss-parser");
 const fs = require("fs");
 const path = require("path");
@@ -15,6 +16,16 @@ const rssFeeds = [
 
 const SENT_FILE = path.join(__dirname, "../data/sentNews.json");
 
+const sourceLogos = {
+  kompas: "https://asset.kompas.com/data/2020/wp/images/logokompascom.png",
+  detik: "https://cdn.detik.net.id/assets/images/logo-detikcom.png",
+  cnn: "https://upload.wikimedia.org/wikipedia/commons/6/66/CNN_International_logo.svg",
+  antara: "https://cdn.antaranews.com/images/2021/antaranewscom.png",
+  tempo: "https://cdn.tempo.co/images/tempo.png",
+  merdeka: "https://cdn-image.hipwee.com/wp-content/uploads/2023/07/hipwee-merdeka-com.png",
+  republika: "https://static.republika.co.id/files/images/logo-republika.png",
+};
+
 function loadSentLinks() {
   if (!fs.existsSync(SENT_FILE)) return [];
   return JSON.parse(fs.readFileSync(SENT_FILE));
@@ -30,52 +41,50 @@ function getRandomColor() {
   return Math.floor(Math.random() * 0xffffff);
 }
 
-async function getBerita() {
+module.exports = async function beritaCmd(message) {
   const sentLinks = loadSentLinks();
 
   for (const feedUrl of rssFeeds) {
     try {
       const feed = await parser.parseURL(feedUrl);
-      const beritaBaru = feed.items.find(item => !sentLinks.includes(item.link));
-      if (beritaBaru) {
-        saveSentLink(beritaBaru.link);
-        return {
-          title: beritaBaru.title,
-          url: beritaBaru.link,
-          source: feed.title,
-          date: new Date(beritaBaru.pubDate || beritaBaru.isoDate || Date.now()),
-          contentSnippet: beritaBaru.contentSnippet || "Tidak ada ringkasan."
-        };
+      const item = feed.items.find(i => !sentLinks.includes(i.link));
+      if (!item) continue;
+
+      // Cek gambar
+      let image = null;
+      if (item.enclosure?.url) {
+        image = item.enclosure.url;
+      } else {
+        const match = (item.content || item.contentSnippet || "").match(/<img[^>]+src="([^">]+)"/);
+        if (match?.[1]) image = match[1];
       }
+
+      const sourceKey = Object.keys(sourceLogos).find(key => feedUrl.includes(key)) || "";
+      const sourceLogo = sourceLogos[sourceKey] || null;
+      const sourceName = feed.title || "Media";
+
+      const embed = new EmbedBuilder()
+        .setTitle(item.title || "Berita")
+        .setURL(item.link)
+        .setDescription(item.contentSnippet?.slice(0, 200) + "..." || "Klik untuk baca selengkapnya.")
+        .setColor(getRandomColor())
+        .setTimestamp(new Date(item.pubDate || item.isoDate || Date.now()));
+
+      if (image) embed.setImage(image);
+
+      embed.setFooter({
+        text: `${sourceName} • ${new Date(item.pubDate).toLocaleString("id-ID", { hour: '2-digit', minute: '2-digit', hour12: false })}`,
+        iconURL: sourceLogo,
+      });
+
+      await message.reply({ embeds: [embed] });
+      saveSentLink(item.link);
+      return;
+
     } catch (err) {
-      console.error("Gagal ambil RSS:", feedUrl, err);
+      console.error(`Gagal ambil RSS dari ${feedUrl}:`, err.message);
     }
   }
 
-  return null;
-}
-
-module.exports = {
-  name: "berita",
-  description: "📢 Kirim 1 berita terbaru dari media Indonesia",
-  async execute(message) {
-    const berita = await getBerita();
-    if (!berita) {
-      return message.channel.send("⚠️ Tidak ada berita baru untuk saat ini.");
-    }
-
-    const embed = {
-      title: berita.title,
-      url: berita.url,
-      description: berita.contentSnippet,
-      color: getRandomColor(),
-      footer: {
-        text: `Sumber: ${berita.source}`
-      },
-      timestamp: berita.date
-    };
-
-    message.channel.send({ embeds: [embed] });
-  },
-  getBeritaEmbed: getBerita // biar bisa dipakai scheduler otomatis
+  await message.reply("⚠️ Tidak ada berita baru untuk saat ini.");
 };
