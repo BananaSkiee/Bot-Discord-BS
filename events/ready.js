@@ -46,11 +46,11 @@ module.exports = {
     // 💬 Auto Chat
     autoChat(client);
 
-    // aktifkan auto berita
-    autoNews(client);
-
-    // 🟩 Setup slash command
+    // 🟩 Setup slash command DULUAN
     await slashCommandSetup(client);
+
+    // 🔁 Aktifkan auto berita SETELAH slash command siap
+    autoNews(client);
 
     // 📈 Update pesan grafik BTC (1 menit)
     setInterval(() => {
