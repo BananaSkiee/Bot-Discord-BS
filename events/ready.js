@@ -10,8 +10,7 @@ const autoSendMeme = require("../modules/autoMeme");
 const autoDelete = require("../modules/autoDeleteCryptoMessages.js");
 const slashCommandSetup = require("../modules/slashCommandSetup");
 const autoChat = require("../modules/autoChat");
-
-// ... (import tetap)
+const iconAnim = require("../modules/iconAnim");
 
 module.exports = {
   name: "ready",
@@ -19,7 +18,6 @@ module.exports = {
   async execute(client) {
     console.log(`🤖 Bot siap sebagai ${client.user.tag}`);
 
-    // Menampilkan semua server tempat bot bergabung
     console.log(`🧩 Bot berada di ${client.guilds.cache.size} server:`);
     client.guilds.cache.forEach((guild) => {
       console.log(`- ${guild.name} (ID: ${guild.id})`);
@@ -28,9 +26,9 @@ module.exports = {
     const guild = client.guilds.cache.first();
     if (!guild) return;
 
-    // 🔁 Update jumlah online VC setiap 10 detik (// 10 detik)
+    // 🔁 Update jumlah online VC setiap 1 menit
     await updateOnline(guild);
-    setInterval(() => updateOnline(guild), 60000); // 10 detik
+    setInterval(() => updateOnline(guild), 60_000);
 
     // 📌 Sticky Message
     stickyHandler(client);
@@ -50,13 +48,13 @@ module.exports = {
     // 🟩 Setup slash command
     await slashCommandSetup(client);
 
-    // 📈 Update pesan grafik BTC (// 1 menit)
+    // 📈 Update pesan grafik BTC (1 menit)
     setInterval(() => {
       const newContent = "📈 BTC: $65,000 (+0.4%)";
       updateCryptoMessage(client, newContent);
-    }, 60_000); // 1 menit
+    }, 60_000);
 
-    // 💡 Status ganti setiap 1 menit (// 1 menit)
+    // 💡 Status ganti setiap 1 menit
     const statuses = [
       "🌌 Menembus batas kemungkinan",
       "📖 Membaca alur takdir",
@@ -80,9 +78,12 @@ module.exports = {
       index++;
     };
     updateStatus();
-    setInterval(updateStatus, 60_000); // 1 menit
+    setInterval(updateStatus, 60_000);
 
-    // 📸 Auto meme setiap 3 jam (// 3 jam)
+    // 🔄 Mulai animasi icon server setiap 5 menit
+    iconAnim.startAnimation(guild);
+
+    // 📸 Auto meme setiap 3 jam
     try {
       const channel = await client.channels.fetch("1352404777513783336");
       setInterval(() => autoSendMeme(channel), 10_800_000); // 3 jam
@@ -90,7 +91,7 @@ module.exports = {
       console.error("❌ Gagal fetch channel untuk auto meme:", err);
     }
 
-    // 🔊 Join voice channel saat online (// saat ready)
+    // 🔊 Join voice channel saat online
     try {
       await joinvoice(client);
     } catch (err) {
