@@ -1,7 +1,6 @@
-const fs = require("fs");
-const path = require("path");
 const { EmbedBuilder } = require("discord.js");
 const Parser = require("rss-parser");
+const fs = require("fs");
 const parser = new Parser();
 
 const rssFeeds = [
@@ -14,42 +13,53 @@ const rssFeeds = [
   "https://republika.co.id/rss/nasional"
 ];
 
-const sentFilePath = path.join(__dirname, "../sentNews.json");
-
 function loadSentLinks() {
   try {
-    return JSON.parse(fs.readFileSync(sentFilePath, "utf8"));
-  } catch {
+    return JSON.parse(fs.readFileSync("sentLinks.json"));
+  } catch (e) {
     return [];
   }
 }
 
-function saveSentLinks(data) {
-  fs.writeFileSync(sentFilePath, JSON.stringify(data, null, 2));
+function saveSentLinks(links) {
+  fs.writeFileSync("sentLinks.json", JSON.stringify(links, null, 2));
 }
 
-function getRandomColor() {
-  return Math.floor(Math.random() * 0xffffff);
-}
-
-module.exports = async (message) => {
+module.exports = async function beritaCmd(message) {
   const sentLinks = loadSentLinks();
 
-  for (const url of rssFeeds) {
+  for (const feedUrl of rssFeeds) {
     try {
-      const feed = await parser.parseURL(url);
+      const feed = await parser.parseURL(feedUrl);
 
       for (const item of feed.items) {
         if (!sentLinks.includes(item.link)) {
-          const embed = new EmbedBuilder()
-            .setTitle(item.title || "Berita")
-            .setDescription(item.contentSnippet || item.content || "Tidak ada deskripsi.")
-            .setURL(item.link)
-            .setColor(getRandomColor())
-            .setTimestamp(new Date(item.isoDate || Date.now()))
-            .setFooter({ text: feed.title || "Berita Terkini" });
+          // Cari gambar
+          let image = null;
+          if (item.enclosure?.url) {
+            image = item.enclosure.url;
+          } else {
+            const match = (item.content || item.contentSnippet || "").match(/<img[^>]+src="([^">]+)"/);
+            if (match?.[1]) {
+              image = match[1];
+            }
+          }
 
-          await message.reply({ embeds: [embed] });
+          // Jika ada gambar → pakai embed
+          if (image) {
+            const embed = new EmbedBuilder()
+              .setTitle(item.title || "Berita")
+              .setURL(item.link)
+              .setDescription(item.contentSnippet?.slice(0, 200) + "..." || "Klik untuk baca selengkapnya.")
+              .setImage(image)
+              .setColor(Math.floor(Math.random() * 0xffffff))
+              .setTimestamp(new Date(item.pubDate || Date.now()));
+
+            await message.reply({ embeds: [embed] });
+          } else {
+            // Tanpa embed → reply teks dengan format markdown
+            await message.reply(`[📰 ${item.title}](${item.link})`);
+          }
 
           sentLinks.push(item.link);
           saveSentLinks(sentLinks);
@@ -57,9 +67,9 @@ module.exports = async (message) => {
         }
       }
     } catch (err) {
-      console.error(`❌ Error ambil RSS ${url}:`, err.message);
+      console.error(`Gagal fetch RSS dari ${feedUrl}:`, err.message);
     }
   }
 
-  await message.reply("❌ Tidak ada berita baru yang bisa dikirim saat ini.");
+  await message.reply("Tidak ada berita baru untuk saat ini.");
 };
