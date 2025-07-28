@@ -14,7 +14,6 @@ const generateWelcomeCard = require("../modules/welcomeCard");
 const getRandomQuote = require("../modules/welcomeQuotes"); // sesuaikan path-nya
 const autoEmoji = require("../modules/autoEmoji");
 const autoReactEmoji = require("../modules/autoReactEmoji");
-const iconanim = require("../modules/iconAnim");
 const beritaCmd = require("../modules/beritaCmd.js");
 
 const filePath = path.join(__dirname, "../data/taggedUsers.json");
@@ -68,7 +67,6 @@ module.exports = {
     await autoReply(message);
     await autoChat(message);
     await autoEmoji(message);
-    await iconanim.onMessage(message);
     autoReactEmoji.execute(message);
     
     const prefix = "!";
