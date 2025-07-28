@@ -88,7 +88,15 @@ if (command === "meme") {
 
  // Command !iconanim start / stop
 if (command === "icon") {
-  return iconanim.execute(message, args);
+  if (args[0] === "start") {
+    iconanim.startAnimation(message.guild);
+    return message.reply("✅ Icon animation dimulai.");
+  } else if (args[0] === "stop") {
+    iconanim.stopAnimation();
+    return message.reply("⛔ Icon animation dihentikan.");
+  } else {
+    return message.reply("❓ Gunakan `!icon start` atau `!icon stop`.");
+  }
 }
     
 // GANTI BLOK LAMA !testwelcome DI messageCreate.js ANDA DENGAN INI
