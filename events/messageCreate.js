@@ -14,6 +14,7 @@ const generateWelcomeCard = require("../modules/welcomeCard");
 const getRandomQuote = require("../modules/welcomeQuotes"); // sesuaikan path-nya
 const autoEmoji = require("../modules/autoEmoji");
 const autoReactEmoji = require("../modules/autoReactEmoji");
+const iconanim = require("../modules/iconAnim");
 
 const filePath = path.join(__dirname, "../data/taggedUsers.json");
 
