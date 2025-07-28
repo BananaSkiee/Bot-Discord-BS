@@ -28,6 +28,10 @@ const client = new Client({
 require("./modules/slashCommandSetup")(client);
 client.commands = new Collection();
 
+client.once("ready", () => {
+  iconanim.startAutoAnimation(client);
+});
+
 // 🌐 Web server (Railway)
 const app = express();
 app.get("/", (_, res) => res.send("✅ Bot Akira aktif"));
@@ -74,7 +78,6 @@ client.on("interactionCreate", async (interaction) => {
 client.on("messageCreate", async (message) => {
   if (message.author.bot) return;
   stickyHandler(client, message);
-  iconAnim.startAutoAnimation(client);
 });
 
 // 🚀 Auto Greeting ketika user join
