@@ -3,126 +3,115 @@ const fs = require("fs");
 const path = require("path");
 
 const invitesPath = path.join(__dirname, "../data/invites.json");
-let invitesData = {};
+let invitesData = fs.existsSync(invitesPath)
+    ? JSON.parse(fs.readFileSync(invitesPath, "utf8"))
+    : {};
 
-// Baca file invites.json saat start
-if (fs.existsSync(invitesPath)) {
-    invitesData = JSON.parse(fs.readFileSync(invitesPath, "utf8"));
-} else {
-    fs.writeFileSync(invitesPath, JSON.stringify({}));
-}
-
+// Simpan file
 function saveInvites() {
     fs.writeFileSync(invitesPath, JSON.stringify(invitesData, null, 2));
 }
 
-function getRandomColor() {
-    return Math.floor(Math.random() * 16777215);
-}
-
 module.exports = (client) => {
-    // Simpan data invites saat bot ready
     client.on(Events.ClientReady, async () => {
-        client.guilds.cache.forEach(async (guild) => {
-            const firstInvites = await guild.invites.fetch();
-            invitesData[guild.id] = new Map(firstInvites.map((invite) => [invite.code, invite.uses]));
-        });
+        for (const guild of client.guilds.cache.values()) {
+            const guildInvites = await guild.invites.fetch();
+            invitesData[guild.id] = invitesData[guild.id] || { codes: {}, users: {}, joins: {} };
+            guildInvites.forEach(inv => invitesData[guild.id].codes[inv.code] = inv.uses);
+        }
         saveInvites();
-        console.log("✅ Invite Tracker siap!");
+        console.log("✅ Invite Tracker Siap!");
     });
 
-    // Event Member Join
+    // Member Join
     client.on(Events.GuildMemberAdd, async (member) => {
         const newInvites = await member.guild.invites.fetch();
-        const oldInvites = invitesData[member.guild.id] || new Map();
-        const inviteUsed = newInvites.find((inv) => oldInvites.get(inv.code) < inv.uses);
-        invitesData[member.guild.id] = new Map(newInvites.map((invite) => [invite.code, invite.uses]));
-        saveInvites();
+        const oldInvites = invitesData[member.guild.id]?.codes || {};
+        const inviteUsed = newInvites.find(inv => (oldInvites[inv.code] || 0) < inv.uses);
+
+        invitesData[member.guild.id] = invitesData[member.guild.id] || { codes: {}, users: {}, joins: {} };
+        invitesData[member.guild.id].codes = {};
+        newInvites.forEach(inv => invitesData[member.guild.id].codes[inv.code] = inv.uses);
 
         let inviter = inviteUsed ? inviteUsed.inviter : null;
         let inviteCode = inviteUsed ? `discord.gg/${inviteUsed.code}` : "Vanity / Tidak diketahui";
 
         if (inviter) {
-            if (!invitesData.users) invitesData.users = {};
-            if (!invitesData.users[inviter.id]) invitesData.users[inviter.id] = 0;
-            invitesData.users[inviter.id] += 1;
-            saveInvites();
+            invitesData[member.guild.id].users[inviter.id] = (invitesData[member.guild.id].users[inviter.id] || 0) + 1;
+            invitesData[member.guild.id].joins[member.id] = inviter.id;
         }
+        saveInvites();
 
         const embed = new EmbedBuilder()
-            .setColor(getRandomColor())
-            .setTitle("🎉 Selamat Datang!")
+            .setColor("Green")
+            .setTitle("👋 Selamat Datang!")
             .setThumbnail(member.user.displayAvatarURL({ dynamic: true }))
             .addFields(
                 { name: "👤 Member", value: `<@${member.id}>`, inline: true },
                 { name: "📩 Diundang oleh", value: inviter ? `<@${inviter.id}>` : "Tidak diketahui", inline: true },
                 { name: "🔗 Link Invite", value: inviteCode, inline: false },
-                { name: "📊 Total Invites", value: inviter ? `${invitesData.users[inviter.id]} (+1)` : "-", inline: true },
+                { name: "📊 Total Invites", value: inviter ? `${invitesData[member.guild.id].users[inviter.id]} (+1)` : "-", inline: true },
                 { name: "👥 Total Member", value: `${member.guild.memberCount}`, inline: true }
             )
             .setFooter({ text: `Bergabung pada ${new Date().toLocaleString()}` });
 
-        const welcomeChannel = member.guild.systemChannel || member.guild.channels.cache.find(c => c.isTextBased());
+        const welcomeChannel = member.guild.channels.cache.get(process.env.WELCOME_CHANNEL_ID);
         if (welcomeChannel) welcomeChannel.send({ embeds: [embed] });
     });
 
-    // Event Member Leave
+    // Member Leave
     client.on(Events.GuildMemberRemove, async (member) => {
-        let inviterId = null;
+        const guildData = invitesData[member.guild.id];
+        let inviterId = guildData?.joins[member.id];
 
-        // Cari siapa yang dulu ngundang
-        for (let [id, invites] of Object.entries(invitesData.users || {})) {
-            // Tidak ada cara langsung untuk tahu pengundang saat leave, jadi butuh database join
+        if (inviterId) {
+            guildData.users[inviterId] = (guildData.users[inviterId] || 1) - 1;
+            delete guildData.joins[member.id];
         }
+        saveInvites();
 
         const embed = new EmbedBuilder()
-            .setColor(getRandomColor())
+            .setColor("Red")
             .setTitle("👋 Selamat Tinggal!")
             .setThumbnail(member.user.displayAvatarURL({ dynamic: true }))
             .addFields(
                 { name: "👤 Member", value: `<@${member.id}>`, inline: true },
                 { name: "📩 Diundang oleh", value: inviterId ? `<@${inviterId}>` : "Tidak diketahui", inline: true },
-                { name: "📊 Total Invites", value: inviterId ? `${invitesData.users[inviterId]} (-1)` : "-", inline: true },
+                { name: "📊 Total Invites", value: inviterId ? `${guildData.users[inviterId]} (-1)` : "-", inline: true },
                 { name: "👥 Total Member", value: `${member.guild.memberCount}`, inline: true }
             )
             .setFooter({ text: `Keluar pada ${new Date().toLocaleString()}` });
 
-        const goodbyeChannel = member.guild.systemChannel || member.guild.channels.cache.find(c => c.isTextBased());
+        const goodbyeChannel = member.guild.channels.cache.get(process.env.GOODBYE_CHANNEL_ID);
         if (goodbyeChannel) goodbyeChannel.send({ embeds: [embed] });
     });
 
-    // Command test !tw (welcome) dan !tg (goodbye)
-    client.on(Events.MessageCreate, async (message) => {
+    // Commands
+    client.on(Events.MessageCreate, (message) => {
         if (message.author.bot) return;
+        const args = message.content.trim().split(/\s+/);
 
-        if (message.content === "!tw") {
+        // Leaderboard
+        if (args[0] === "!topinvites") {
+            const guildData = invitesData[message.guild.id]?.users || {};
+            const sorted = Object.entries(guildData).sort((a, b) => b[1] - a[1]).slice(0, 10);
+            const desc = sorted.map(([id, count], i) => `**${i + 1}.** <@${id}> — ${count} invites`).join("\n") || "Tidak ada data.";
+
             const embed = new EmbedBuilder()
-                .setColor(getRandomColor())
-                .setTitle("🎉 Selamat Datang! (Test)")
-                .addFields(
-                    { name: "👤 Member", value: `<@${message.author.id}>`, inline: true },
-                    { name: "📩 Diundang oleh", value: `<@${message.author.id}>`, inline: true },
-                    { name: "🔗 Link Invite", value: "discord.gg/test", inline: false },
-                    { name: "📊 Total Invites", value: "5 (+1)", inline: true },
-                    { name: "👥 Total Member", value: "100", inline: true }
-                )
-                .setFooter({ text: "Simulasi bergabung" });
-
+                .setColor("Blue")
+                .setTitle("🏆 Top 10 Pengundang")
+                .setDescription(desc);
             message.channel.send({ embeds: [embed] });
         }
 
-        if (message.content === "!tg") {
+        // Cek user
+        if (args[0] === "!invites") {
+            const user = message.mentions.users.first() || message.author;
+            const count = invitesData[message.guild.id]?.users[user.id] || 0;
             const embed = new EmbedBuilder()
-                .setColor(getRandomColor())
-                .setTitle("👋 Selamat Tinggal! (Test)")
-                .addFields(
-                    { name: "👤 Member", value: `<@${message.author.id}>`, inline: true },
-                    { name: "📩 Diundang oleh", value: `<@${message.author.id}>`, inline: true },
-                    { name: "📊 Total Invites", value: "5 (-1)", inline: true },
-                    { name: "👥 Total Member", value: "99", inline: true }
-                )
-                .setFooter({ text: "Simulasi keluar" });
-
+                .setColor("Blue")
+                .setTitle(`📊 Invites untuk ${user.username}`)
+                .setDescription(`<@${user.id}> memiliki **${count}** invites.`);
             message.channel.send({ embeds: [embed] });
         }
     });
