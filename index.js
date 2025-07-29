@@ -13,6 +13,7 @@ const generateTextGraph = require('./modules/generateTextGraph');
 const startCryptoSimulation = require("./modules/cryptoSimulator");
 const welcomecard = require("./modules/welcomeCard");
 const iconanim = require("./modules/iconAnim"); // <- pastikan path-nya sesuai
+const invitesTracker = require("./modules/invitesTracker"); 
 
 const client = new Client({
   intents: [
@@ -27,6 +28,8 @@ const client = new Client({
 
 require("./modules/slashCommandSetup")(client);
 client.commands = new Collection();
+
+invitesTracker(client);
 
 client.once("ready", () => {
 });
