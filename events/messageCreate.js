@@ -17,6 +17,7 @@ const autoReactEmoji = require("../modules/autoReactEmoji");
 const beritaCmd = require("../modules/beritaCmd.js");
 const tebakAngka = require("../modules/tebakAngka");
 
+
 const filePath = path.join(__dirname, "../data/taggedUsers.json");
 
 const ADMIN_ROLE_ID = "1352279577174605884";
@@ -93,7 +94,142 @@ if (command === "meme") {
 if (command === "tebakangka") {
   return tebakAngka(message);
 }
+
+// ==== TEST MEMBER JOIN ====
+if (command === "testjoin") {
+  // Hanya admin yang bisa
+  if (!message.member.roles.cache.has(ADMIN_ROLE_ID)) {
+    return message.reply("❌ Kamu tidak punya izin untuk menjalankan perintah ini.");
+  }
+
+  const member = message.member;
+  const inviter = message.author; // Karena ini simulasi, kita anggap yang jalankan cmd sebagai pengundang
+
+  const embed = new EmbedBuilder()
+    .setColor("Green")
+    .setTitle("👋 [TEST] Selamat Datang!")
+    .setThumbnail(member.user.displayAvatarURL({ dynamic: true }))
+    .addFields(
+      { name: "👤 Member", value: `<@${member.id}>`, inline: true },
+      { name: "📩 Diundang oleh", value: `<@${inviter.id}>`, inline: true },
+      { name: "🔗 Link Invite", value: "discord.gg/testcode", inline: false },
+      { name: "📊 Total Invites", value: "10 (+1)", inline: true },
+      { name: "👥 Total Member", value: `${member.guild.memberCount}`, inline: true }
+    )
+    .setFooter({ text: `Bergabung pada ${new Date().toLocaleString()}` });
+
+  return message.channel.send({ embeds: [embed] });
+}
+
+// ==== TEST MEMBER LEAVE ====
+if (command === "testleave") {
+  // Hanya admin yang bisa
+  if (!message.member.roles.cache.has(ADMIN_ROLE_ID)) {
+    return message.reply("❌ Kamu tidak punya izin untuk menjalankan perintah ini.");
+  }
+
+  const member = message.member;
+  const inviter = message.author; // Simulasi pengundang
+
+  const embed = new EmbedBuilder()
+    .setColor("Red")
+    .setTitle("👋 [TEST] Selamat Tinggal!")
+    .setThumbnail(member.user.displayAvatarURL({ dynamic: true }))
+    .addFields(
+      { name: "👤 Member", value: `<@${member.id}>`, inline: true },
+      { name: "📩 Diundang oleh", value: `<@${inviter.id}>`, inline: true },
+      { name: "📊 Total Invites", value: "9 (-1)", inline: true },
+      { name: "👥 Total Member", value: `${member.guild.memberCount}`, inline: true }
+    )
+    .setFooter({ text: `Keluar pada ${new Date().toLocaleString()}` });
+
+  return message.channel.send({ embeds: [embed] });
+    }
     
+// ==== COMMAND TEST INVITES ====
+const invitesPath = path.join(__dirname, "../data/invites.json");
+
+if (command === "testinvites") {
+  if (!fs.existsSync(invitesPath)) {
+    return message.reply("❌ Data invite belum ada.");
+  }
+
+  const invitesData = JSON.parse(fs.readFileSync(invitesPath, "utf8"));
+  const guildData = invitesData[message.guild.id];
+  if (!guildData || !guildData.users) {
+    return message.reply("⚠ Tidak ada data user invite di server ini.");
+  }
+
+  const desc = Object.entries(guildData.users)
+    .map(([userId, count]) => `<@${userId}> — **${count}** invites`)
+    .join("\n");
+
+  const embed = new EmbedBuilder()
+    .setColor("Green")
+    .setTitle("📊 Data Invite (Test)")
+    .setDescription(desc || "Tidak ada data.")
+    .setFooter({ text: `Total: ${Object.keys(guildData.users).length} user` });
+
+  return message.channel.send({ embeds: [embed] });
+}
+
+if (command === "testtop") {
+  if (!fs.existsSync(invitesPath)) {
+    return message.reply("❌ Data invite belum ada.");
+  }
+
+  const invitesData = JSON.parse(fs.readFileSync(invitesPath, "utf8"));
+  const guildData = invitesData[message.guild.id];
+  if (!guildData || !guildData.users) {
+    return message.reply("⚠ Tidak ada data user invite di server ini.");
+  }
+
+  const sorted = Object.entries(guildData.users)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 10);
+
+  const desc = sorted
+    .map(([userId, count], i) => `**${i + 1}.** <@${userId}> — **${count}** invites`)
+    .join("\n");
+
+  const embed = new EmbedBuilder()
+    .setColor("Blue")
+    .setTitle("🏆 Top 10 Inviter (Test)")
+    .setDescription(desc || "Tidak ada data.")
+    .setFooter({ text: `Total inviter: ${Object.keys(guildData.users).length} user` });
+
+  return message.channel.send({ embeds: [embed] });
+}
+
+if (command === "testwho") {
+  const targetUser = message.mentions.users.first();
+  if (!targetUser) {
+    return message.reply("❌ Tag user yang mau dicek.");
+  }
+
+  if (!fs.existsSync(invitesPath)) {
+    return message.reply("❌ Data invite belum ada.");
+  }
+
+  const invitesData = JSON.parse(fs.readFileSync(invitesPath, "utf8"));
+  const guildData = invitesData[message.guild.id];
+  if (!guildData || !guildData.joins) {
+    return message.reply("⚠ Tidak ada data join di server ini.");
+  }
+
+  const invitedAccounts = Object.entries(guildData.joins)
+    .filter(([memberId, inviterId]) => inviterId === targetUser.id)
+    .map(([memberId]) => `<@${memberId}>`);
+
+  const embed = new EmbedBuilder()
+    .setColor("Yellow")
+    .setTitle(`👥 Akun yang diundang oleh ${targetUser.username}`)
+    .setDescription(invitedAccounts.length > 0 ? invitedAccounts.join("\n") : "Tidak ada yang diundang.")
+    .setFooter({ text: `Total: ${invitedAccounts.length} akun` });
+
+  return message.channel.send({ embeds: [embed] });
+    }
+  
 if (command === 'w') { // Menggunakan 'command' dari struktur kode Anda
     if (message.author.bot) return;
 
