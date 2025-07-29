@@ -1,48 +1,49 @@
 // modules/tebakAngka.js
-const games = {};
+const games = {}; // Simpan game per channelId
 
 module.exports = async function tebakAngka(message) {
-  const userId = message.author.id;
+  const channelId = message.channel.id;
 
-  if (games[userId]) {
-    return message.reply("Kamu sudah dalam permainan! Kirim angka untuk menebak.");
+  if (games[channelId]) {
+    return message.reply("⚠ Game sudah dimulai di channel ini! Kirim angka untuk menebak.");
   }
 
   const target = Math.floor(Math.random() * 100) + 1;
-  games[userId] = { number: target, attempts: 5 };
+  games[channelId] = { number: target, attempts: 5 };
 
-  message.reply("🎯 Aku sudah memilih angka 1-100. Tebak angkanya! Kamu punya 5 percobaan.");
+  message.reply("🎯 Game dimulai! Aku sudah memilih angka 1-100. Semua orang di channel ini bisa nebak! Kalian punya 5 percobaan bersama.");
 
-  const filter = m => m.author.id === userId;
+  const filter = m => !m.author.bot && m.channel.id === channelId;
   const collector = message.channel.createMessageCollector({ filter, time: 30000 });
 
   collector.on("collect", m => {
     const guess = parseInt(m.content);
-    if (isNaN(guess)) {
-      return m.reply("Masukkan angka yang valid!");
-    }
+    if (isNaN(guess)) return;
 
-    games[userId].attempts--;
+    games[channelId].attempts--;
 
-    if (guess === games[userId].number) {
-      m.reply(`✅ Benar! Angkanya adalah **${guess}** 🎉`);
-      delete games[userId];
+    if (guess === games[channelId].number) {
+      m.reply(`✅ Benar! Angkanya adalah **${guess}** 🎉 (${m.author})`);
+      delete games[channelId];
       return collector.stop();
-    } else if (games[userId].attempts <= 0) {
-      m.reply(`❌ Kesempatan habis! Angka yang benar adalah **${games[userId].number}**.`);
-      delete games[userId];
+    } 
+    else if (games[channelId].attempts <= 0) {
+      m.reply(`❌ Kesempatan habis! Angka yang benar adalah **${games[channelId].number}**.`);
+      delete games[channelId];
       return collector.stop();
-    } else if (guess > games[userId].number) {
-      m.reply(`🔻 Terlalu besar! Sisa percobaan: ${games[userId].attempts}`);
-    } else {
-      m.reply(`🔺 Terlalu kecil! Sisa percobaan: ${games[userId].attempts}`);
+    } 
+    else if (guess > games[channelId].number) {
+      m.reply(`🔻 Terlalu besar! Sisa percobaan: ${games[channelId].attempts}`);
+    } 
+    else {
+      m.reply(`🔺 Terlalu kecil! Sisa percobaan: ${games[channelId].attempts}`);
     }
   });
 
   collector.on("end", () => {
-    if (games[userId]) {
-      message.reply(`⏳ Waktu habis! Angka yang benar adalah **${games[userId].number}**.`);
-      delete games[userId];
+    if (games[channelId]) {
+      message.reply(`⏳ Waktu habis! Angka yang benar adalah **${games[channelId].number}**.`);
+      delete games[channelId];
     }
   });
 };
