@@ -41,50 +41,61 @@ function getRandomColor() {
   return Math.floor(Math.random() * 0xffffff);
 }
 
-module.exports = async function beritaCmd(message) {
-  const sentLinks = loadSentLinks();
+module.exports = async function autoNews(client) {
+  const channelId = "1352331574376665178"; // ID channel target
+  const scheduleHours = [8, 14, 20]; // Jam pengiriman WIB
 
-  for (const feedUrl of rssFeeds) {
-    try {
-      const feed = await parser.parseURL(feedUrl);
-      const item = feed.items.find(i => !sentLinks.includes(i.link));
-      if (!item) continue;
+  setInterval(async () => {
+    const now = new Date();
+    const hour = now.getHours();
+    const minute = now.getMinutes();
 
-      // Cek gambar
-      let image = null;
-      if (item.enclosure?.url) {
-        image = item.enclosure.url;
-      } else {
-        const match = (item.content || item.contentSnippet || "").match(/<img[^>]+src="([^">]+)"/);
-        if (match?.[1]) image = match[1];
+    // Cek kalau jam sekarang masuk jadwal
+    if (scheduleHours.includes(hour) && minute === 0) {
+      const channel = await client.channels.fetch(channelId);
+      if (!channel) return;
+
+      const sentLinks = loadSentLinks();
+
+      for (const feedUrl of rssFeeds) {
+        try {
+          const feed = await parser.parseURL(feedUrl);
+          const item = feed.items.find(i => !sentLinks.includes(i.link));
+          if (!item) continue;
+
+          let image = null;
+          if (item.enclosure?.url) {
+            image = item.enclosure.url;
+          } else {
+            const match = (item.content || item.contentSnippet || "").match(/<img[^>]+src="([^">]+)"/);
+            if (match?.[1]) image = match[1];
+          }
+
+          const sourceKey = Object.keys(sourceLogos).find(key => feedUrl.includes(key)) || "";
+          const sourceLogo = sourceLogos[sourceKey] || null;
+          const sourceName = feed.title || "Media";
+
+          const embed = new EmbedBuilder()
+            .setTitle(item.title || "Berita")
+            .setURL(item.link)
+            .setDescription(item.contentSnippet?.slice(0, 200) + "..." || "Klik untuk baca selengkapnya.")
+            .setColor(getRandomColor())
+            .setTimestamp(new Date(item.pubDate || item.isoDate || Date.now()));
+
+          if (image) embed.setImage(image);
+
+          embed.setFooter({
+            text: `${sourceName} • ${new Date(item.pubDate).toLocaleString("id-ID", { hour: '2-digit', minute: '2-digit', hour12: false })}`,
+            iconURL: sourceLogo,
+          });
+
+          await channel.send({ embeds: [embed] });
+          saveSentLink(item.link);
+          return; // Kirim satu berita saja per jadwal
+        } catch (err) {
+          console.error(`Gagal ambil RSS dari ${feedUrl}:`, err.message);
+        }
       }
-
-      const sourceKey = Object.keys(sourceLogos).find(key => feedUrl.includes(key)) || "";
-      const sourceLogo = sourceLogos[sourceKey] || null;
-      const sourceName = feed.title || "Media";
-
-      const embed = new EmbedBuilder()
-        .setTitle(item.title || "Berita")
-        .setURL(item.link)
-        .setDescription(item.contentSnippet?.slice(0, 200) + "..." || "Klik untuk baca selengkapnya.")
-        .setColor(getRandomColor())
-        .setTimestamp(new Date(item.pubDate || item.isoDate || Date.now()));
-
-      if (image) embed.setImage(image);
-
-      embed.setFooter({
-        text: `${sourceName} • ${new Date(item.pubDate).toLocaleString("id-ID", { hour: '2-digit', minute: '2-digit', hour12: false })}`,
-        iconURL: sourceLogo,
-      });
-
-      await message.reply({ embeds: [embed] });
-      saveSentLink(item.link);
-      return;
-
-    } catch (err) {
-      console.error(`Gagal ambil RSS dari ${feedUrl}:`, err.message);
     }
-  }
-
-  await message.reply("⚠️ Tidak ada berita baru untuk saat ini.");
+  }, 60_000); // cek setiap 1 menit
 };
