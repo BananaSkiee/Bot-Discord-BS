@@ -10,7 +10,7 @@ module.exports = async function tebakAngka(message) {
         new EmbedBuilder()
           .setColor("#ffcc00")
           .setTitle("⚠ Game Sedang Berlangsung")
-          .setDescription("Sudah ada game **Tebak Angka** di channel ini!\nKirim angka untuk menebak.")
+          .setDescription("Sudah ada game **Tebak Angka** di channel ini!\nKetik angka untuk menebak.")
       ]
     });
   }
@@ -51,14 +51,14 @@ module.exports = async function tebakAngka(message) {
         .setColor("#00ff00")
         .setTitle("🏆 Tebak Angka")
         .setDescription(
-          `**${m.author}** berhasil menebak angka yang benar!\n\n` +
+          `**${m.author.username}** berhasil menebak angka yang benar!\n\n` +
           `🎯 Angka: **${guess}**\n` +
           `🎉 Selamat!`
         )
         .setFooter({ text: "Permainan selesai" })
         .setTimestamp();
 
-      m.channel.send({ embeds: [winEmbed] });
+      m.reply({ embeds: [winEmbed] });
       delete games[channelId];
       return collector.stop();
     } 
@@ -73,14 +73,14 @@ module.exports = async function tebakAngka(message) {
         .setFooter({ text: "Permainan selesai" })
         .setTimestamp();
 
-      m.channel.send({ embeds: [loseEmbed] });
+      m.reply({ embeds: [loseEmbed] });
       delete games[channelId];
       return collector.stop();
     } 
     else {
       const hintEmbed = new EmbedBuilder()
         .setColor("#ffaa00")
-        .setTitle(`🤔 Tebak Lagi, ${m.author.username}!`)
+        .setTitle("🤔 Tebak Lagi!")
         .setDescription(
           guess > games[channelId].number
             ? `🔻 **Terlalu besar!**`
@@ -91,7 +91,7 @@ module.exports = async function tebakAngka(message) {
         )
         .setFooter({ text: "Lanjutkan menebak..." });
 
-      m.channel.send({ embeds: [hintEmbed], content: `${m.author}` });
+      m.reply({ embeds: [hintEmbed] });
     }
   });
 
@@ -108,7 +108,7 @@ module.exports = async function tebakAngka(message) {
         .setFooter({ text: "Permainan selesai" })
         .setTimestamp();
 
-      message.channel.send({ embeds: [timeoutEmbed], content: `<@${starterId}>` });
+      message.reply({ embeds: [timeoutEmbed] }); // Balas ke orang yang mulai game
       delete games[channelId];
     }
   });
