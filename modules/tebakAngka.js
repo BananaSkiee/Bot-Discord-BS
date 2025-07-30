@@ -17,7 +17,10 @@ module.exports = async function tebakAngka(message) {
   }
 
   const target = Math.floor(Math.random() * 100) + 1;
-  games[channelId] = { number: target, attempts: 5 };
+  games[channelId] = {
+    number: target,
+    attempts: {} // simpan kesempatan tiap user
+  };
 
   // Embed Pembukaan
   const startEmbed = new EmbedBuilder()
@@ -26,7 +29,7 @@ module.exports = async function tebakAngka(message) {
     .setDescription(
       `Aku sudah memilih **angka rahasia** antara \`1\` - \`100\`.\n\n` +
       `📌 **Semua orang di channel ini bisa menebak!**\n` +
-      `❤️ Kesempatan bersama: **5 kali**\n` +
+      `❤️ Tiap orang punya **5 kesempatan pribadi**\n` +
       `⏳ Waktu bermain: **5 menit**`
     )
     .setFooter({ text: "Ketik angka di chat untuk menebak" })
@@ -41,8 +44,27 @@ module.exports = async function tebakAngka(message) {
     const guess = parseInt(m.content);
     if (isNaN(guess)) return;
 
-    games[channelId].attempts--;
+    // Inisialisasi kesempatan user kalau belum ada
+    if (!games[channelId].attempts[m.author.id]) {
+      games[channelId].attempts[m.author.id] = 5;
+    }
 
+    // Kalau kesempatan user sudah habis
+    if (games[channelId].attempts[m.author.id] <= 0) {
+      return m.reply({
+        embeds: [
+          new EmbedBuilder()
+            .setColor("#ff0000")
+            .setTitle("🚫 Kesempatan Habis")
+            .setDescription("Kamu sudah tidak bisa ikut menebak lagi di game ini.")
+        ]
+      });
+    }
+
+    // Kurangi kesempatan user
+    games[channelId].attempts[m.author.id]--;
+
+    // Cek jawaban
     if (guess === games[channelId].number) {
       const winEmbed = new EmbedBuilder()
         .setColor("#00ff00")
@@ -59,21 +81,6 @@ module.exports = async function tebakAngka(message) {
       delete games[channelId];
       return collector.stop();
     } 
-    else if (games[channelId].attempts <= 0) {
-      const loseEmbed = new EmbedBuilder()
-        .setColor("#ff0000")
-        .setTitle("💀 Game Over")
-        .setDescription(
-          `Kesempatan habis!\n` +
-          `🎯 Angka yang benar adalah: **${games[channelId].number}**`
-        )
-        .setFooter({ text: "Permainan selesai" })
-        .setTimestamp();
-
-      m.channel.send({ embeds: [loseEmbed] });
-      delete games[channelId];
-      return collector.stop();
-    } 
     else {
       const hintEmbed = new EmbedBuilder()
         .setColor("#ffaa00")
@@ -84,7 +91,7 @@ module.exports = async function tebakAngka(message) {
             : `🔺 **Terlalu kecil!**`
         )
         .addFields(
-          { name: "Sisa Kesempatan", value: `${games[channelId].attempts}`, inline: true }
+          { name: "Sisa Kesempatan Kamu", value: `${games[channelId].attempts[m.author.id]}`, inline: true }
         )
         .setFooter({ text: "Lanjutkan menebak..." });
 
