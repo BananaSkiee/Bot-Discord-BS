@@ -1,23 +1,41 @@
+const { EmbedBuilder } = require("discord.js");
 const games = {}; // Simpan game per channelId
 
 module.exports = async function tebakAngka(message) {
   const channelId = message.channel.id;
 
   if (games[channelId]) {
-    return message.reply(`⚠ Game Tebak Angka sedang berlangsung! Kirim angka untuk menebak.`);
+    return message.reply({
+      embeds: [
+        new EmbedBuilder()
+          .setColor("#ffcc00")
+          .setTitle("⚠ Game Sedang Berlangsung")
+          .setDescription("Sudah ada game **Tebak Angka** di channel ini!\nKirim angka untuk menebak.")
+      ]
+    });
   }
 
   const target = Math.floor(Math.random() * 100) + 1;
-  games[channelId] = { number: target, attempts: 5 };
+  games[channelId] = {
+    number: target,
+    attempts: 5,
+    starterId: message.author.id
+  };
 
-  await message.channel.send(
-    `🎯 **Tebak Angka Dimulai!**\n` +
-    `Aku sudah memilih angka rahasia antara **1 - 100**.\n` +
-    `📌 Semua orang di channel ini bisa menebak.\n` +
-    `❤️ Kesempatan bersama: **5 kali**.\n` +
-    `⏳ Waktu bermain: **5 menit**.\n` +
-    `Ketik angka di chat untuk menebak!`
-  );
+  // Embed Pembukaan
+  const startEmbed = new EmbedBuilder()
+    .setColor("#00ff88")
+    .setTitle("🎯 Tebak Angka Dimulai!")
+    .setDescription(
+      `Aku sudah memilih **angka rahasia** antara \`1\` - \`100\`.\n\n` +
+      `📌 **Semua orang di channel ini bisa menebak!**\n` +
+      `❤️ Kesempatan bersama: **5 kali**\n` +
+      `⏳ Waktu bermain: **5 menit**`
+    )
+    .setFooter({ text: `Game dimulai oleh ${message.author.username}` })
+    .setTimestamp();
+
+  await message.channel.send({ embeds: [startEmbed] });
 
   const filter = m => !m.author.bot && m.channel.id === channelId;
   const collector = message.channel.createMessageCollector({ filter, time: 300000 }); // 5 menit
@@ -29,27 +47,68 @@ module.exports = async function tebakAngka(message) {
     games[channelId].attempts--;
 
     if (guess === games[channelId].number) {
-      m.channel.send(`🏆 **${m.author.username}** berhasil menebak angka **${guess}**! 🎉`);
+      const winEmbed = new EmbedBuilder()
+        .setColor("#00ff00")
+        .setTitle("🏆 Tebak Angka")
+        .setDescription(
+          `**${m.author}** berhasil menebak angka yang benar!\n\n` +
+          `🎯 Angka: **${guess}**\n` +
+          `🎉 Selamat!`
+        )
+        .setFooter({ text: "Permainan selesai" })
+        .setTimestamp();
+
+      m.channel.send({ embeds: [winEmbed] });
       delete games[channelId];
       return collector.stop();
     } 
     else if (games[channelId].attempts <= 0) {
-      m.channel.send(`💀 Kesempatan habis! Angka yang benar adalah **${games[channelId].number}**.`);
+      const loseEmbed = new EmbedBuilder()
+        .setColor("#ff0000")
+        .setTitle("💀 Game Over")
+        .setDescription(
+          `Kesempatan habis!\n` +
+          `🎯 Angka yang benar adalah: **${games[channelId].number}**`
+        )
+        .setFooter({ text: "Permainan selesai" })
+        .setTimestamp();
+
+      m.channel.send({ embeds: [loseEmbed] });
       delete games[channelId];
       return collector.stop();
     } 
     else {
-      m.channel.send(
-        guess > games[channelId].number
-          ? `🔻 Terlalu besar! Sisa kesempatan: **${games[channelId].attempts}**`
-          : `🔺 Terlalu kecil! Sisa kesempatan: **${games[channelId].attempts}**`
-      );
+      const hintEmbed = new EmbedBuilder()
+        .setColor("#ffaa00")
+        .setTitle(`🤔 Tebak Lagi, ${m.author.username}!`)
+        .setDescription(
+          guess > games[channelId].number
+            ? `🔻 **Terlalu besar!**`
+            : `🔺 **Terlalu kecil!**`
+        )
+        .addFields(
+          { name: "Sisa Kesempatan", value: `${games[channelId].attempts}`, inline: true }
+        )
+        .setFooter({ text: "Lanjutkan menebak..." });
+
+      m.channel.send({ embeds: [hintEmbed], content: `${m.author}` });
     }
   });
 
   collector.on("end", () => {
     if (games[channelId]) {
-      message.channel.send(`⏳ Waktu habis! Angka yang benar adalah **${games[channelId].number}**.`);
+      const starterId = games[channelId].starterId;
+      const timeoutEmbed = new EmbedBuilder()
+        .setColor("#5555ff")
+        .setTitle("⏳ Waktu Habis!")
+        .setDescription(
+          `Tidak ada yang berhasil menebak dalam waktu 5 menit.\n` +
+          `🎯 Angka yang benar adalah: **${games[channelId].number}**`
+        )
+        .setFooter({ text: "Permainan selesai" })
+        .setTimestamp();
+
+      message.channel.send({ embeds: [timeoutEmbed], content: `<@${starterId}>` });
       delete games[channelId];
     }
   });
