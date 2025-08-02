@@ -47,7 +47,7 @@ module.exports = {
     // 💬 Auto Chat
     autoChat(client);
 
-    rainbowRole(client, 3000);
+    rainbowRole(client, 60000);
 
     // 🟩 Setup slash command DULUAN
     await slashCommandSetup(client);
