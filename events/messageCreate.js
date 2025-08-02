@@ -108,6 +108,22 @@ if (command === "testjoin") {
     return message.reply("❌ Kamu tidak punya izin untuk menjalankan perintah ini.");
   }
 
+if (command === "addcoin") {
+  if (!message.member.roles.cache.has(ADMIN_ROLE_ID)) {
+    return message.reply("❌ Kamu tidak punya izin pakai command ini.");
+  }
+
+  const target = message.mentions.users.first();
+  const amount = parseInt(args[1]);
+
+  if (!target || isNaN(amount)) {
+    return message.reply("❌ Format: `!addcoin @user jumlah`");
+  }
+
+  const newBalance = coinSystem.addCoins(target.id, amount);
+  return message.reply(`✅ Berhasil menambah **${amount}** BS Coin ke ${target.username}. Saldo sekarang: **${newBalance}**`);
+}
+  
   const member = message.member;
   const inviter = message.author; // Karena ini simulasi, kita anggap yang jalankan cmd sebagai pengundang
 
