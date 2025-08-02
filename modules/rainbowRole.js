@@ -1,13 +1,16 @@
+require("dotenv").config();
+
 const COLORS = [
   "#FF0000", "#FF7F00", "#FFFF00", "#00FF00",
   "#0000FF", "#4B0082", "#9400D3"
-]; // warna rainbow
+];
 
-module.exports = function rainbowRole(client, roleId, interval = 5000) {
+module.exports = function rainbowRole(client, interval = 5000) {
+  const roleId = process.env.RAINBOW_ROLE_ID;
   const guild = client.guilds.cache.first();
   if (!guild) return console.log("❌ Bot tidak ada di server.");
 
-  console.log("🌈 Rainbow role aktif untuk role:", roleId);
+  console.log(`🌈 Rainbow role aktif untuk role: ${roleId}`);
 
   let index = 0;
   setInterval(async () => {
