@@ -26,10 +26,10 @@ module.exports = (client) => {
       const hariEN = now.format("dddd");
       const hariID = hariIndonesia[hariEN] || hariEN;
 
-      const tanggal = now.format("D MMMM"); // Contoh: 16 Juli
+      const tanggal = now.format("D"); // Contoh: 16 Juli
       const jam = now.format("HH:mm");
 
-      const namaBaru = `「 ${hariID}, ${tanggal} | ${jam} Jam 」`;
+      const namaBaru = `「 ${hariID}, ${tanggal} - ${jam} Jam 」`;
 
       if (channel.name !== namaBaru) {
         await channel.setName(namaBaru);
