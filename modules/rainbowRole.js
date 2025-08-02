@@ -6,24 +6,30 @@ const COLORS = [
 ];
 
 module.exports = function rainbowRole(client, interval = 5000) {
-  const roleId = process.env.RAINBOW_ROLE_ID;
-  const guild = client.guilds.cache.first();
-  if (!guild) return console.log("❌ Bot tidak ada di server.");
+  const guild = client.guilds.cache.get(process.env.GUILD_ID);
+  if (!guild) return console.log("❌ Guild tidak ditemukan.");
 
-  console.log(`🌈 Rainbow role aktif untuk role: ${roleId}`);
+  const roleIds = process.env.RAINBOW_ROLE_IDS.split(",").map(id => id.trim());
 
-  let index = 0;
-  setInterval(async () => {
-    try {
-      const role = guild.roles.cache.get(roleId);
-      if (!role) return console.log("❌ Role tidak ditemukan.");
+  roleIds.forEach(roleId => {
+    console.log(`🌈 Rainbow role aktif untuk role: ${roleId}`);
 
-      await role.setColor(COLORS[index]);
-      console.log(`🎨 Warna role diubah ke ${COLORS[index]}`);
+    let index = 0;
+    setInterval(async () => {
+      try {
+        const role = guild.roles.cache.get(roleId);
+        if (!role) {
+          console.log(`❌ Role tidak ditemukan: ${roleId}`);
+          return;
+        }
 
-      index = (index + 1) % COLORS.length;
-    } catch (err) {
-      console.error("❌ Gagal mengubah warna:", err);
-    }
-  }, interval);
+        await role.setColor(COLORS[index]);
+        console.log(`🎨 [${role.name}] diubah ke ${COLORS[index]}`);
+
+        index = (index + 1) % COLORS.length;
+      } catch (err) {
+        console.error(`❌ Gagal mengubah warna untuk role ${roleId}:`, err);
+      }
+    }, interval);
+  });
 };
