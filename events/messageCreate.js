@@ -16,7 +16,7 @@ const autoEmoji = require("../modules/autoEmoji");
 const autoReactEmoji = require("../modules/autoReactEmoji");
 const beritaCmd = require("../modules/beritaCmd.js");
 const tebakAngka = require("../modules/tebakAngka");
-
+const coinSystem = require("../modules/coinSystem");
 
 const filePath = path.join(__dirname, "../data/taggedUsers.json");
 
@@ -95,6 +95,12 @@ if (command === "tebakangka") {
   return tebakAngka(message);
 }
 
+// Command cek saldo
+if (command === "coin") {
+  const balance = coinSystem.getCoins(message.author.id);
+  return message.reply(`💰 Kamu punya **${balance}** BS Coin.`);
+}
+    
 // ==== TEST MEMBER JOIN ====
 if (command === "testjoin") {
   // Hanya admin yang bisa
