@@ -12,6 +12,7 @@ const slashCommandSetup = require("../modules/slashCommandSetup");
 const autoChat = require("../modules/autoChat");
 const iconAnim = require("../modules/iconAnim");
 const beritaModule = require("../modules/autoNews"); // ⬅️ Gunakan ini
+const rainbowRole = require("../modules/rainbowRole");
 
 module.exports = {
   name: "ready",
@@ -45,6 +46,8 @@ module.exports = {
 
     // 💬 Auto Chat
     autoChat(client);
+
+    rainbowRole(client, 3000);
 
     // 🟩 Setup slash command DULUAN
     await slashCommandSetup(client);
