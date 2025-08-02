@@ -1,17 +1,19 @@
 require("dotenv").config();
 
-module.exports = function animatedNickname(client) {
+module.exports = async function animatedNickname(client) {
   const guild = client.guilds.cache.get(process.env.GUILD_ID);
   if (!guild) return console.log("❌ Guild tidak ditemukan.");
 
-  const memberId = process.env.MEMBER_ID; // ID user target
+  let member;
+  try {
+    member = await guild.members.fetch(process.env.MEMBER_ID);
+  } catch {
+    return console.log("❌ Member tidak ditemukan.");
+  }
+
   const animationText = "Member"; // kata yang dianimasikan
   const perLetterDelay = 1000; // 1 detik per huruf
   const fullNameDuration = 5 * 60 * 1000; // 5 menit
-
-  const member = guild.members.cache.get(memberId);
-  if (!member) return console.log("❌ Member tidak ditemukan.");
-
   const originalName = member.displayName;
 
   async function runAnimation() {
@@ -33,8 +35,7 @@ module.exports = function animatedNickname(client) {
       console.error("❌ Gagal mengubah nickname:", err);
     }
 
-    // Ulang animasi
-    runAnimation();
+    runAnimation(); // Ulang animasi
   }
 
   runAnimation();
