@@ -28,6 +28,8 @@ const client = new Client({
   ],
 });
 
+require("./modules/srvName")(client);
+
 // 📂 Load Slash Commands
 require("./modules/slashCommandSetup")(client);
 client.commands = new Collection();
