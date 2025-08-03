@@ -1,165 +1,243 @@
-const fs = require("fs");
-const path = require("path");
-const { EmbedBuilder } = require("discord.js");
-const generateTextGraph = require("./generateTextGraph");
+const { EmbedBuilder } = require('discord.js');
+const fs = require('fs');
+const path = require('path');
 
-const USERS_FILE = path.join(__dirname, "../data/cryptoUsers.json");
-const PW_FILE = path.join(__dirname, "../data/cryptoPasswords.json");
+// Path database
+const usersPath = path.join(__dirname, '../data/cryptoUsers.json');
+const pricesPath = path.join(__dirname, '../data/cryptoPrices.json');
 
-// --- Helper Function ---
+// Load database
 function loadUsers() {
-    if (!fs.existsSync(USERS_FILE)) fs.writeFileSync(USERS_FILE, JSON.stringify({}));
-    return JSON.parse(fs.readFileSync(USERS_FILE));
+  return JSON.parse(fs.readFileSync(usersPath, 'utf8'));
 }
+
 function saveUsers(data) {
-    fs.writeFileSync(USERS_FILE, JSON.stringify(data, null, 2));
-}
-function loadPasswords() {
-    if (!fs.existsSync(PW_FILE)) fs.writeFileSync(PW_FILE, JSON.stringify({}));
-    return JSON.parse(fs.readFileSync(PW_FILE));
-}
-function savePasswords(data) {
-    fs.writeFileSync(PW_FILE, JSON.stringify(data, null, 2));
-}
-function randomPassword(len = 5) {
-    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-    let pw = "";
-    for (let i = 0; i < len; i++) pw += chars.charAt(Math.floor(Math.random() * chars.length));
-    return pw;
+  fs.writeFileSync(usersPath, JSON.stringify(data, null, 2));
 }
 
-// --- Command Handler ---
-module.exports = async function cmdCrypto(message, client) {
-    const prefix = "!";
-    if (!message.content.startsWith(prefix)) return;
-    const [cmd, ...args] = message.content.slice(prefix.length).trim().split(/\s+/);
-    const command = cmd.toLowerCase();
-    const users = loadUsers();
-    const passwords = loadPasswords();
-    const userId = message.author.id;
+function loadPrices() {
+  return JSON.parse(fs.readFileSync(pricesPath, 'utf8'));
+}
 
-    // --- Register ---
-    if (command === "register") {
-        if (users[userId]) return message.reply("❌ Kamu sudah terdaftar di Crypto Game.");
-        const startBalance = 500;
-        const pw = randomPassword(5);
-        users[userId] = { coins: startBalance, btc: 0, hacks: 0, lastDaily: 0, lastHack: 0, lastReset: 0 };
-        passwords[userId] = pw;
-        saveUsers(users);
-        savePasswords(passwords);
-        return message.reply(`🚀 Selamat datang di **Crypto Game**!\n💰 Saldo awal: **${startBalance} BS Coin**\n🔑 Password: **${pw}** (jangan kasih tau orang!)`);
+// Simulasi harga crypto (naik/turun acak)
+function updateCryptoPrices() {
+  const prices = loadPrices();
+  for (const coin in prices) {
+    const change = (Math.random() * 10) - 5; // -5% sampai +5%
+    prices[coin] = Math.max(100, prices[coin] * (1 + change / 100));
+  }
+  fs.writeFileSync(pricesPath, JSON.stringify(prices, null, 2));
+}
+
+// Command: !register
+function register(userId) {
+  const users = loadUsers();
+  if (users[userId]) return { error: 'Anda sudah terdaftar!' };
+
+  users[userId] = {
+    balance: 1000,
+    btc: 0,
+    eth: 0,
+    lastDaily: 0,
+    lastWork: 0
+  };
+  saveUsers(users);
+
+  return { 
+    success: true,
+    message: '🎉 Pendaftaran berhasil! Saldo awal: **1000 BS Coin**'
+  };
+}
+
+// Command: !balance
+function getBalance(userId) {
+  const users = loadUsers();
+  const user = users[userId];
+  if (!user) return { error: 'Anda belum terdaftar! Gunakan `!register`.' };
+
+  const embed = new EmbedBuilder()
+    .setTitle('💰 Saldo Anda')
+    .addFields(
+      { name: 'BS Coin', value: `${user.balance}`, inline: true },
+      { name: 'BTC', value: `${user.btc}`, inline: true },
+      { name: 'ETH', value: `${user.eth}`, inline: true }
+    );
+
+  return { embed };
+}
+
+// Command: !buy [coin] [amount]
+function buyCrypto(userId, coin, amount) {
+  const users = loadUsers();
+  const prices = loadPrices();
+  const user = users[userId];
+  if (!user) return { error: 'Anda belum terdaftar!' };
+
+  const totalCost = amount * prices[coin];
+  if (user.balance < totalCost) {
+    return { error: 'Saldo tidak cukup!' };
+  }
+
+  user.balance -= totalCost;
+  user[coin] += amount;
+  saveUsers(users);
+
+  return {
+    success: true,
+    message: `✅ Berhasil membeli **${amount} ${coin.toUpperCase()}** seharga **${totalCost} BS Coin**!`
+  };
+}
+
+// Command: !daily
+function claimDaily(userId) {
+  const users = loadUsers();
+  const user = users[userId];
+  if (!user) return { error: 'Anda belum terdaftar!' };
+
+  const now = Date.now();
+  const lastDaily = user.lastDaily || 0;
+  const cooldown = 24 * 60 * 60 * 1000; // 24 jam
+
+  if (now - lastDaily < cooldown) {
+    const remaining = Math.ceil((cooldown - (now - lastDaily)) / (1000 * 60 * 60));
+    return { error: `Anda harus menunggu **${remaining} jam** lagi!` };
+  }
+
+  const reward = Math.floor(Math.random() * 9000) + 1000; // 1000-10000 BS Coin
+  user.balance += reward;
+  user.lastDaily = now;
+  saveUsers(users);
+
+  return {
+    success: true,
+    message: `🎁 Anda mendapatkan **${reward} BS Coin**!`
+  };
+}
+
+// ==================[ GACHA SYSTEM ]==================
+const gachaTiers = {
+  basic: {
+    cost: 500,
+    rewards: [
+      { type: 'coin', min: 50, max: 1000, chance: 0.45 },
+      { type: 'btc', min: 0.001, max: 0.05, chance: 0.20 },
+      { type: 'ticket', value: 1, chance: 0.15 },
+      { type: 'multispin', value: 2, chance: 0.05 },
+      { type: 'zonk', chance: 0.15 }
+    ]
+  },
+  premium: {
+    cost: 1500,
+    rewards: [
+      { type: 'coin', min: 200, max: 2000, chance: 0.40 },
+      { type: 'btc', min: 0.01, max: 0.5, chance: 0.25 },
+      { type: 'ticket', value: 3, chance: 0.10 },
+      { type: 'multispin', value: 5, chance: 0.05 },
+      { type: 'jackpot', multiplier: 10, chance: 0.01 },
+      { type: 'zonk', chance: 0.19 }
+    ]
+  },
+  vip: {
+    cost: 2000,
+    rewards: [
+      { type: 'coin', min: 500, max: 5000, chance: 0.35 },
+      { type: 'btc', min: 0.05, max: 2.0, chance: 0.30 },
+      { type: 'random_crypto', chance: 0.15 },
+      { type: 'multispin', value: 10, chance: 0.05 },
+      { type: 'super_jackpot', multiplier: 50, chance: 0.005 },
+      { type: 'zonk', chance: 0.145 }
+    ]
+  }
+};
+
+function getGachaReward(tier) {
+  const rewards = gachaTiers[tier].rewards;
+  const roll = Math.random();
+  let cumulativeChance = 0;
+
+  for (const reward of rewards) {
+    cumulativeChance += reward.chance;
+    if (roll <= cumulativeChance) {
+      return reward;
     }
+  }
+  return rewards[rewards.length - 1]; // Fallback
+}
 
-    // --- Help ---
-    if (command === "help" && args[0] && args[0].toLowerCase() === "crypto") {
-        const embed = new EmbedBuilder()
-            .setColor("Gold")
-            .setTitle("📜 Crypto Game Commands")
-            .setDescription("Mainkan game crypto simulasi berbasis harga BTC real-time dari bot.")
-            .addFields(
-                { name: "💰 Dasar", value: "`!balance`, `!price`, `!buy`, `!sell`, `!portfolio`" },
-                { name: "🎁 Event", value: "`!daily`, `!work`, `!hunt`" },
-                { name: "🎲 Game", value: "`!guess`, `!gacha`, `!heck`, `!resetpw`" },
-                { name: "🏦 Investasi", value: "`!stake`, `!loan`, `!market`" },
-                { name: "🏆 Sosial", value: "`!richest`, `!achievements`, `!donate`, `!report`" }
-            )
-            .setFooter({ text: "Crypto Game by BananaSkiee" });
-        return message.channel.send({ embeds: [embed] });
-    }
+// Command: !gacha [tier]
+function gacha(userId, tier = 'basic') {
+  const users = loadUsers();
+  const user = users[userId];
+  if (!user) return { error: 'Anda belum terdaftar! Gunakan `!register`.' };
 
-    // --- Balance ---
-    if (command === "balance") {
-        if (!users[userId]) return message.reply("❌ Kamu belum daftar. Ketik `!register`");
-        const { coins, btc, hacks } = users[userId];
-        return message.reply(`💰 **Saldo BS Coin:** ${coins}\n₿ **BTC:** ${btc}\n🎟 **Hack Ticket:** ${hacks}`);
-    }
+  // Validasi tier
+  if (!gachaTiers[tier]) {
+    return { error: 'Tier gacha tidak valid! Pilih: basic/premium/vip' };
+  }
 
-    // --- Price ---
-    if (command === "price") {
-        const hargaData = [64000, 64500, 64200, 64800, 65000, 64900, 65500];
-        const chart = generateTextGraph(hargaData, "BTC");
-        return message.channel.send("```" + chart + "```");
-    }
+  // Cek saldo
+  if (user.balance < gachaTiers[tier].cost) {
+    return { error: `Saldo tidak cukup! Butuh ${gachaTiers[tier].cost} BS Coin.` };
+  }
 
-    // --- Gacha ---
-    if (command === "gacha") {
-        if (!users[userId]) return message.reply("❌ Daftar dulu pakai `!register`");
-        const cost = 100;
-        if (users[userId].coins < cost) return message.reply("❌ Coin kamu kurang buat gacha.");
-        users[userId].coins -= cost;
+  // Proses gacha
+  user.balance -= gachaTiers[tier].cost;
+  const reward = getGachaReward(tier);
 
-        const rewards = [
-            { type: "coin", value: Math.floor(Math.random() * 491) + 10, chance: 30 },
-            { type: "btc", value: 0.01, chance: 15 },
-            { type: "hack", value: 1, chance: 10 },
-            { type: "nothing", value: 0, chance: 45 }
-        ];
-        let roll = Math.random() * 100;
-        let cumulative = 0;
-        for (let r of rewards) {
-            cumulative += r.chance;
-            if (roll <= cumulative) {
-                if (r.type === "coin") users[userId].coins += r.value;
-                if (r.type === "btc") users[userId].btc += r.value;
-                if (r.type === "hack") users[userId].hacks += r.value;
-                saveUsers(users);
-                return message.reply(r.type === "nothing" ? "💨 Zonk! Gak dapet apa-apa." : `🎉 Kamu dapet **${r.value} ${r.type.toUpperCase()}**`);
-            }
-        }
-    }
+  let message;
+  switch (reward.type) {
+    case 'coin':
+      const coinAmount = Math.floor(
+        reward.min + Math.random() * (reward.max - reward.min)
+      );
+      user.balance += coinAmount;
+      message = `🎉 Anda mendapatkan **${coinAmount} BS Coin**!`;
+      break;
 
-    // --- Hack ---
-    if (command === "heck") {
-        if (!users[userId]) return message.reply("❌ Daftar dulu pakai `!register`");
-        const target = message.mentions.users.first();
-        if (!target) return message.reply("❌ Tag user yang mau dihack.");
-        if (!users[target.id]) return message.reply("❌ Target belum daftar Crypto Game.");
-        if (userId === target.id) return message.reply("❌ Gak bisa hack diri sendiri.");
+    case 'btc':
+      const btcAmount = parseFloat(
+        (reward.min + Math.random() * (reward.max - reward.min)).toFixed(4)
+      );
+      user.btc = (parseFloat(user.btc || 0) + parseFloat(btcAmount);
+      message = `🎉 Anda mendapatkan **${btcAmount} BTC**!`;
+      break;
 
-        if (users[userId].lastHack && Date.now() - users[userId].lastHack < 86400000) {
-            return message.reply("❌ Kamu sudah hack hari ini. Coba lagi besok atau dapetin ticket hack dari gacha.");
-        }
+    case 'ticket':
+      user.tickets = (user.tickets || 0) + reward.value;
+      message = `🎫 Anda mendapatkan **${reward.value} Hack Ticket**!`;
+      break;
 
-        const correctPw = passwords[target.id];
-        const options = new Set([correctPw]);
-        while (options.size < 4) options.add(randomPassword(5));
-        const choiceArray = Array.from(options).sort(() => Math.random() - 0.5);
+    case 'jackpot':
+      const jackpotAmount = gachaTiers[tier].cost * reward.multiplier;
+      user.balance += jackpotAmount;
+      message = `💰 **JACKPOT!** Anda mendapatkan **${jackpotAmount} BS Coin** (${reward.multiplier}x lipat)!`;
+      break;
 
-        let msg = `🛡 Hack **${target.username}**! Pilih password yang benar:\n`;
-        choiceArray.forEach((pw, i) => msg += `\`${i + 1}\` ${pw}\n`);
+    case 'super_jackpot':
+      const superJackpot = gachaTiers[tier].cost * reward.multiplier;
+      user.balance += superJackpot;
+      message = `✨ **SUPER JACKPOT!** Anda mendapatkan **${superJackpot} BS Coin** (${reward.multiplier}x lipat)!`;
+      break;
 
-        users[userId].lastHack = Date.now();
-        saveUsers(users);
+    case 'zonk':
+      message = '😭 Zonk! Anda tidak mendapatkan apa-apa.';
+      break;
 
-        message.reply(msg + "\nKetik nomor pilihan kamu.");
-        const filter = m => m.author.id === userId && /^[1-4]$/.test(m.content.trim());
-        const collector = message.channel.createMessageCollector({ filter, time: 15000, max: 1 });
+    default:
+      message = '❌ Hadiah tidak dikenali.';
+  }
 
-        collector.on("collect", m => {
-            const pick = parseInt(m.content.trim()) - 1;
-            if (choiceArray[pick] === correctPw) {
-                const stolen = Math.floor(users[target.id].coins * 0.25);
-                users[target.id].coins -= stolen;
-                users[userId].coins += stolen;
-                saveUsers(users);
-                return message.reply(`✅ Berhasil hack! Kamu curi **${stolen}** BS Coin dari ${target.username}`);
-            } else {
-                return message.reply("❌ Password salah. Hack gagal.");
-            }
-        });
-    }
+  saveUsers(users);
+  return { 
+    success: true, 
+    message,
+    rewardType: reward.type,
+    tier
+  };
+}
 
-    // --- Reset Password ---
-    if (command === "resetpw") {
-        if (!users[userId]) return message.reply("❌ Daftar dulu pakai `!register`");
-        if (users[userId].lastReset && Date.now() - users[userId].lastReset < 86400000) {
-            return message.reply("❌ Kamu sudah reset password hari ini. Coba besok lagi.");
-        }
-        const newPw = randomPassword(5);
-        passwords[userId] = newPw;
-        users[userId].lastReset = Date.now();
-        saveUsers(users);
-        savePasswords(passwords);
-        return message.reply(`🔑 Password baru kamu: **${newPw}**`);
-    }
+// ==================[ EXPORT ]==================
+module.exports = {
+  gacha,
+  getGachaTiers: () => gachaTiers
 };
