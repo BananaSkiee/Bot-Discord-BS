@@ -3,7 +3,7 @@ require("dotenv").config();
 module.exports = function srvName(client) {
   const GUILD_ID = process.env.GUILD_ID;
   const FULL_NAME = "BananaSkiee Community";
-  const SPEED = 1000; // 1 detik per frame (aman dari rate limit)
+  const SPEED = 1000; // jeda antar frame (ms)
   const BLINK_TIMES = 3;
   const BLINK_DELAY = 300; // kedip cepat
 
@@ -14,7 +14,7 @@ module.exports = function srvName(client) {
     if (!guild) return console.log("❌ Server tidak ditemukan!");
 
     async function sleep(ms) {
-      return new Promise(r => setTimeout(r, ms));
+      return new Promise((resolve) => setTimeout(resolve, ms));
     }
 
     async function animate() {
@@ -22,7 +22,7 @@ module.exports = function srvName(client) {
       const mid = Math.floor(len / 2);
 
       // Stage 1: Muncul dari tengah ke dua arah
-      for (let size = 2; size <= len; size++) { // mulai dari minimal 2 huruf
+      for (let size = 2; size <= len; size++) {
         let start = Math.max(0, mid - Math.floor(size / 2));
         let end = Math.min(len, mid + Math.ceil(size / 2));
         let name = FULL_NAME.slice(start, end);
@@ -32,16 +32,16 @@ module.exports = function srvName(client) {
         }
       }
 
-      // Stage 2: Kedip cepat
+      // Stage 2: Kedip cepat (pakai 2 karakter blank biar valid)
       for (let i = 0; i < BLINK_TIMES; i++) {
         await guild.setName(FULL_NAME);
         await sleep(BLINK_DELAY);
-        await guild.setName("⠀"); // spasi karakter kosong (tetap valid)
+        await guild.setName("⠀ ⠀"); // dua karakter blank agar valid
         await sleep(BLINK_DELAY);
       }
 
       // Stage 3: Hilang dari tengah ke dua arah
-      for (let size = len; size >= 2; size--) { // minimal 2 huruf
+      for (let size = len; size >= 2; size--) {
         let start = Math.max(0, mid - Math.floor(size / 2));
         let end = Math.min(len, mid + Math.ceil(size / 2));
         let name = FULL_NAME.slice(start, end);
@@ -52,7 +52,7 @@ module.exports = function srvName(client) {
       }
 
       await sleep(500);
-      animate();
+      animate(); // ulang animasi
     }
 
     animate();
