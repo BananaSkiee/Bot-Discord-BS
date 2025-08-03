@@ -3,17 +3,15 @@ require("dotenv").config();
 const { Client, GatewayIntentBits, Collection, EmbedBuilder } = require("discord.js");
 const fs = require("fs");
 const express = require("express");
-const path = require("path");
 const config = require("./config");
 
 // 🧠 Custom modules
 const cmdCrypto = require("./modules/cmdCrypto");
-const startCryptoSimulation = require("./modules/cryptoSimulator");
+const startCryptoSimulation = require("./modules/cryptoSimulator"); // Sudah termasuk generateTextGraph di dalamnya
 const stickyHandler = require("./sticky");
 const updateOnline = require("./online");
 const autoGreeting = require("./modules/autoGreeting");
 const updateTimeChannel = require("./modules/updateTimeChannel");
-const generateTextGraph = require("./modules/generateTextGraph");
 const welcomecard = require("./modules/welcomeCard");
 const iconanim = require("./modules/iconAnim");
 const invitesTracker = require("./modules/invitesTracker");
@@ -71,8 +69,8 @@ const prefixCommands = {
 // 📌 Event Ready
 client.once("ready", () => {
   console.log(`✅ Bot ${client.user.tag} aktif!`);
-  startCryptoSimulation(client); // Crypto market simulation
-  invitesTracker(client); // Invite tracker
+  startCryptoSimulation(client); // Jalankan simulasi crypto
+  invitesTracker(client); // Jalankan invite tracker
 });
 
 // 📂 Load events dari folder /events
