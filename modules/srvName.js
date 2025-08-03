@@ -4,8 +4,8 @@ module.exports = function srvName(client) {
   const GUILD_ID = process.env.GUILD_ID;
   const FULL_NAME = "BananaSkiee Community";
   const SPEED = 1000; // jeda antar frame (ms)
-  const BLINK_TIMES = 3;
-  const BLINK_DELAY = 300; // kedip cepat
+  const BLINK_TIMES = 4; // berapa kali kedip
+  const BLINK_DELAY = 500; // kedip lebih lama
 
   client.once("ready", async () => {
     console.log("🎬 Animasi nama server aktif.");
@@ -33,12 +33,12 @@ module.exports = function srvName(client) {
           }
         }
 
-        // Stage 2: Kedip cepat (pakai 2 karakter blank biar valid)
+        // Stage 2: Kedip lama di nama full
         for (let i = 0; i < BLINK_TIMES; i++) {
           await guild.setName(FULL_NAME);
-          await sleep(BLINK_DELAY);
-          await guild.setName("⠀ ⠀"); // dua karakter blank
-          await sleep(BLINK_DELAY);
+          await sleep(BLINK_DELAY); // saat full
+          await guild.setName("⠀ ⠀"); // kosong
+          await sleep(BLINK_DELAY); // saat kosong
         }
 
         // Stage 3: Hilang dari tengah ke dua arah
