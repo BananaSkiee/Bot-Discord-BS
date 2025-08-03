@@ -1,11 +1,49 @@
+// modules/cryptoSimulator.js
 const fs = require("fs");
 const path = require("path");
-const generateTextGraph = require("./generateTextGraph");
 
-let hargaData = [64000, 64500, 64200, 64800, 65000, 64900, 65500];
-const CHANNEL_ID = "1397169936467755151";
+// === Konfigurasi ===
+const CHANNEL_ID = "1397169936467755151"; // Ganti dengan ID channel grafik
 const DATA_FILE = path.join(__dirname, "../data/cryptoMessage.json");
 
+let hargaData = [64000, 64500, 64200, 64800, 65000, 64900, 65500];
+
+// === Fungsi Generate Grafik ASCII ===
+function generateTextGraph(data, symbol = "BTC") {
+  const height = 10; // tinggi grafik
+  const width = data.length;
+  const max = Math.max(...data);
+  const min = Math.min(...data);
+  const range = max - min || 1;
+
+  // Normalisasi data ke tinggi grafik
+  const normalized = data.map((val) =>
+    Math.round(((val - min) / range) * (height - 1))
+  );
+
+  // Buat grafik baris demi baris dari atas ke bawah
+  let lines = [];
+  for (let row = height - 1; row >= 0; row--) {
+    let line = "";
+    for (let col = 0; col < width; col++) {
+      line += normalized[col] >= row ? " █" : "  ";
+    }
+    lines.push(line);
+  }
+
+  // Tambahkan garis dasar dan info harga
+  const current = data[data.length - 1];
+  const previous = data[data.length - 2] || current;
+  const delta = current - previous;
+  const deltaStr = delta >= 0 ? `+${delta}` : `${delta}`;
+
+  lines.push("‾".repeat(width * 2));
+  lines.push(`${symbol}: $${current.toLocaleString()} (${deltaStr})`);
+
+  return lines.join("\n");
+}
+
+// === Utility ===
 function getNextDelay() {
   return Math.floor(Math.random() * 10000) + 5000;
 }
@@ -31,10 +69,11 @@ function loadMessageId() {
   }
 }
 
+// === Update Harga & Kirim Grafik ===
 async function updateHarga(client) {
   const last = hargaData[hargaData.length - 1];
   const change = getPriceChange();
-  const next = last + change;
+  const next = Math.max(100, last + change);
 
   hargaData.push(next);
   if (hargaData.length > 20) hargaData.shift();
@@ -52,7 +91,7 @@ async function updateHarga(client) {
       try {
         message = await channel.messages.fetch(messageId);
         await message.edit("```" + chart + "```");
-      } catch (e) {
+      } catch {
         message = await channel.send("```" + chart + "```");
         saveMessageId(message.id);
       }
@@ -60,7 +99,6 @@ async function updateHarga(client) {
       message = await channel.send("```" + chart + "```");
       saveMessageId(message.id);
     }
-
   } catch (err) {
     console.error("❌ Gagal kirim/edit grafik:", err);
   }
@@ -68,6 +106,15 @@ async function updateHarga(client) {
   setTimeout(() => updateHarga(client), getNextDelay());
 }
 
+// === Export ===
 module.exports = function startCryptoSimulation(client) {
   updateHarga(client);
+};
+
+module.exports.getPrices = () => {
+  return { BTC: hargaData[hargaData.length - 1] };
+};
+
+module.exports.getPriceHistory = () => {
+  return hargaData;
 };
