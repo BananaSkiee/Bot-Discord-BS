@@ -2,17 +2,20 @@
 const { SlashCommandBuilder } = require("discord.js");
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 
-// Ambil API key dari ENV, bisa banyak dipisah koma
-if (!process.env.GIMINI_KEY) {
-  console.error("❌ GIMINI_KEY belum diatur!");
+// Ambil semua API key dari 1 variabel env
+const allKeys = (process.env.GIMINI_API_KEY || "")
+  .split(",")
+  .map(k => k.trim())
+  .filter(Boolean);
+
+if (!allKeys.length) {
+  console.error("❌ Tidak ada API key Gemini ditemukan!");
   process.exit(1);
 }
 
-const apiKeys = process.env.GIMINI_KEY.split(",").map(k => k.trim()).filter(Boolean);
 let currentKeyIndex = 0;
-
 function getGenAI() {
-  return new GoogleGenerativeAI(apiKeys[currentKeyIndex]);
+  return new GoogleGenerativeAI(allKeys[currentKeyIndex]);
 }
 
 module.exports = {
@@ -44,7 +47,7 @@ Contoh gaya: "Hmm... gua liat di belakang lo ada macan putih nongkrong sambil ny
 
         await interaction.editReply(`🔮 **Kodam untuk ${username}:**\n${replyText.trim()}`);
       } catch (error) {
-        if (error.status === 429 && currentKeyIndex < apiKeys.length - 1) {
+        if (error.status === 429 && currentKeyIndex < allKeys.length - 1) {
           console.warn(`⚠️ API key ${currentKeyIndex + 1} limit, ganti ke key berikutnya...`);
           currentKeyIndex++;
           return runKodamCheck();
