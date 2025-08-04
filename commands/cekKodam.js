@@ -7,9 +7,7 @@ if (!process.env.GEMINI_KEYS) {
   console.error("❌ GEMINI_KEYS belum diatur!");
   process.exit(1);
 }
-const apiKeys = process.env.GEMINI_API_KEY.split(",").map(k => k.trim());
-let currentKeyIndex = 0;
-
+const apiKeys = process.env.GEMINI_KEYS.split(",").map(k => k.trim());let currentKeyIndex = 0;
 function getGenAI() {
   return new GoogleGenerativeAI(apiKeys[currentKeyIndex]);
 }
