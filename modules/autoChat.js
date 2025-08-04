@@ -14,7 +14,7 @@ module.exports = async (message) => {
   try {
     await message.channel.sendTyping();
 
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro-latest" });
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
     const result = await model.generateContent(message.content);
 
     // Akses teks dengan benar
