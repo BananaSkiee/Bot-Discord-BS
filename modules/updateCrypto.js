@@ -2,17 +2,33 @@
 const fs = require("fs");
 const path = require("path");
 
-const filePath = path.join(__dirname, "../data/cryptoMessage.json");
+const folderPath = path.join(__dirname, "../data");
+const filePath = path.join(folderPath, "cryptoMessage.json");
 
 module.exports = async function updateCryptoMessage(client, newContent) {
+  // Pastikan folder ada
+  if (!fs.existsSync(folderPath)) {
+    fs.mkdirSync(folderPath, { recursive: true });
+  }
+
+  // Pastikan file ada
   if (!fs.existsSync(filePath)) {
-    console.error("❌ File cryptoMessage.json belum ada, tidak bisa update pesan crypto.");
+    fs.writeFileSync(filePath, JSON.stringify({ channelId: "", messageId: "" }, null, 2));
+    console.warn("⚠ cryptoMessage.json dibuat baru, silakan isi channelId & messageId.");
     return;
   }
 
-  const data = JSON.parse(fs.readFileSync(filePath, "utf8"));
+  let data;
+  try {
+    data = JSON.parse(fs.readFileSync(filePath, "utf8"));
+  } catch (err) {
+    console.error("❌ Gagal membaca cryptoMessage.json:", err);
+    return;
+  }
+
+  // Cek validitas
   if (!data.channelId || !data.messageId) {
-    console.error("❌ channelId atau messageId di cryptoMessage.json kosong/undefined.");
+    console.warn("⚠ channelId atau messageId di cryptoMessage.json kosong.");
     return;
   }
 
