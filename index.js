@@ -29,7 +29,8 @@ const client = new Client({
 });
 
 require("./modules/srvName")(client);
-
+const { resetGrafik } = require("./modules/cryptoSimulator");
+  
 // 📂 Load Slash Commands
 require("./modules/slashCommandSetup")(client);
 client.commands = new Collection();
@@ -88,12 +89,16 @@ fs.readdirSync("./events").forEach((file) => {
 // 🎯 Handler untuk command prefix "!"
 client.on("messageCreate", async (message) => {
   if (message.author.bot || !message.content.startsWith("!")) return;
-
+  
   const args = message.content.slice(1).trim().split(/ +/);
   const commandName = args.shift().toLowerCase();
   const command = prefixCommands[commandName];
   const adminRoleId = process.env.ADMIN_ROLE_ID || "1352279577174605884";
 
+  await resetGrafik(message.client);
+    return { message: "✅ Grafik berhasil direset." };
+  },
+  
   if (!command) {
     // Jika command tidak dikenal dan user belum register
     const isRegistered = cmdCrypto.checkIfRegistered(message.author.id);
