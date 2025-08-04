@@ -3,7 +3,6 @@ const stickyHandler = require("../sticky");
 const autoGreeting = require("../modules/autoGreeting");
 const joinvoice = require("../modules/joinvoice");
 const countValidator = require("../modules/countValidator");
-const textCounter = require("../modules/textCounter");
 const simulateBTC = require("../modules/cryptoSimulator");
 const updateCryptoMessage = require("../modules/updateCrypto");
 const autoSendMeme = require("../modules/autoMeme");
@@ -40,7 +39,6 @@ module.exports = {
     try { stickyHandler(client); } catch (err) { console.error("❌ Sticky handler error:", err); }
     try { autoGreeting(client); } catch (err) { console.error("❌ Auto greeting error:", err); }
     try { countValidator(client); } catch (err) { console.error("❌ Count validator error:", err); }
-    try { textCounter(client); } catch (err) { console.error("❌ Text counter error:", err); }
     try { simulateBTC(client); } catch (err) { console.error("❌ Simulasi BTC error:", err); }
     try { autoChat(client); } catch (err) { console.error("❌ Auto chat error:", err); }
     try { nickAnim(client); } catch (err) { console.error("❌ Nickname anim error:", err); }
