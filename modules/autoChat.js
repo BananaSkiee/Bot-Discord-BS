@@ -1,12 +1,12 @@
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 
 // Pisahkan banyak API key dengan koma di Environment Variables Railway
-if (!process.env.GEMINI_KEYS) {
-  console.error("❌ GEMINI_KEYS belum diatur di Railway!");
+if (!process.env.GEMINI_API_KEY) {
+  console.error("❌ GEMINI_API_KEY belum diatur di Railway!");
   process.exit(1);
 }
 
-const apiKeys = process.env.GEMINI_KEYS.split(",").map(k => k.trim());
+const apiKeys = process.env.GEMINI_API_KEY.split(",").map(k => k.trim());
 let currentKeyIndex = 0;
 
 function getGenAI() {
