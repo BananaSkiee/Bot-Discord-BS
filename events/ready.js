@@ -2,7 +2,6 @@ const updateOnline = require("../online");
 const stickyHandler = require("../sticky");
 const autoGreeting = require("../modules/autoGreeting");
 const joinvoice = require("../modules/joinvoice");
-const countValidator = require("../modules/countValidator");
 const simulateBTC = require("../modules/cryptoSimulator");
 const updateCryptoMessage = require("../modules/updateCrypto");
 const autoSendMeme = require("../modules/autoMeme");
@@ -36,7 +35,6 @@ module.exports = {
 
     try { stickyHandler(client); } catch (err) { console.error("❌ Sticky handler error:", err); }
     try { autoGreeting(client); } catch (err) { console.error("❌ Auto greeting error:", err); }
-    try { countValidator(client); } catch (err) { console.error("❌ Count validator error:", err); }
     try { simulateBTC(client); } catch (err) { console.error("❌ Simulasi BTC error:", err); }
     try { nickAnim(client); } catch (err) { console.error("❌ Nickname anim error:", err); }
     try { rainbowRole(client, 60_000); } catch (err) { console.error("❌ Rainbow role error:", err); }
