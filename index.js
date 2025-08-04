@@ -146,8 +146,15 @@ client.on("guildMemberAdd", (member) => {
 });
 
 // 🔁 Update jumlah online & waktu
-client.on("presenceUpdate", () => updateOnline(client));
-client.on("voiceStateUpdate", () => updateOnline(client));
+client.on("presenceUpdate", () => {
+  const guild = client.guilds.cache.first();
+  if (guild) updateOnline(guild);
+});
+
+client.on("voiceStateUpdate", () => {
+  const guild = client.guilds.cache.first();
+  if (guild) updateOnline(guild);
+});
 setInterval(() => updateTimeChannel(client), 30 * 1000);
 
 // 🌐 Web Server
