@@ -63,8 +63,8 @@ module.exports = {
   async execute(message, client) {
     if (message.author.bot) return;
  // Panggil fungsi-fungsinya saat ada pesan baru
-    await countValidator(message);
-    await textCounter(message);
+    // await countValidator(message);
+    // await textCounter(message);
     await autoDeleteCrypto(message);
     await autoReply(message);
     await autoChat(message);
