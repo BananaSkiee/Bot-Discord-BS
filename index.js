@@ -29,7 +29,7 @@ const client = new Client({
 });
 
 require("./modules/srvName")(client);
-const { sendGrafikNow } = require("./modules/cryptoSimulator");
+const { resetGrafik } = require("./modules/cryptoSimulator");
 
 // 📂 Load Slash Commands
 require("./modules/slashCommandSetup")(client);
