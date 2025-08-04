@@ -1,3 +1,4 @@
+// modules/inviteTracker.js
 const { EmbedBuilder, Events } = require("discord.js");
 const fs = require("fs");
 const path = require("path");
@@ -7,9 +8,12 @@ let invitesData = fs.existsSync(invitesPath)
     ? JSON.parse(fs.readFileSync(invitesPath, "utf8"))
     : {};
 
-// Simpan file
 function saveInvites() {
     fs.writeFileSync(invitesPath, JSON.stringify(invitesData, null, 2));
+}
+
+function formatDateIndo(date) {
+    return new Date(date).toLocaleString("id-ID", { timeZone: "Asia/Jakarta" });
 }
 
 module.exports = (client) => {
@@ -42,21 +46,34 @@ module.exports = (client) => {
         }
         saveInvites();
 
+        const isVerified = member.roles.cache.has(process.env.ROLE_MEMBER_ID);
+        const verifiedStatus = isVerified ? "✅ Verified" : "❌ Belum Verified";
+
         const embed = new EmbedBuilder()
             .setColor("Green")
-            .setTitle("👋 Selamat Datang!")
+            .setTitle("-# . <a:bananacat:1361702933036667111> <a:letter:1361709818083152045> <a:letter0:960426513562472480> <a:letter0:960426513562472480> <a:Letter6:1361695190695416029> <a:Letter7:1361705035704045750> <a:Letter1:1361695421369421956> <a:letter3:1361695449874043021> <a:bananacat:1361702933036667111>")
             .setThumbnail(member.user.displayAvatarURL({ dynamic: true }))
-            .addFields(
-                { name: "👤 Member", value: `<@${member.id}>`, inline: true },
-                { name: "📩 Diundang oleh", value: inviter ? `<@${inviter.id}>` : "Tidak diketahui", inline: true },
-                { name: "🔗 Link Invite", value: inviteCode, inline: false },
-                { name: "📊 Total Invites", value: inviter ? `${invitesData[member.guild.id].users[inviter.id]} (+1)` : "-", inline: true },
-                { name: "👥 Total Member", value: `${member.guild.memberCount}`, inline: true }
+            .setDescription(
+                `👤 **Member**        : <@${member.id}>\n` +
+                `🏠 **Server**        : BananaSkiee Community\n` +
+                `🎁 **Invited by**    : ${inviter ? `<@${inviter.id}>` : "Tidak diketahui"}\n` +
+                `🔗 **Link Invite**   : ${inviteCode}\n` +
+                `📈 **Total Invites** : ${inviter ? `${invitesData[member.guild.id].users[inviter.id]} (+1)` : "-"}\n` +
+                `👥 **Total Members** : ${member.guild.memberCount}\n` +
+                `🛡 **Status**        : ${verifiedStatus}\n` +
+                `📅 **Bergabung**     : ${formatDateIndo(Date.now())}\n\n` +
+                `-# . <a:merah:1361623714541604894> <a:garis:1361628335297527910><a:garis:1361628335297527910><a:garis:1361628335297527910><a:garis:1361628335297527910><a:garis:1361628335297527910><a:garis:1361628335297527910><a:garis:1361628335297527910><a:garis:1361628335297527910><a:garis:1361628335297527910><a:garis:1361628335297527910><a:garis:1361628335297527910><a:garis:1361628335297527910> <a:merah:1361623714541604894>`
             )
-            .setFooter({ text: `Bergabung pada ${new Date().toLocaleString()}` });
+            .setFooter({
+                text: "© Copyright | BananaSkiee Community",
+                iconURL: "https://i.imgur.com/RGp8pqJ.jpeg"
+            });
 
         const welcomeChannel = member.guild.channels.cache.get(process.env.WELCOME_CHANNEL_ID);
-        if (welcomeChannel) welcomeChannel.send({ embeds: [embed] });
+        if (welcomeChannel) {
+            welcomeChannel.send({ embeds: [embed] })
+                .then(msg => msg.react("👋").catch(() => {}));
+        }
     });
 
     // Member Leave
@@ -72,15 +89,20 @@ module.exports = (client) => {
 
         const embed = new EmbedBuilder()
             .setColor("Red")
-            .setTitle("👋 Selamat Tinggal!")
+            .setTitle("-# . <a:BananaSkiee:1360541400382439475> <a:rflx:1361623860205715589> <a:rflx_e:1361624001939771413> <a:rflx_l:1361624056884887673> <a:rflx_c:1361624260434591855> <a:rflx_o:1361624335126626396> <a:rflx_m:1361624355771256956> <a:rflx_e:1361624001939771413> <a:BananaSkiee:1360541400382439475>")
             .setThumbnail(member.user.displayAvatarURL({ dynamic: true }))
-            .addFields(
-                { name: "👤 Member", value: `<@${member.id}>`, inline: true },
-                { name: "📩 Diundang oleh", value: inviterId ? `<@${inviterId}>` : "Tidak diketahui", inline: true },
-                { name: "📊 Total Invites", value: inviterId ? `${guildData.users[inviterId]} (-1)` : "-", inline: true },
-                { name: "👥 Total Member", value: `${member.guild.memberCount}`, inline: true }
+            .setDescription(
+                `👤 **Member**        : <@${member.id}>\n` +
+                `🎁 **Invited by**    : ${inviterId ? `<@${inviterId}>` : "Tidak diketahui"}\n` +
+                `📉 **Total Invites** : ${inviterId ? `${guildData.users[inviterId]} (-1)` : "-"}\n` +
+                `👥 **Total Members** : ${member.guild.memberCount}\n` +
+                `📅 **Keluar**        : ${formatDateIndo(Date.now())}\n\n` +
+                `-# . <a:merah:1361623714541604894> <a:garis:1361628335297527910><a:garis:1361628335297527910><a:garis:1361628335297527910><a:garis:1361628335297527910><a:garis:1361628335297527910><a:garis:1361628335297527910><a:garis:1361628335297527910><a:garis:1361628335297527910><a:garis:1361628335297527910><a:garis:1361628335297527910><a:garis:1361628335297527910><a:garis:1361628335297527910> <a:merah:1361623714541604894>`
             )
-            .setFooter({ text: `Keluar pada ${new Date().toLocaleString()}` });
+            .setFooter({
+                text: "© Copyright | BananaSkiee Community",
+                iconURL: "https://i.imgur.com/RGp8pqJ.jpeg"
+            });
 
         const goodbyeChannel = member.guild.channels.cache.get(process.env.GOODBYE_CHANNEL_ID);
         if (goodbyeChannel) goodbyeChannel.send({ embeds: [embed] });
@@ -91,7 +113,6 @@ module.exports = (client) => {
         if (message.author.bot) return;
         const args = message.content.trim().split(/\s+/);
 
-        // Leaderboard
         if (args[0] === "!topinvites") {
             const guildData = invitesData[message.guild.id]?.users || {};
             const sorted = Object.entries(guildData).sort((a, b) => b[1] - a[1]).slice(0, 10);
@@ -104,7 +125,6 @@ module.exports = (client) => {
             message.channel.send({ embeds: [embed] });
         }
 
-        // Cek user
         if (args[0] === "!invites") {
             const user = message.mentions.users.first() || message.author;
             const count = invitesData[message.guild.id]?.users[user.id] || 0;
