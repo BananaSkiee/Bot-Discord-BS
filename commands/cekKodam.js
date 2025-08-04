@@ -1,7 +1,6 @@
 const { SlashCommandBuilder } = require("discord.js");
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 
-// Inisialisasi Gemini
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 module.exports = {
@@ -13,16 +12,22 @@ module.exports = {
     await interaction.deferReply();
 
     try {
-      const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
-      const prompt = `Tolong bacakan kodamku.\n
-Kamu adalah dukun sakti nan mistis. Jawabanmu harus gaib, puitis, dan spiritual. Jawab hanya 2–4 kalimat.`;
+      const username = interaction.user.username;
+      const prompt = `Kamu adalah dukun sakti yang rada nyeleneh tapi tetap mistis.
+Gunakan bahasa Indonesia santai + sedikit bahasa gaul, seperti ngobrol sama teman.
+Jangan jawab panjang, cukup 2–4 kalimat.
+Jangan bilang kamu AI atau model bahasa.
+Langsung bacakan "Kodam" untuk orang bernama ${username}.
+Buat seolah-olah kamu beneran meramal kodamnya, bisa ada hewan, makhluk gaib, atau sesuatu yang unik.
+Contoh gaya: "Hmm... gua liat di belakang lo ada macan putih nongkrong sambil nyengir."
+`;
 
       const result = await model.generateContent(prompt);
-      const response = await result.response;
-      const text = response.text();
+      const replyText = result.response?.candidates?.[0]?.content?.parts?.[0]?.text || "Hmm... gua gak bisa liat kodam lo sekarang 😅";
 
-      await interaction.editReply(`🔮 **Kodammu telah dibaca:**\n${text}`);
+      await interaction.editReply(`🔮 **Kodam untuk ${username}:**\n${replyText.trim()}`);
     } catch (error) {
       console.error("❌ Gemini Error:", error);
       await interaction.editReply("❌ Gagal membaca kodam. Coba lagi nanti.");
