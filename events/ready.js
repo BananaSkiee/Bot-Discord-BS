@@ -40,13 +40,13 @@ module.exports = {
     autoGreeting(client);
 
     // 🔢 Counter validator
-    countValidator(client);
+    // countValidator(client);
 
     // 🪙 Simulasi Bitcoin
     simulateBTC(client);
 
     // 💬 Auto Chat
-    autoChat(client);
+    // autoChat(client);
 
     nickAnim(client);
     
