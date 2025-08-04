@@ -7,14 +7,14 @@ const config = require("./config");
 
 // 🧠 Custom modules
 const cmdCrypto = require("./modules/cmdCrypto");
-const startCryptoSimulation = require("./modules/cryptoSimulator"); // Sudah termasuk generateTextGraph di dalamnya
+const startCryptoSimulation = require("./modules/cryptoSimulator");
 const stickyHandler = require("./sticky");
 const updateOnline = require("./online");
 const autoGreeting = require("./modules/autoGreeting");
 const updateTimeChannel = require("./modules/updateTimeChannel");
-const welcomecard = require("./modules/welcomeCard");
-const iconanim = require("./modules/iconAnim");
 const invitesTracker = require("./modules/invitesTracker");
+const slashCommandSetup = require("./modules/slashCommandSetup");
+const { resetGrafik } = require("./modules/cryptoSimulator");
 
 const client = new Client({
   intents: [
@@ -29,10 +29,6 @@ const client = new Client({
 });
 
 require("./modules/srvName")(client);
-const { resetGrafik } = require("./modules/cryptoSimulator");
-
-// 📂 Load Slash Commands
-require("./modules/slashCommandSetup")(client);
 client.commands = new Collection();
 
 // 📂 Command prefix "!" untuk crypto game
@@ -70,10 +66,11 @@ const prefixCommands = {
 };
 
 // 📌 Event Ready
-client.once("ready", () => {
+client.once("ready", async () => {
   console.log(`✅ Bot ${client.user.tag} aktif!`);
-  startCryptoSimulation(client); // Jalankan simulasi crypto
-  invitesTracker(client); // Jalankan invite tracker
+  await slashCommandSetup(client); // Jalankan slash command di sini
+  startCryptoSimulation(client);
+  invitesTracker(client);
 });
 
 // 📂 Load events dari folder /events
@@ -96,13 +93,12 @@ client.on("messageCreate", async (message) => {
   const adminRoleId = process.env.ADMIN_ROLE_ID || "1352279577174605884";
 
   // 📊 Kalau command !grafik → reset grafik
-if (commandName === "grafik") {
-  await sendGrafikNow(message.client);
-  return message.reply("✅ Grafik berhasil dikirim ulang.");
-}
+  if (commandName === "grafik") {
+    await resetGrafik(message.client); // Gunakan fungsi yang ada
+    return message.reply("✅ Grafik berhasil dikirim ulang.");
+  }
 
   if (!command) {
-    // Jika command tidak dikenal dan user belum register
     const isRegistered = cmdCrypto.checkIfRegistered(message.author.id);
     if (!isRegistered) {
       return message.reply({
@@ -117,7 +113,6 @@ if (commandName === "grafik") {
     return;
   }
 
-  // Cek command admin
   const isAdminCommand = ["admin", "pw", "givecoin", "givebtc", "setpw"].includes(commandName);
   const member = await message.guild.members.fetch(message.author.id);
 
@@ -140,27 +135,6 @@ if (commandName === "grafik") {
   }
 });
 
-// 📌 Slash Command & Interaction
-client.on("interactionCreate", async (interaction) => {
-  try {
-    if (!interaction.isChatInputCommand()) return;
-    const command = client.commands.get(interaction.commandName);
-    if (!command) return;
-    await command.execute(interaction, client);
-  } catch (error) {
-    console.error("❌ Interaction Error:", error);
-    const replyOptions = {
-      content: "❌ Terjadi error saat menjalankan perintah.",
-      ephemeral: true,
-    };
-    if (interaction.replied || interaction.deferred) {
-      await interaction.followUp(replyOptions);
-    } else {
-      await interaction.reply(replyOptions);
-    }
-  }
-});
-
 // 📌 Sticky Message
 client.on("messageCreate", (message) => {
   if (!message.author.bot) stickyHandler(client, message);
@@ -176,7 +150,7 @@ client.on("presenceUpdate", () => updateOnline(client));
 client.on("voiceStateUpdate", () => updateOnline(client));
 setInterval(() => updateTimeChannel(client), 30 * 1000);
 
-// 🌐 Web Server (Railway Ping)
+// 🌐 Web Server
 const app = express();
 app.get("/", (_, res) => res.send("✅ Bot Akira aktif"));
 app.listen(process.env.PORT || 3000, () => {
