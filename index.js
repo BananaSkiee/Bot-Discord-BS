@@ -29,8 +29,8 @@ const client = new Client({
 });
 
 require("./modules/srvName")(client);
-const { resetGrafik } = require("./modules/cryptoSimulator");
-  
+const { sendGrafikNow } = require("./modules/cryptoSimulator");
+
 // 📂 Load Slash Commands
 require("./modules/slashCommandSetup")(client);
 client.commands = new Collection();
@@ -96,10 +96,10 @@ client.on("messageCreate", async (message) => {
   const adminRoleId = process.env.ADMIN_ROLE_ID || "1352279577174605884";
 
   // 📊 Kalau command !grafik → reset grafik
-  if (commandName === "grafik") {
-    await resetGrafik(message.client);
-    return message.reply("✅ Grafik berhasil direset.");
-  }
+if (commandName === "grafik") {
+  await sendGrafikNow(message.client);
+  return message.reply("✅ Grafik berhasil dikirim ulang.");
+}
 
   if (!command) {
     // Jika command tidak dikenal dan user belum register
