@@ -65,56 +65,59 @@ module.exports = {
         });
       }
 
-      // ========== TOMBOL TEST ✅ / ❌ ==========
-      if (
-        customId.startsWith("test_use_tag_") ||
-        customId.startsWith("test_remove_tag_")
-      ) {
-        const parts = customId.split("_");
-        const action = parts[1];
-        const roleId = parts[3];
-        const safeTagId = parts.slice(4).join("_");
+// ...
+// ========== TOMBOL TEST ✅ / ❌ ==========
+if (
+  interaction.isButton() && (
+    customId.startsWith("test_use_tag_") ||
+    customId.startsWith("test_remove_tag_")
+  )
+) {
+  const parts = customId.split("_");
+  const action = parts[1];
+  const roleId = parts[3];
+  const safeTagId = parts.slice(4).join("_");
 
-        const matched = ROLES.find(
-          r =>
-            r.id === roleId &&
-            r.tag.replace(/[^\w-]/g, "").toLowerCase() === safeTagId
-        );
+  const matched = ROLES.find(
+    r =>
+      r.id === roleId &&
+      r.tag.replace(/[^\w-]/g, "").toLowerCase() === safeTagId
+  );
 
-        if (!matched) {
-          return interaction.reply({
-            content: "❌ Tag tidak ditemukan atau tidak valid.",
-            ephemeral: true,
-          });
-        }
+  if (!matched) {
+    return interaction.reply({
+      content: "❌ Tag tidak ditemukan atau tidak valid.",
+      ephemeral: true,
+    });
+  }
 
-        const realTag = matched.tag;
+  const realTag = matched.tag;
 
-        if (action === "use") {
-          await member.setNickname(`${realTag} ${username}`).catch(console.error);
-          if (!member.roles.cache.has(matched.id)) {
-            await member.roles.add(matched.id).catch(console.error);
-          }
-          taggedUsers[member.id] = true;
-          saveTaggedUsers(taggedUsers);
+  if (action === "use") {
+    await member.setNickname(`${realTag} ${username}`).catch(console.error);
+    if (!member.roles.cache.has(matched.id)) {
+      await member.roles.add(matched.id).catch(console.error);
+    }
+    taggedUsers[member.id] = true;
+    saveTaggedUsers(taggedUsers);
 
-          return interaction.reply({
-            content: `🧪 Nickname kamu sekarang: \`${realTag} ${username}\``,
-            ephemeral: true,
-          });
-        }
+    return interaction.reply({
+      content: `🧪 Nickname kamu sekarang: \`${realTag} ${username}\``,
+      ephemeral: true,
+    });
+  }
 
-        if (action === "remove") {
-          await member.setNickname(username).catch(console.error);
-          taggedUsers[member.id] = false;
-          saveTaggedUsers(taggedUsers);
+  if (action === "remove") {
+    await member.setNickname(username).catch(console.error);
+    taggedUsers[member.id] = false;
+    saveTaggedUsers(taggedUsers);
 
-          return interaction.reply({
-            content: `🧪 Nickname kamu dikembalikan menjadi \`${username}\``,
-            ephemeral: true,
-          });
-        }
-      }
+    return interaction.reply({
+      content: `🧪 Nickname kamu dikembalikan menjadi \`${username}\``,
+      ephemeral: true,
+    });
+  }
+}
 
       // ========== UNKNOWN ==========
       return interaction.reply({
