@@ -3,7 +3,7 @@ const { SlashCommandBuilder } = require("discord.js");
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 
 // Ambil semua API key dari 1 variabel env
-const allKeys = (process.env.GIMINI_API_KEY || "")
+const allKeys = (process.env.GEMINI_API_KEY || "")
   .split(",")
   .map(k => k.trim())
   .filter(Boolean);
