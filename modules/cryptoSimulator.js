@@ -3,51 +3,57 @@ const fs = require("fs");
 const path = require("path");
 
 // === Konfigurasi ===
-const CHANNEL_ID = "1397169936467755151"; // Ganti dengan ID channel grafik
-const DATA_FILE = path.join(__dirname, "../data/cryptoMessage.json");
+const DATA_FILE = path.join(__dirname, "../data/cryptoSimulator.json");
+const CHANNELS = {
+  BTC: "1397169936467755151",
+  ETH: "1394478754297811034",
+  BNB: "1402210580466499625"
+};
 
-let hargaData = [64000, 64500, 64200, 64800, 65000, 64900, 65500];
-
-// === Fungsi Generate Grafik ASCII ===
-function generateTextGraph(data, symbol = "BTC") {
-  const height = 10; // tinggi grafik
-  const width = data.length;
-  const max = Math.max(...data);
-  const min = Math.min(...data);
-  const range = max - min || 1;
-
-  // Normalisasi data ke tinggi grafik
-  const normalized = data.map((val) =>
-    Math.round(((val - min) / range) * (height - 1))
-  );
-
-  // Buat grafik baris demi baris dari atas ke bawah
-  let lines = [];
-  for (let row = height - 1; row >= 0; row--) {
-    let line = "";
-    for (let col = 0; col < width; col++) {
-      line += normalized[col] >= row ? " █" : "  ";
-    }
-    lines.push(line);
+// === Data Awal ===
+let cryptoData = {
+  BTC: {
+    price: 64000,
+    history: [64000, 64500, 64200, 64800, 65000, 64900, 65500],
+    messageId: null
+  },
+  ETH: {
+    price: 3500,
+    history: [3500, 3550, 3480, 3600, 3580, 3620, 3700],
+    messageId: null
+  },
+  BNB: {
+    price: 400,
+    history: [400, 410, 395, 405, 415, 408, 420],
+    messageId: null
   }
+};
 
-  // Tambahkan garis dasar dan info harga
-  const current = data[data.length - 1];
-  const previous = data[data.length - 2] || current;
-  const delta = current - previous;
-  const deltaStr = delta >= 0 ? `+${delta}` : `${delta}`;
+// === Load & Save Data ===
+function loadCryptoData() {
+  try {
+    const data = fs.readFileSync(DATA_FILE, "utf8");
+    const loaded = JSON.parse(data);
 
-  lines.push("‾".repeat(width * 2));
-  lines.push(`${symbol}: $${current.toLocaleString()} (${deltaStr})`);
-
-  return lines.join("\n");
+    for (const coin in cryptoData) {
+      if (loaded[coin]) {
+        cryptoData[coin] = { ...cryptoData[coin], ...loaded[coin] };
+      }
+      if (!cryptoData[coin].history || cryptoData[coin].history.length === 0) {
+        cryptoData[coin].history = [cryptoData[coin].price];
+      }
+    }
+  } catch (err) {
+    if (err.code === "ENOENT") saveCryptoData();
+    else console.error(`❌ Gagal load data ${DATA_FILE}:`, err);
+  }
 }
 
-// === Utility ===
-function getNextDelay() {
-  return Math.floor(Math.random() * 10000) + 5000;
+function saveCryptoData() {
+  fs.writeFileSync(DATA_FILE, JSON.stringify(cryptoData, null, 2));
 }
 
+// === Perubahan Harga Random ===
 function getPriceChange() {
   const chance = Math.random();
   if (chance < 0.4) return Math.floor(Math.random() * 50);
@@ -56,95 +62,87 @@ function getPriceChange() {
   return Math.floor(Math.random() * -150);
 }
 
-function saveMessageId(id) {
-  fs.writeFileSync(DATA_FILE, JSON.stringify({ messageId: id }, null, 2));
-}
+// === Grafik ASCII ===
+function generateTextGraph(data, label) {
+  if (!data || data.length === 0) return "Tidak ada data grafik.";
+  const max = Math.max(...data);
+  const min = Math.min(...data);
+  const range = max - min || 1;
+  const height = 8;
+  const width = 20;
 
-function loadMessageId() {
-  try {
-    const data = fs.readFileSync(DATA_FILE, "utf8");
-    return JSON.parse(data).messageId;
-  } catch {
-    return null;
+  const lastData = data.slice(-width);
+
+  let graph = "";
+  for (let row = height; row >= 0; row--) {
+    let line = "";
+    for (let value of lastData) {
+      const scaled = ((value - min) / range) * height;
+      line += scaled >= row && scaled < row + 1 ? "█" : " ";
+    }
+    graph += line + "\n";
   }
+
+  const minLabel = min.toFixed(0);
+  const maxLabel = max.toFixed(0);
+  const padding = " ".repeat(width - minLabel.length - maxLabel.length - 1);
+  graph += `${minLabel}${padding}${maxLabel}`;
+
+  return `${label}\n${graph}`;
 }
 
-// === Update Harga & Kirim Grafik ===
-async function updateHarga(client) {
-  const last = hargaData[hargaData.length - 1];
-  const change = getPriceChange();
-  const next = Math.max(100, last + change);
+// === Update Harga & Kirim ke Discord ===
+async function updatePrices(client) {
+  for (const coin in cryptoData) {
+    const last = cryptoData[coin].price;
+    const change = getPriceChange();
+    const next = Math.max(1, last + change);
 
-  hargaData.push(next);
-  if (hargaData.length > 20) hargaData.shift();
+    cryptoData[coin].price = next;
+    cryptoData[coin].history.push(next);
+    if (cryptoData[coin].history.length > 20) cryptoData[coin].history.shift();
 
-  const chart = generateTextGraph(hargaData, "BTC");
+    try {
+      const channel = await client.channels.fetch(CHANNELS[coin]);
+      if (!channel || !channel.isTextBased()) continue;
 
-  try {
-    const channel = await client.channels.fetch(CHANNEL_ID);
-    if (!channel || !channel.isTextBased()) return;
+      const chart = generateTextGraph(cryptoData[coin].history, `${coin}: $${next.toLocaleString()}`);
+      let message;
 
-    const messageId = loadMessageId();
-    let message;
-
-    if (messageId) {
-      try {
-        message = await channel.messages.fetch(messageId);
-        await message.edit("```" + chart + "```");
-      } catch {
+      if (cryptoData[coin].messageId) {
+        try {
+          message = await channel.messages.fetch(cryptoData[coin].messageId);
+          await message.edit("```" + chart + "```");
+        } catch {
+          message = await channel.send("```" + chart + "```");
+          cryptoData[coin].messageId = message.id;
+        }
+      } else {
         message = await channel.send("```" + chart + "```");
-        saveMessageId(message.id);
+        cryptoData[coin].messageId = message.id;
       }
-    } else {
-      message = await channel.send("```" + chart + "```");
-      saveMessageId(message.id);
+
+    } catch (err) {
+      console.error(`❌ Gagal update grafik ${coin}:`, err.message);
     }
-  } catch (err) {
-    console.error("❌ Gagal kirim/edit grafik:", err);
   }
 
-  setTimeout(() => updateHarga(client), getNextDelay());
+  saveCryptoData();
+  setTimeout(() => updatePrices(client), Math.floor(Math.random() * 10000) + 5000);
 }
 
-// === Fungsi Reset Grafik ===
-async function resetGrafik(client) {
-  try {
-    const channel = await client.channels.fetch(CHANNEL_ID);
-    if (!channel || !channel.isTextBased()) return;
-
-    // Hapus pesan lama
-    const messageId = loadMessageId();
-    if (messageId) {
-      try {
-        const oldMessage = await channel.messages.fetch(messageId);
-        await oldMessage.delete();
-      } catch (err) {
-        console.warn("⚠ Tidak bisa hapus pesan lama:", err.message);
-      }
-    }
-
-    // Kirim ulang grafik dengan data yang ada
-    const chart = generateTextGraph(hargaData, "BTC");
-    const newMessage = await channel.send("```" + chart + "```");
-    saveMessageId(newMessage.id);
-
-    console.log("✅ Grafik direset dan dikirim ulang.");
-  } catch (err) {
-    console.error("❌ Gagal reset grafik:", err);
-  }
-}
-
-// === Export ===
+// === Start Simulation ===
 module.exports = function startCryptoSimulation(client) {
-  updateHarga(client);
+  loadCryptoData();
+  updatePrices(client);
 };
 
+// === Getter ===
 module.exports.getPrices = () => {
-  return { BTC: hargaData[hargaData.length - 1] };
+  let prices = {};
+  for (const coin in cryptoData) prices[coin] = cryptoData[coin].price;
+  return prices;
 };
 
-module.exports.getPriceHistory = () => {
-  return hargaData;
-};
-
-module.exports.resetGrafik = resetGrafik;
+module.exports.getPriceHistory = (coin) => cryptoData[coin]?.history || [];
+module.exports.generateTextGraph = generateTextGraph;
