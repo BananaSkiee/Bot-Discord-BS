@@ -1,23 +1,9 @@
-// index.js
 require("dotenv").config();
 const { Client, GatewayIntentBits, Collection, EmbedBuilder } = require("discord.js");
 const fs = require("fs");
 const path = require("path");
 const express = require("express");
 const config = require("./config");
-
-// 🧠 Custom modules
-const cmdCrypto = require("./modules/cmdCrypto");
-const startCryptoSimulation = require("./modules/cryptoSimulator");
-const { resetGrafik } = require("./modules/cryptoSimulator");
-const stickyHandler = require("./sticky");
-const updateOnline = require("./online");
-const autoGreeting = require("./modules/autoGreeting");
-const updateTimeChannel = require("./modules/updateTimeChannel");
-const invitesTracker = require("./modules/invitesTracker");
-const slashCommandSetup = require("./modules/slashCommandSetup");
-
-require("./modules/srvName")(client);
 
 // 📌 Init Bot
 const client = new Client({
@@ -31,6 +17,18 @@ const client = new Client({
     GatewayIntentBits.DirectMessages,
   ],
 });
+
+// 🧠 Custom modules
+const cmdCrypto = require("./modules/cmdCrypto");
+const startCryptoSimulation = require("./modules/cryptoSimulator");
+const { resetGrafik } = require("./modules/cryptoSimulator");
+const stickyHandler = require("./sticky");
+const updateOnline = require("./online");
+const autoGreeting = require("./modules/autoGreeting");
+const updateTimeChannel = require("./modules/updateTimeChannel");
+const invitesTracker = require("./modules/invitesTracker");
+const slashCommandSetup = require("./modules/slashCommandSetup");
+require("./modules/srvName")(client); // ✅ client sudah ada
 
 client.commands = new Collection();
 
@@ -93,11 +91,16 @@ function initializeDataFiles() {
     "owoRates.json",
     "cryptoSimulator.json"
   ];
+
   files.forEach(file => {
     const filePath = path.join(dataDir, file);
     if (!fs.existsSync(filePath)) {
-      fs.writeFileSync(filePath, JSON.stringify({}, null, 2));
-      console.log(`[INIT] Created empty data file: ${file}`);
+      if (file === "cryptoSimulator.json") {
+        fs.writeFileSync(filePath, JSON.stringify({ rate: 50, lastUpdate: 0 }, null, 2));
+      } else {
+        fs.writeFileSync(filePath, JSON.stringify({}, null, 2));
+      }
+      console.log(`[INIT] Created data file: ${file}`);
     }
   });
 }
