@@ -195,7 +195,7 @@ if (!interaction.isButton()) return;
                 '"Hukuman diberikan bukan untuk menyusahkan, tapi untuk menjaga kenyamanan bersama!" 🍍'
             )
             .setColor('Yellow')
-            .setFooter({
+.setFooter({
                 text: '© Copyright | BananaSkiee Community',
                 iconURL: 'https://i.imgur.com/RGp8pqJ.jpeg'
             })
@@ -203,13 +203,13 @@ if (!interaction.isButton()) return;
 
         await interaction.reply({ embeds: [warnEmbed], ephemeral: true });
     }
-};      
 
-// ========== UNKNOWN ==========
-return interaction.reply({
-  content: "⚠️ Tombol tidak dikenali.",
-  ephemeral: true,
-});
+    // ========== UNKNOWN ==========
+    return interaction.reply({
+      content: "⚠️ Tombol tidak dikenali.",
+      ephemeral: true,
+    });
+
     } catch (err) {
       console.error("❌ ERROR GLOBAL DI INTERACTIONCREATE:", err);
       if (interaction.replied || interaction.deferred) {
