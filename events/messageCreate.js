@@ -15,6 +15,7 @@ const autoReactEmoji = require("../modules/autoReactEmoji");
 const beritaCmd = require("../modules/beritaCmd.js");
 const tebakAngka = require("../modules/tebakAngka");
 const coinSystem = require("../modules/coinSystem");
+const rulesCmd = require("../modules/rules.js");
 
 const filePath = path.join(__dirname, "../data/taggedUsers.json");
 
@@ -78,6 +79,11 @@ if (!contentRaw.startsWith(prefix)) return;
 const [commandRaw, ...args] = contentRaw.slice(prefix.length).trim().split(/ +/);
 const command = commandRaw.toLowerCase();
 
+    // Command !rules
+    if (command === "rules") {
+        rulesCmd.execute(message);
+    }
+    
 // Di dalam messageCreate:
 if (command === "meme") {
   return memeCommand.execute(message);
