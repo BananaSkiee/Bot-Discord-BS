@@ -1,0 +1,12 @@
+{
+  "prices": {
+    "BTC": 0,
+    "ETH": 0,
+    "BNB": 0
+  },
+  "history": {
+    "BTC": [],
+    "ETH": [],
+    "BNB": []
+  }
+}
