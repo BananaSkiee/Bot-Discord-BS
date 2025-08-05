@@ -28,6 +28,7 @@ const autoGreeting = require("./modules/autoGreeting");
 const updateTimeChannel = require("./modules/updateTimeChannel");
 const invitesTracker = require("./modules/invitesTracker");
 const slashCommandSetup = require("./modules/slashCommandSetup");
+const rulesCommand = require("./modules/rulesCommand");
 require("./modules/srvName")(client); // ✅ client sudah ada
 
 client.commands = new Collection();
@@ -37,6 +38,7 @@ const prefixCommands = {
   register: cmdCrypto.register,
   balance: cmdCrypto.balance,
   help: cmdCrypto.help,
+  rules: rulesCommand.execute, // ✅ tambahin ini
   price: cmdCrypto.price,
   buy: cmdCrypto.buy,
   sell: cmdCrypto.sell,
