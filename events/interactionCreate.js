@@ -32,6 +32,34 @@ module.exports = {
       const taggedUsers = fs.existsSync(filePath)
         ? JSON.parse(fs.readFileSync(filePath, "utf8"))
         : {};
+
+if (command === "rules") {
+  const rulesChannel = message.guild.channels.cache.get("1352326247186694164");
+  if (!rulesChannel) return message.reply("❌ Channel rules tidak ditemukan.");
+
+  const rulesEmbed = new EmbedBuilder()
+    .setTitle("📜 PERATURAN SERVER BIKINI BOTTOM")
+    .setDescription("Klik tombol di bawah untuk melihat detail peraturan.")
+    .setColor("Yellow");
+
+  const row = new ActionRowBuilder().addComponents(
+    new ButtonBuilder()
+      .setCustomId("rules_btn")
+      .setLabel("✅ YANG BOLEH")
+      .setStyle(ButtonStyle.Success),
+    new ButtonBuilder()
+      .setCustomId("punishment_btn")
+      .setLabel("❌ YANG GAK BOLEH")
+      .setStyle(ButtonStyle.Danger),
+    new ButtonBuilder()
+      .setCustomId("warn_btn")
+      .setLabel("⚠️ SISTEM WARNING")
+      .setStyle(ButtonStyle.Secondary)
+  );
+
+  await rulesChannel.send({ embeds: [rulesEmbed], components: [row] });
+  return message.reply("✅ Rules sudah dikirim ke channel rules.");
+}
       
       // ========== TOMBOL ✅ UMUM ==========
       if (customId === "use_tag") {
