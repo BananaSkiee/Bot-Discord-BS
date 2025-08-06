@@ -1,4 +1,7 @@
-if (command === "rules") {
+// modules/rulesCommand.js
+const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require("discord.js");
+
+module.exports = async function cmdRules(message) {
     const rulesChannelId = "1352326247186694164"; // ID channel rules
     if (message.channel.id !== rulesChannelId) {
         return message.reply("❌ Command ini hanya bisa digunakan di channel rules.");
@@ -15,8 +18,6 @@ if (command === "rules") {
     if (alreadySent) {
         return message.reply("⚠️ Rules sudah pernah dikirim di channel ini.");
     }
-
-    const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require("discord.js");
 
     const mainEmbed = new EmbedBuilder()
         .setTitle("📜 Rules, Punishment & Sistem Warn")
@@ -40,4 +41,4 @@ if (command === "rules") {
 
     await message.channel.send({ embeds: [mainEmbed], components: [row] });
     await message.reply("✅ Rules berhasil dikirim di channel ini.");
-}
+};
