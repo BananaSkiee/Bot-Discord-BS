@@ -80,7 +80,7 @@ const [commandRaw, ...args] = contentRaw.slice(prefix.length).trim().split(/ +/)
 const command = commandRaw.toLowerCase();
 
 if (command === "rules") {
-  return rulesCommand.execute(message);
+    return rulesCommand(message);
 }
     
 // Di dalam messageCreate:
