@@ -77,6 +77,30 @@ if (!contentRaw.startsWith(prefix)) return;
 
 const [commandRaw, ...args] = contentRaw.slice(prefix.length).trim().split(/ +/);
 const command = commandRaw.toLowerCase();
+
+if (command === "rules") {
+  const rulesEmbed = new EmbedBuilder()
+    .setTitle("📜 PERATURAN SERVER BIKINI BOTTOM")
+    .setDescription("Klik tombol di bawah ini untuk melihat detail peraturan.")
+    .setColor("Yellow");
+
+  const row = new ActionRowBuilder().addComponents(
+    new ButtonBuilder()
+      .setCustomId("rules_btn")
+      .setLabel("✅ YANG BOLEH")
+      .setStyle(ButtonStyle.Success),
+    new ButtonBuilder()
+      .setCustomId("punishment_btn")
+      .setLabel("❌ YANG GAK BOLEH")
+      .setStyle(ButtonStyle.Danger),
+    new ButtonBuilder()
+      .setCustomId("warn_btn")
+      .setLabel("⚠️ SISTEM WARNING")
+      .setStyle(ButtonStyle.Secondary)
+  );
+
+  return message.channel.send({ embeds: [rulesEmbed], components: [row] });
+}
     
 // Di dalam messageCreate:
 if (command === "meme") {
