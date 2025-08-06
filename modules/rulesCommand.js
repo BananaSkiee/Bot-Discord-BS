@@ -30,16 +30,12 @@ if (command === "rules") {
     const row = new ActionRowBuilder().addComponents(
         new ButtonBuilder()
             .setCustomId("rules_btn")
-            .setLabel("✅ Yang Boleh")
+            .setLabel("📜 Rules")
             .setStyle(ButtonStyle.Primary),
         new ButtonBuilder()
             .setCustomId("punishment_btn")
-            .setLabel("❌ Yang Gak Boleh")
-            .setStyle(ButtonStyle.Danger),
-        new ButtonBuilder()
-            .setCustomId("warn_btn")
-            .setLabel("⚠️ Sistem Warn")
-            .setStyle(ButtonStyle.Secondary)
+            .setLabel("⚠️ Punishment")
+            .setStyle(ButtonStyle.Danger)
     );
 
     await message.channel.send({ embeds: [mainEmbed], components: [row] });
