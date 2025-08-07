@@ -2,21 +2,15 @@
 const { SlashCommandBuilder } = require("discord.js");
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 
-// Ambil semua API key dari 1 variabel env
-const allKeys = (process.env.GEMINI_API_KEY || "")
-  .split(",")
-  .map(k => k.trim())
-  .filter(Boolean);
+// Ambil 1 API key dari env
+const apiKey = process.env.GEMINI_API_KEY;
 
-if (!allKeys.length) {
+if (!apiKey) {
   console.error("❌ Tidak ada API key Gemini ditemukan!");
   process.exit(1);
 }
 
-let currentKeyIndex = 0;
-function getGenAI() {
-  return new GoogleGenerativeAI(allKeys[currentKeyIndex]);
-}
+const genAI = new GoogleGenerativeAI(apiKey);
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -26,12 +20,11 @@ module.exports = {
   async execute(interaction) {
     await interaction.deferReply();
 
-    async function runKodamCheck() {
-      try {
-        const model = getGenAI().getGenerativeModel({ model: "gemini-1.5-flash" });
+    try {
+      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
-        const username = interaction.user.username;
-        const prompt = `Kamu adalah dukun sakti yang rada nyeleneh tapi tetap mistis.
+      const username = interaction.user.username;
+      const prompt = `Kamu adalah dukun sakti yang rada nyeleneh tapi tetap mistis.
 Pakai bahasa Indonesia santai + sedikit bahasa gaul, seperti ngobrol sama teman.
 Jawaban cukup 2–4 kalimat, singkat tapi berkesan.
 Jangan bilang kamu AI atau model bahasa.
@@ -40,23 +33,15 @@ Bikin seolah-olah kamu beneran meramal kodamnya: bisa hewan, makhluk gaib, atau 
 Kadang tambahin sedikit candaan atau deskripsi aneh biar kocak.
 Contoh gaya: "Hmm... gua liat di belakang lo ada macan putih nongkrong sambil nyengir."`;
 
-        const result = await model.generateContent(prompt);
-        const replyText =
-          result.response?.candidates?.[0]?.content?.parts?.[0]?.text ||
-          "Hmm... gua gak bisa liat kodam lo sekarang 😅";
+      const result = await model.generateContent(prompt);
+      const replyText =
+        result.response?.candidates?.[0]?.content?.parts?.[0]?.text ||
+        "Hmm... gua gak bisa liat kodam lo sekarang 😅";
 
-        await interaction.editReply(`🔮 **Kodam untuk ${username}:**\n${replyText.trim()}`);
-      } catch (error) {
-        if (error.status === 429 && currentKeyIndex < allKeys.length - 1) {
-          console.warn(`⚠️ API key ${currentKeyIndex + 1} limit, ganti ke key berikutnya...`);
-          currentKeyIndex++;
-          return runKodamCheck();
-        }
-        console.error("❌ Gemini Error:", error);
-        await interaction.editReply("❌ Gagal membaca kodam. Coba lagi nanti.");
-      }
+      await interaction.editReply(`🔮 **Kodam untuk ${username}:**\n${replyText.trim()}`);
+    } catch (error) {
+      console.error("❌ Gemini Error:", error);
+      await interaction.editReply("❌ Gagal membaca kodam. Coba lagi nanti.");
     }
-
-    runKodamCheck();
   },
 };
