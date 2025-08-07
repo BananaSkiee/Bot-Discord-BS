@@ -1,14 +1,6 @@
 // modules/rulesCommand.js
 const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require("discord.js");
 
-module.exports = async function cmdRules(message) {
-    const rulesChannelId = "1352326247186694164"; // ID channel rules
-
-    // ⛔ Batasi hanya di channel rules
-    if (message.channel.id !== rulesChannelId) {
-        return message.reply("❌ Command ini hanya bisa digunakan di channel rules.");
-    }
-
     try {
         // 🔍 Cek apakah rules sudah dikirim
         const fetchedMessages = await message.channel.messages.fetch({ limit: 50 });
