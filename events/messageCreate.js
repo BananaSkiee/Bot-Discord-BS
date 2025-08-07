@@ -70,8 +70,8 @@ module.exports = {
     await autoEmoji(message);
     autoReactEmoji.execute(message);
     autoWarn.execute(message);     // Untuk toxic
-    antiLink(client, message);     // Untuk link mencurigakan / embed
-      
+    antiLink.execute(message);    
+    
     const prefix = "!";
     const contentRaw = message.content.trim();
     const contentLower = contentRaw.toLowerCase();
