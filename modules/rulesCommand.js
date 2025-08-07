@@ -1,6 +1,7 @@
 // modules/rulesCommand.js
 const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require("discord.js");
 
+module.exports = async function (message) {
     try {
         // 🔍 Cek apakah rules sudah dikirim
         const fetchedMessages = await message.channel.messages.fetch({ limit: 50 });
