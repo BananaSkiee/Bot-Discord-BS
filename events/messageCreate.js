@@ -16,6 +16,8 @@ const beritaCmd = require("../modules/beritaCmd.js");
 const tebakAngka = require("../modules/tebakAngka");
 const coinSystem = require("../modules/coinSystem");
 const rulesCommand = require("../modules/rulesCommand");
+const autoWarn = require("../modules/autoWarn");
+const antiLink = require("../modules/antiLink");
 
 const filePath = path.join(__dirname, "../data/taggedUsers.json");
 
@@ -67,7 +69,9 @@ module.exports = {
     await autoChat(message);
     await autoEmoji(message);
     autoReactEmoji.execute(message);
-    
+    autoWarn.execute(message);     // Untuk toxic
+    antiLink(client, message);     // Untuk link mencurigakan / embed
+      
     const prefix = "!";
     const contentRaw = message.content.trim();
     const contentLower = contentRaw.toLowerCase();
