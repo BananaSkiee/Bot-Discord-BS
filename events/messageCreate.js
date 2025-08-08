@@ -513,4 +513,5 @@ Pilih salah satu opsi di bawah ini: 👇`,
 if (contentLower.startsWith("!hapustag")) {
   return handleHapusTag(message);
 }
-});
+  }
+};  // <-- Ini penutupan module.exports
