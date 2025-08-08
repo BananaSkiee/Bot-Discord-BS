@@ -511,7 +511,6 @@ Pilih salah satu opsi di bawah ini: 👇`,
 
     // ========== 4. HAPUS TAG ============
 if (contentLower.startsWith("!hapustag")) {
-return handleHapusTag(message);
+  return handleHapusTag(message);
 }
-    }
-};
+});
