@@ -514,4 +514,4 @@ Pilih salah satu opsi di bawah ini: 👇`,
       return handleHapusTag(message);
     }
   } // Tutup execute()
-}; // Tutup module.exports
+} // Tutup module.exports
