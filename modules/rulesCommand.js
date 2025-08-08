@@ -1,21 +1,21 @@
 // modules/rulesCommand.js
 const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require("discord.js");
 
-module.exports = async function (message) {
+module.exports = async function (message, options = { checkDuplicate: false }) {
     try {
-        // 🔍 Cek apakah rules sudah dikirim
-        const fetchedMessages = await message.channel.messages.fetch({ limit: 50 });
-        const alreadySent = fetchedMessages.some(msg =>
-            msg.author.id === message.client.user.id &&
-            msg.embeds.length > 0 &&
-            msg.embeds[0].title === "📜 Rules, Punishment & Sistem Warn"
-        );
+        if (options.checkDuplicate) {
+            const fetchedMessages = await message.channel.messages.fetch({ limit: 50 });
+            const alreadySent = fetchedMessages.some(msg =>
+                msg.author.id === message.client.user.id &&
+                msg.embeds.length > 0 &&
+                msg.embeds[0].title === "📜 Rules, Punishment & Sistem Warn"
+            );
 
-        if (alreadySent) {
-            return message.reply("⚠️ Rules sudah pernah dikirim di channel ini.");
+            if (alreadySent) {
+                return message.reply("⚠️ Rules sudah pernah dikirim di channel ini.");
+            }
         }
 
-        // 📦 Buat embed + tombol
         const mainEmbed = new EmbedBuilder()
             .setTitle("📜 Rules, Punishment & Sistem Warn")
             .setDescription(
@@ -36,9 +36,10 @@ module.exports = async function (message) {
                 .setStyle(ButtonStyle.Danger)
         );
 
-        // 🚀 Kirim ke channel
         await message.channel.send({ embeds: [mainEmbed], components: [row] });
-        await message.reply("✅ Rules berhasil dikirim di channel ini.");
+        if (options.checkDuplicate) {
+            await message.reply("✅ Rules berhasil dikirim di channel ini.");
+        }
 
     } catch (err) {
         console.error("❌ Error saat menjalankan cmdRules:", err);
