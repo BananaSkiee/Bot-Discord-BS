@@ -387,9 +387,9 @@ Total Members   : ${member.guild.memberCount}`,
 });
 
         // Hapus pesan perintah !testwelcome agar channel bersih (opsional)
-        if (message.deletable) {
-            await message.delete().catch(console.error);
-        }
+if (channel.messages.cache.has(message.id)) {
+    await message.delete().catch(console.error);
+}
 
     } catch (error) {
         console.error("ERROR SAAT TES WELCOME MANUAL:", error);
