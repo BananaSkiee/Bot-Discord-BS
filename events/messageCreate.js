@@ -146,9 +146,8 @@ if (command === "tebakangka") {
       try {
         await user.timeout(10 * 60 * 1000, "Auto mute karena setwarn mencapai batas");
         message.channel.send(`🔇 ${user} telah di-mute otomatis karena mencapai ${newWarn} warn.`);
-      } catch (err) {
-        console.error("Gagal mute user:", err);
-      }
+    } catch (err) {
+      console.error("Gagal mute user:", err);
     }
   }
 });
