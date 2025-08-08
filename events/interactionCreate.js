@@ -73,9 +73,9 @@ module.exports = {
       // ====================== ⚠️ PUNISHMENT ======================
       if (customId === "punishment_btn") {
         const warnEmbed = new EmbedBuilder()
-          .setTitle("📜 PERATURAN & HUKUMAN SERVER BIKINI BOTTOM")
+          .setTitle("📜 HUKUMAN SERVER BANANASKIEE COMMUNITY ")
           .setDescription(
-            '### ⚠️ SISTEM WARNING KUMULATIF\n' +
+            '### ⚠️ SISTEM WARNING\n' +
             '<a:seru:1402337929556263002> | **Warn 1** = Peringatan\n' +
             '<a:seru:1402337929556263002> | **Warn 2** = Mute 5 menit\n' +
             '<a:seru:1402337929556263002> | **Warn 3** = Mute 10 menit\n' +
@@ -103,7 +103,6 @@ module.exports = {
             '1. Semua warn akan **hangus setelah 1 bulan**\n' +
             '2. Pelanggaran **NSFW/Rasis/SARA** tidak bisa di-reset\n' +
             '3. Admin berhak memberikan hukuman tambahan sesuai tingkat pelanggaran\n\n' +
-            '*(Sistem ini berlaku mulai 20 Agustus 2025)*\n\n' +
             '"Hukuman diberikan bukan untuk menyusahkan, tapi untuk menjaga kenyamanan bersama!" 🍍'
           )
           .setColor("Yellow")
