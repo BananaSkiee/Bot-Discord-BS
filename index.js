@@ -119,7 +119,6 @@ client.once("ready", async () => {
   setInterval(() => {
     cmdCrypto.processStakes();
     cmdCrypto.processLoans();
-});
   }, 60 * 60 * 1000);
 });
 
