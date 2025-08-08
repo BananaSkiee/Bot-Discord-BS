@@ -63,7 +63,7 @@ module.exports = {
           .setColor("Red")
           .setFooter({
             text: "© Copyright | BananaSkiee Community",
-            iconURL: "https://i.imgur.com/RGp8pqJ.jpeg",
+            iconURL: "https://i.imgur.co/RGp8pqJ.jpeg",
           })
           .setImage("https://i.ibb.com/4wcgBZQS/6f59b29a5247.gif");
 
