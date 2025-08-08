@@ -18,6 +18,7 @@ const coinSystem = require("../modules/coinSystem");
 const rulesCommand = require("../modules/rulesCommand");
 const autoWarn = require("../modules/autoWarn");
 const antiLink = require("../modules/antiLink");
+const { handleGrafikCommand } = require("./modules/cryptoSimulator");
 const { warnUser, setWarn, checkMute, getWarn } = require("../modules/autoWarning");
 
 const filePath = path.join(__dirname, "../data/taggedUsers.json");
@@ -84,6 +85,10 @@ if (!contentRaw.startsWith(prefix)) return;
 const [commandRaw, ...args] = contentRaw.slice(prefix.length).trim().split(/ +/);
 const command = commandRaw.toLowerCase();
 
+  if (message.content === "!grafik") {
+    await handleGrafikCommand(message, client);
+      }
+    
 if (command === "rules") {
     return rulesCommand(message);
 }
