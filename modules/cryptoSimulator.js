@@ -1,8 +1,7 @@
-// modules/cryptoSimulator.js
+const { generateTextGraph } = require("../modules/cryptoSimulator");
 const fs = require("fs");
 const path = require("path");
 
-// === Konfigurasi ===
 const DATA_FILE = path.join(__dirname, "../data/cryptoSimulator.json");
 const CHANNELS = {
   BTC: "1397169936467755151",
@@ -10,140 +9,45 @@ const CHANNELS = {
   BNB: "1402210580466499625"
 };
 
-// === Data Awal ===
-let cryptoData = {
-  BTC: {
-    price: 64000,
-    history: [64000, 64500, 64200, 64800, 65000, 64900, 65500],
-    messageId: null
-  },
-  ETH: {
-    price: 3500,
-    history: [3500, 3550, 3480, 3600, 3580, 3620, 3700],
-    messageId: null
-  },
-  BNB: {
-    price: 400,
-    history: [400, 410, 395, 405, 415, 408, 420],
-    messageId: null
-  }
-};
-
-// === Load & Save Data ===
-function loadCryptoData() {
-  try {
-    const data = fs.readFileSync(DATA_FILE, "utf8");
-    const loaded = JSON.parse(data);
-
-    for (const coin in cryptoData) {
-      if (loaded[coin]) {
-        cryptoData[coin] = { ...cryptoData[coin], ...loaded[coin] };
-      }
-      if (!cryptoData[coin].history || cryptoData[coin].history.length === 0) {
-        cryptoData[coin].history = [cryptoData[coin].price];
-      }
-    }
-  } catch (err) {
-    if (err.code === "ENOENT") saveCryptoData();
-    else console.error(`❌ Gagal load data ${DATA_FILE}:`, err);
-  }
+// Load data
+function loadData() {
+  if (!fs.existsSync(DATA_FILE)) return {};
+  return JSON.parse(fs.readFileSync(DATA_FILE, "utf8"));
 }
 
-function saveCryptoData() {
-  fs.writeFileSync(DATA_FILE, JSON.stringify(cryptoData, null, 2));
+// Save data
+function saveData(data) {
+  fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2));
 }
 
-// === Perubahan Harga Random ===
-function getPriceChange() {
-  const chance = Math.random();
-  if (chance < 0.4) return Math.floor(Math.random() * 50);
-  if (chance < 0.7) return Math.floor(Math.random() * -50);
-  if (chance < 0.85) return Math.floor(Math.random() * 150);
-  return Math.floor(Math.random() * -150);
-}
+// Handle !grafik command
+module.exports = async function handleGrafikCommand(message) {
+  const args = message.content.trim().split(" ");
+  const coin = (args[1] || "BTC").toUpperCase();
 
-// === Grafik ASCII ===
-function generateTextGraph(data, label) {
-  if (!data || data.length === 0) return "Tidak ada data grafik.";
-  const max = Math.max(...data);
-  const min = Math.min(...data);
-  const range = max - min || 1;
-  const height = 8;
-  const width = 20;
-
-  const lastData = data.slice(-width);
-
-  let graph = "";
-  for (let row = height; row >= 0; row--) {
-    let line = "";
-    for (let value of lastData) {
-      const scaled = ((value - min) / range) * height;
-      line += scaled >= row && scaled < row + 1 ? "█" : " ";
-    }
-    graph += line + "\n";
+  const data = loadData();
+  const coinData = data[coin];
+  if (!coinData || !CHANNELS[coin]) {
+    return message.reply("❌ Coin tidak ditemukan atau belum didukung.");
   }
 
-  const minLabel = min.toFixed(0);
-  const maxLabel = max.toFixed(0);
-  const padding = " ".repeat(width - minLabel.length - maxLabel.length - 1);
-  graph += `${minLabel}${padding}${maxLabel}`;
+  const chart = generateTextGraph(coinData.history, `${coin}: $${coinData.price.toLocaleString()}`);
 
-  return `${label}\n${graph}`;
-}
-
-// === Update Harga & Kirim ke Discord ===
-async function updatePrices(client) {
-  for (const coin in cryptoData) {
-    const last = cryptoData[coin].price;
-    const change = getPriceChange();
-    const next = Math.max(1, last + change);
-
-    cryptoData[coin].price = next;
-    cryptoData[coin].history.push(next);
-    if (cryptoData[coin].history.length > 20) cryptoData[coin].history.shift();
-
+  // Hapus pesan lama (jika ada)
+  if (coinData.messageId) {
     try {
-      const channel = await client.channels.fetch(CHANNELS[coin]);
-      if (!channel || !channel.isTextBased()) continue;
-
-      const chart = generateTextGraph(cryptoData[coin].history, `${coin}: $${next.toLocaleString()}`);
-      let message;
-
-if (cryptoData[coin].messageId) {
-  try {
-    message = await channel.messages.fetch(cryptoData[coin].messageId);
-    await message.edit("```" + chart + "```");
-  } catch (err) {
-    console.warn(`⚠️ Pesan ${coin} tidak ditemukan atau tidak bisa diedit:`, err.message);
-    message = await channel.send("```" + chart + "```");
-    cryptoData[coin].messageId = message.id;
-  }
-} else {
-  message = await channel.send("```" + chart + "```");
-  cryptoData[coin].messageId = message.id;
-}
-
+      const oldMsg = await message.channel.messages.fetch(coinData.messageId);
+      await oldMsg.delete();
     } catch (err) {
-      console.error(`❌ Gagal update grafik ${coin}:`, err.message);
+      console.warn(`⚠️ Gagal hapus pesan lama ${coin}: ${err.message}`);
     }
   }
 
-  saveCryptoData();
-  setTimeout(() => updatePrices(client), Math.floor(Math.random() * 10000) + 5000);
-}
+  // Kirim grafik baru
+  const newMsg = await message.channel.send("```" + chart + "```");
 
-// === Start Simulation ===
-module.exports = function startCryptoSimulation(client) {
-  loadCryptoData();
-  updatePrices(client);
+  // Simpan ID baru
+  coinData.messageId = newMsg.id;
+  data[coin] = coinData;
+  saveData(data);
 };
-
-// === Getter ===
-module.exports.getPrices = () => {
-  let prices = {};
-  for (const coin in cryptoData) prices[coin] = cryptoData[coin].price;
-  return prices;
-};
-
-module.exports.getPriceHistory = (coin) => cryptoData[coin]?.history || [];
-module.exports.generateTextGraph = generateTextGraph;
