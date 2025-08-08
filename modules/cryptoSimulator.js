@@ -109,18 +109,19 @@ async function updatePrices(client) {
       const chart = generateTextGraph(cryptoData[coin].history, `${coin}: $${next.toLocaleString()}`);
       let message;
 
-      if (cryptoData[coin].messageId) {
-        try {
-          message = await channel.messages.fetch(cryptoData[coin].messageId);
-          await message.edit("```" + chart + "```");
-        } catch {
-          message = await channel.send("```" + chart + "```");
-          cryptoData[coin].messageId = message.id;
-        }
-      } else {
-        message = await channel.send("```" + chart + "```");
-        cryptoData[coin].messageId = message.id;
-      }
+if (cryptoData[coin].messageId) {
+  try {
+    message = await channel.messages.fetch(cryptoData[coin].messageId);
+    await message.edit("```" + chart + "```");
+  } catch (err) {
+    console.warn(`⚠️ Pesan ${coin} tidak ditemukan atau tidak bisa diedit:`, err.message);
+    message = await channel.send("```" + chart + "```");
+    cryptoData[coin].messageId = message.id;
+  }
+} else {
+  message = await channel.send("```" + chart + "```");
+  cryptoData[coin].messageId = message.id;
+}
 
     } catch (err) {
       console.error(`❌ Gagal update grafik ${coin}:`, err.message);
