@@ -18,6 +18,7 @@ const coinSystem = require("../modules/coinSystem");
 const rulesCommand = require("../modules/rulesCommand");
 const autoWarn = require("../modules/autoWarn");
 const antiLink = require("../modules/antiLink");
+const { warnUser, setWarn, checkMute, getWarn } = require("../modules/autoWarning");
 
 const filePath = path.join(__dirname, "../data/taggedUsers.json");
 
@@ -100,6 +101,37 @@ if (command === "tebakangka") {
   return tebakAngka(message);
 }
 
+  // ✅ !warn @user [jumlah]
+  if (command === "!warn") {
+    if (!message.member.permissions.has("ModerateMembers")) return;
+
+    const member = message.mentions.members.first();
+    if (!member) return message.reply("Tag user yang ingin di-warn.");
+
+    const amount = parseInt(args[1]) || 1;
+    const totalWarn = warnUser(member.id, amount);
+    await checkMute(member, totalWarn);
+
+    return message.channel.send(`${member} diberi warn. Total warn: ${totalWarn}`);
+  }
+
+  // 🛠️ !setwarn @user jumlah
+  if (command === "!setwarn") {
+    if (!message.member.permissions.has("ModerateMembers")) return;
+
+    const member = message.mentions.members.first();
+    if (!member) return message.reply("Tag user yang ingin diset warn-nya.");
+
+    const jumlah = parseInt(args[1]);
+    if (isNaN(jumlah)) return message.reply("Jumlah warn tidak valid.");
+
+    setWarn(member.id, jumlah);
+    await checkMute(member, jumlah);
+
+    return message.channel.send(`Warn ${member} diatur menjadi ${jumlah}.`);
+  }
+});
+    
 // Command cek saldo
 if (command === "coin") {
   const balance = coinSystem.getCoins(message.author.id);
