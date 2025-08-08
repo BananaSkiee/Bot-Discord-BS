@@ -510,8 +510,8 @@ Pilih salah satu opsi di bawah ini: 👇`,
 }
 
     // ========== 4. HAPUS TAG ============
-if (contentLower.startsWith("!hapustag")) {
-  return handleHapusTag(message);
-}
-  }
-};  // <-- Ini penutupan module.exports
+    if (contentLower.startsWith("!hapustag")) {
+      return handleHapusTag(message);
+    }
+  } // Tutup execute()
+}; // Tutup module.exports
