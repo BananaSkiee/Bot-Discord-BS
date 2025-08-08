@@ -101,34 +101,55 @@ if (command === "tebakangka") {
   return tebakAngka(message);
 }
 
-  // ✅ !warn @user [jumlah]
-  if (command === "!warn") {
-    if (!message.member.permissions.has("ModerateMembers")) return;
+  // ====================
+  // !warn @user [alasan]
+  // ====================
+  if (message.content.startsWith("!warn")) {
+    if (!isAdmin) return;
 
-    const member = message.mentions.members.first();
-    if (!member) return message.reply("Tag user yang ingin di-warn.");
+    const args = message.content.split(" ");
+    const user = message.mentions.members.first();
+    const reason = args.slice(2).join(" ") || "Tidak ada alasan.";
 
-    const amount = parseInt(args[1]) || 1;
-    const totalWarn = warnUser(member.id, amount);
-    await checkMute(member, totalWarn);
+    if (!user) return message.reply("❌ Mention user yang ingin di-warn.");
 
-    return message.channel.send(`${member} diberi warn. Total warn: ${totalWarn}`);
+    const currentWarn = addWarn(user.id);
+    message.channel.send(`⚠️ ${user} telah diberi peringatan. Total: ${currentWarn} warn. Alasan: ${reason}`);
+
+    if (currentWarn >= MAX_WARN) {
+      try {
+        await user.timeout(10 * 60 * 1000, "Auto mute karena melebihi batas warn"); // timeout 10 menit
+        message.channel.send(`🔇 ${user} telah di-mute otomatis karena mencapai ${currentWarn} warn.`);
+      } catch (err) {
+        console.error("Gagal mute user:", err);
+        message.channel.send("❌ Gagal mute user.");
+      }
+    }
   }
 
-  // 🛠️ !setwarn @user jumlah
-  if (command === "!setwarn") {
-    if (!message.member.permissions.has("ModerateMembers")) return;
+  // ========================
+  // !setwarn @user jumlah
+  // ========================
+  if (message.content.startsWith("!setwarn")) {
+    if (!isAdmin) return;
 
-    const member = message.mentions.members.first();
-    if (!member) return message.reply("Tag user yang ingin diset warn-nya.");
+    const args = message.content.split(" ");
+    const user = message.mentions.members.first();
+    const jumlah = parseInt(args[2]);
 
-    const jumlah = parseInt(args[1]);
-    if (isNaN(jumlah)) return message.reply("Jumlah warn tidak valid.");
+    if (!user || isNaN(jumlah)) return message.reply("❌ Format: !setwarn @user jumlah");
 
-    setWarn(member.id, jumlah);
-    await checkMute(member, jumlah);
+    const newWarn = setWarn(user.id, jumlah);
+    message.channel.send(`✅ Jumlah warn untuk ${user} di-set menjadi ${newWarn}.`);
 
-    return message.channel.send(`Warn ${member} diatur menjadi ${jumlah}.`);
+    if (newWarn >= MAX_WARN) {
+      try {
+        await user.timeout(10 * 60 * 1000, "Auto mute karena setwarn mencapai batas");
+        message.channel.send(`🔇 ${user} telah di-mute otomatis karena mencapai ${newWarn} warn.`);
+      } catch (err) {
+        console.error("Gagal mute user:", err);
+      }
+    }
   }
 });
     
