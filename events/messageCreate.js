@@ -399,7 +399,7 @@ if (channel.messages.cache.has(message.id)) {
 }
     
 // ====== !testdm command ======
-if (contentLower.startsWith("!testdm")) {
+if (contentLower.startsWith("!newdm")) {
   const memberAuthor = await message.guild.members.fetch(message.author.id);
   if (!memberAuthor.roles.cache.has(ADMIN_ROLE_ID)) {
     return message.reply("❌ Kamu tidak punya izin pakai command ini.");
