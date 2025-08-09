@@ -30,7 +30,6 @@ const invitesTracker = require("./modules/invitesTracker");
 const slashCommandSetup = require("./modules/slashCommandSetup");
 const rulesCommand = require("./modules/rulesCommand");
 require("./modules/srvName")(client); // ✅ client sudah ada
-const { handlePing, startActivityCheck } = require("./modules/activityPing");
 
 client.commands = new Collection();
 
@@ -113,7 +112,6 @@ client.once("ready", async () => {
   console.log(`✅ Bot ${client.user.tag} aktif!`);
   initializeDataFiles();
   await slashCommandSetup(client);
-  startActivityCheck(client);
   startCryptoSimulation(client);
   invitesTracker(client);
   setInterval(() => {
@@ -140,7 +138,6 @@ client.on("messageCreate", async (message) => {
   const commandName = args.shift().toLowerCase();
   const command = prefixCommands[commandName];
   const adminRoleId = process.env.ADMIN_ROLE_ID || "1352279577174605884";
- handlePing(message);
 
   // 📊 Reset grafik command
   if (commandName === "grafik") {
