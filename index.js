@@ -224,6 +224,18 @@ app.listen(process.env.PORT || 3000, () => {
   console.log("🌐 Web server hidup di port 3000");
 });
 
+// 🔄 Auto-ping Koyeb URL supaya tidak sleep
+const axios = require("axios");
+const selfURL = process.env.SELF_URL; // isi di env Koyeb, contoh: https://namabot.koyeb.app
+
+if (selfURL) {
+  setInterval(() => {
+    axios.get(selfURL)
+      .then(() => console.log("🔄 Ping ke URL sendiri sukses"))
+      .catch(err => console.error("⚠️ Gagal ping:", err.message));
+  }, 5 * 60 * 1000); // setiap 5 menit
+}
+
 // 🧯 Error Handler
 process.on("unhandledRejection", (err) => {
   console.error("🚨 Unhandled Error:", err);
