@@ -140,10 +140,10 @@ client.on("messageCreate", async (message) => {
   const adminRoleId = process.env.ADMIN_ROLE_ID || "1352279577174605884";
 
   // 📊 Reset grafik command
-  if (commandName === "grafik") {
-    await resetGrafik(message.client);
+if (commandName === "grafik") {
+    await handleGrafikCommand(message, message.client);
     return message.reply("✅ Grafik berhasil dikirim ulang.");
-  }
+}
 
   // 📜 Help
   if (commandName === "help") {
