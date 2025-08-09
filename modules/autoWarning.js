@@ -9,19 +9,17 @@ if (!fs.existsSync(warnsPath)) {
 }
 
 module.exports = async function warnUser(member, reason, client) {
+  if (!member || !member.guild) return;
+
   const userId = member.id;
   const guild = member.guild;
   const logChannel = guild.channels.cache.get("1353887827619872800");
-  const mutedRole = guild.roles.cache.get(process.env.MUTED_ROLE_ID);
+  const mutedRole = process.env.MUTED_ROLE_ID ? guild.roles.cache.get(process.env.MUTED_ROLE_ID) : null;
   const warnedUsers = JSON.parse(fs.readFileSync(warnsPath, "utf8"));
 
+  // Simpan data warn
   if (!warnedUsers[userId]) warnedUsers[userId] = [];
-
-  warnedUsers[userId].push({
-    reason,
-    date: new Date().toISOString()
-  });
-
+  warnedUsers[userId].push({ reason, date: new Date().toISOString() });
   fs.writeFileSync(warnsPath, JSON.stringify(warnedUsers, null, 2));
 
   const warnCount = warnedUsers[userId].length;
@@ -32,63 +30,65 @@ module.exports = async function warnUser(member, reason, client) {
     4: "1h",
     5: "1d",
     6: "3d",
-    7: "7d",   // + softban
+    7: "7d",   // softban
     8: "1d",   // ban
     9: "3d",   // ban
     10: "7d",  // ban
   };
 
-  // ⛔ DM ke User
+  // DM User
   try {
     await member.send(`⚠️ Kamu mendapatkan **Warn ke-${warnCount}** karena: **${reason}**`);
   } catch {
     console.log(`❌ Gagal kirim DM ke ${member.user.tag}`);
   }
 
-  // 📋 Log ke channel
+  // Log ke channel
   if (logChannel) {
-    logChannel.send({
-      content: `📛 ${member.user.tag} mendapatkan Warn ke-${warnCount}.\n📝 Alasan: ${reason}`,
-    });
+    logChannel.send(`📛 ${member.user.tag} mendapatkan Warn ke-${warnCount}.\n📝 Alasan: ${reason}`);
   }
 
-  // ⚠️ Warn 1 hanya peringatan
+  // Warn 1 cuma peringatan
   if (warnCount === 1) return;
 
-  // 🔇 Mute 2-6
+  // Mute otomatis untuk warn 2–6
   if (warnCount >= 2 && warnCount <= 6) {
-    if (!mutedRole) return console.log("Muted role not found.");
+    if (!mutedRole) return console.log("⚠️ Muted role tidak ditemukan.");
     const duration = muteDurations[warnCount];
+    if (!duration) return;
     await member.roles.add(mutedRole, `Auto Mute - Warn ${warnCount}`);
     setTimeout(() => {
-      member.roles.remove(mutedRole, `Unmute otomatis - Warn ${warnCount}`);
+      if (member.roles.cache.has(mutedRole.id)) {
+        member.roles.remove(mutedRole, `Unmute otomatis - Warn ${warnCount}`);
+      }
     }, ms(duration));
   }
 
-  // 🔁 Warn 7 = softban
+  // Warn 7 = Softban
   if (warnCount === 7) {
     try {
-      await member.send("⚠️ Kamu terkena **softban** dan **mute 1 minggu** karena mencapai warn ke-7.");
+      await member.send("⚠️ Kamu terkena **softban** & **mute 1 minggu** karena warn ke-7.");
     } catch {}
     await member.ban({ deleteMessageDays: 1, reason: "Warn 7 - Softban" });
     await guild.members.unban(userId, "Softban selesai");
 
-    setTimeout(async () => {
-      const rejoined = await guild.members.fetch(userId).catch(() => null);
-      if (rejoined && mutedRole) {
-        await rejoined.roles.add(mutedRole, "Mute setelah softban (1 minggu)");
+    // Mute setelah join kembali
+    client.once("guildMemberAdd", async (joinMember) => {
+      if (joinMember.id === userId && mutedRole) {
+        await joinMember.roles.add(mutedRole, "Mute setelah softban (1 minggu)");
         setTimeout(() => {
-          rejoined.roles.remove(mutedRole, "Unmute otomatis - Warn 7");
+          joinMember.roles.remove(mutedRole, "Unmute otomatis - Warn 7");
         }, ms("7d"));
       }
-    }, 5000);
+    });
   }
 
-  // 🔒 Warn 8–10 = ban sementara
+  // Warn 8–10 = Ban sementara
   if (warnCount >= 8 && warnCount <= 10) {
     const duration = muteDurations[warnCount];
+    if (!duration) return;
     try {
-      await member.send(`⛔ Kamu terkena **ban ${duration}** karena mencapai Warn ke-${warnCount}.`);
+      await member.send(`⛔ Kamu terkena **ban ${duration}** karena warn ke-${warnCount}.`);
     } catch {}
     await member.ban({ reason: `Warn ${warnCount} - Ban ${duration}` });
     setTimeout(() => {
@@ -96,7 +96,7 @@ module.exports = async function warnUser(member, reason, client) {
     }, ms(duration));
   }
 
-  // 🛑 Warn 11 = Ban Permanen
+  // Warn 11+ = Ban permanen
   if (warnCount >= 11) {
     try {
       await member.send("🚫 Kamu terkena **BAN PERMANEN** karena mencapai Warn ke-11.");
