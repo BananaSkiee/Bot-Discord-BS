@@ -94,16 +94,6 @@ module.exports = {
     // 🔁 Auto berita
     try { beritaModule(client); } catch (err) { console.error("❌ Auto berita error:", err); }
 
-    // 📈 Update pesan grafik BTC
-    setInterval(() => {
-      try {
-        const newContent = "📈 BTC: $65,000 (+0.4%)";
-        updateCryptoMessage(client, newContent);
-      } catch (err) {
-        console.error("❌ Update crypto message error:", err);
-      }
-    }, 60_000);
-
     // 💡 Status bot berganti tiap 1 menit
     const statuses = [
       "🌌 Menembus batas kemungkinan",
