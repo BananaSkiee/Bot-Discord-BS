@@ -19,7 +19,6 @@ const rulesCommand = require("../modules/rulesCommand");
 const autoWarn = require("../modules/autoWarn");
 const antiLink = require("../modules/antiLink");
 const { handleGrafikCommand } = require("./modules/cryptoSimulator");
-const { warnUser, setWarn, checkMute, getWarn } = require("../modules/autoWarning");
 
 const filePath = path.join(__dirname, "../data/taggedUsers.json");
 
@@ -105,56 +104,6 @@ if (command === "meme") {
 if (command === "tebakangka") {
   return tebakAngka(message);
 }
-
-  // ====================
-  // !warn @user [alasan]
-  // ====================
-  if (message.content.startsWith("!warn")) {
-    if (!isAdmin) return;
-
-    const args = message.content.split(" ");
-    const user = message.mentions.members.first();
-    const reason = args.slice(2).join(" ") || "Tidak ada alasan.";
-
-    if (!user) return message.reply("❌ Mention user yang ingin di-warn.");
-
-    const currentWarn = addWarn(user.id);
-    message.channel.send(`⚠️ ${user} telah diberi peringatan. Total: ${currentWarn} warn. Alasan: ${reason}`);
-
-    if (currentWarn >= MAX_WARN) {
-      try {
-        await user.timeout(10 * 60 * 1000, "Auto mute karena melebihi batas warn"); // timeout 10 menit
-        message.channel.send(`🔇 ${user} telah di-mute otomatis karena mencapai ${currentWarn} warn.`);
-      } catch (err) {
-        console.error("Gagal mute user:", err);
-        message.channel.send("❌ Gagal mute user.");
-      }
-    }
-  }
-
-  // ========================
-  // !setwarn @user jumlah
-  // ========================
-  if (message.content.startsWith("!setwarn")) {
-    if (!isAdmin) return;
-
-    const args = message.content.split(" ");
-    const user = message.mentions.members.first();
-    const jumlah = parseInt(args[2]);
-
-    if (!user || isNaN(jumlah)) return message.reply("❌ Format: !setwarn @user jumlah");
-
-    const newWarn = setWarn(user.id, jumlah);
-    message.channel.send(`✅ Jumlah warn untuk ${user} di-set menjadi ${newWarn}.`);
-
-    if (newWarn >= MAX_WARN) {
-      try {
-        await user.timeout(10 * 60 * 1000, "Auto mute karena setwarn mencapai batas");
-        message.channel.send(`🔇 ${user} telah di-mute otomatis karena mencapai ${newWarn} warn.`);
-} catch (err) {
-    console.error("Gagal mute user:", err);
-  }
-    }  
     
 // Command cek saldo
 if (command === "coin") {
