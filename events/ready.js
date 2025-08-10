@@ -96,42 +96,6 @@ module.exports = {
 
     // 🔁 Auto berita
     try { beritaModule(client); } catch (err) { console.error("❌ Auto berita error:", err); }
-
-    // 💡 Status bot berganti tiap 1 menit
-let index = 0;
-const updateStatus = () => {
-  try {
-    const s = statuses[index % statuses.length];
-
-    if (s.rich) {
-      client.user.setPresence({
-        activities: [{
-          name: s.text,
-          type: s.type, // 0 = Playing
-          state: 'Teraman, Terpercaya dan Cepat !!',
-          assets: {
-            large_image: '1000039682', // KEY dari gambar di Rich Presence Art Assets
-            large_text: 'Join Sekarang !!'
-          },
-          // Tombol ini hanya muncul kalau pakai Game SDK / RPC, bukan bot API biasa
-          buttons: [
-            { label: 'Join Sekarang !!', url: 'https://discord.gg/5asgbezyR6' }
-          ]
-        }],
-        status: 'online'
-      });
-    } else {
-      client.user.setActivity(s.text, { type: s.type });
-    }
-
-    index++;
-  } catch (err) {
-    console.error("❌ Update status error:", err);
-  }
-};
-
-updateStatus();
-setInterval(updateStatus, 60_000);
     
     // 🔄 Icon server animasi
     try { iconAnim.startAutoAnimation(client); } catch (err) { console.error("❌ Icon anim error:", err); }
