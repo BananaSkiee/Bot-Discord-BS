@@ -40,7 +40,25 @@ const punishmentRules = {
 };
 
 // 3. DAFTAR KATA TERLARANG (disensor sebagian)
-const bannedWords = ["anj***", "bangs**", "gob***", "kont**", /*...*/];
+const bannedWords = [
+  // Bahasa Indonesia kasar & singkatan
+  "anjing", "anjg", "ajg", "ajgk",
+  "bangsat", "bgsd", "bgst",
+  "goblok", "gblk",
+  "tai", "kontol", "kntl", "kontl",
+  "memek", "memk", "meki", "meky", "pepek", "peler",
+  "ngentot", "ngentt", "ngntd", "ngntl", "kentot", "kenthu",
+  "tolol", "tll", "idiot", "setan", "brengsek", "keparat", "kampret", "pantek", "pntk", "pnjk", "jmbt", "jmbtt", "asu", "babi",
+
+  // Bahasa Inggris kasar & variasi alay
+  "fuck", "fck", "fuk", "fak", "fkn", "fkng", "fukc", "fking",
+  "shit", "sh1t", "sht", "shyt",
+  "bitch", "btch", "biatch",
+  "asshole", "a$$", "assh0le", "jerk",
+  "dick", "d1ck", "d1x", "d!ck",
+  "cunt", "c*nt",
+  "bastard", "retard", "stupid", "slut", "whore", "hoe", "suck", "sux"
+];
 
 // 4. FUNGSI UTAMA
 module.exports = {
