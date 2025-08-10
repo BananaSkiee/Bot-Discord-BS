@@ -114,14 +114,15 @@ const updateStatus = () => {
       client.user.setPresence({
         activities: [{
           name: s.text,
-          type: s.type, // Playing
+          type: s.type, // 0 = Playing
           state: 'Teraman, Terpercaya dan Cepat !!',
           assets: {
-            largeImage: '1000039682', // nama file di Art Assets
-            largeText: 'Join Sekarang !!'
+            large_image: '1000039682', // KEY dari gambar di Rich Presence Art Assets
+            large_text: 'Join Sekarang !!'
           },
+          // Tombol ini hanya muncul kalau pakai Game SDK / RPC, bukan bot API biasa
           buttons: [
-            { label: 'Join Sekarang !!', url: 'Https://discord.gg/5asgbezyR6' }
+            { label: 'Join Sekarang !!', url: 'https://discord.gg/5asgbezyR6' }
           ]
         }],
         status: 'online'
@@ -138,7 +139,7 @@ const updateStatus = () => {
 
 updateStatus();
 setInterval(updateStatus, 60_000);
-
+    
     // 🔄 Icon server animasi
     try { iconAnim.startAutoAnimation(client); } catch (err) { console.error("❌ Icon anim error:", err); }
 
