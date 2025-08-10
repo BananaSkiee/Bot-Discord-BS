@@ -98,13 +98,6 @@ module.exports = {
     try { beritaModule(client); } catch (err) { console.error("❌ Auto berita error:", err); }
 
     // 💡 Status bot berganti tiap 1 menit
-const statuses = [
-  { text: 'Takemi Store | Top Up Game !!', type: 0, rich: true },
-  { text: '📖 Membaca alur takdir', type: 0 },
-  { text: '🧠 Belajar tanpa akhir', type: 0 },
-  { text: '🌟 Jadi cahaya di kegelapan', type: 0 },
-];
-
 let index = 0;
 const updateStatus = () => {
   try {
