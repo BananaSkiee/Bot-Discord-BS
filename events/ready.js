@@ -11,6 +11,7 @@ const iconAnim = require("../modules/iconAnim");
 const beritaModule = require("../modules/autoNews");
 const rainbowRole = require("../modules/rainbowRole");
 const nickAnim = require("../modules/nickAnim");
+const minecraft = require("../modules/minecraft");
 
 const channelId = "1352326247186694164"; // ID channel #rules
 const memeChannelId = "1352404777513783336"; // ID channel meme
@@ -21,6 +22,8 @@ module.exports = {
   async execute(client) {
     console.log(`🤖 Bot siap sebagai ${client.user.tag}`);
 
+    minecraft.init(client); // Letakkan setelah console.log(`🤖 Bot siap...`)
+    
     // 🔹 Kirim rules embed otomatis kalau belum ada
     try {
       const channel = client.channels.cache.get(channelId);
