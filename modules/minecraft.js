@@ -2,59 +2,49 @@ const { Bot } = require('mineflayer');
 const { EmbedBuilder } = require('discord.js');
 
 let mcBot = null;
-let reconnectAttempts = 0;
+let isConnecting = false;
 
 module.exports = {
     init: (client) => {
-        console.log('🔄 Memulai bot Minecraft...');
+        console.log('🔄 Memulai koneksi Minecraft...'); // Debug 1
         
         mcBot = new Bot({
-            host: 'BananaUcok.aternos.me:14262', // Gunakan domain Aternos
+            host: 'BananaUcok.aternos.me',
             port: 14262,
-            username: 'BotServer', // Pastikan sama dengan di .env
-            version: '1.21.4',
-            auth: 'offline',
-            checkTimeoutInterval: 30000 // Penting untuk Aternos
+            username: 'BotServer',
+            version: '1.20.1',
+            auth: 'offline'
         });
 
-        // ===== [ EVENT HANDLERS ] =====
         mcBot.on('login', () => {
-            console.log('✅ Berhasil terhubung ke server Aternos!');
-            reconnectAttempts = 0;
-            client.user.setActivity('Aternos', { type: 'PLAYING' });
-            
-            // Handle khusus Aternos:
-            setTimeout(() => {
-                mcBot.chat('/whitelist add BotServer'); // Auto-whitelist
-                mcBot.chat('Hello from Discord Bot!'); // Pesan test
-            }, 10000);
+            console.log(`✅ Terhubung ke ${mcBot.server.host}`);
+            client.user.setActivity('Main di Aternos', { type: 'PLAYING' });
+            mcBot.chat('/whitelist add BotServer');
         });
 
         mcBot.on('error', (err) => {
-            console.error(`❌ Error MC: ${err.message}`);
-            if (err.code === 'ECONNREFUSED') {
-                console.log('⚠️ Server mungkin mati atau port salah');
+            console.error('❌ Error MC:', err.message);
+        });
+
+        mcBot.on('end', (reason) => {
+            console.log(`🔌 Koneksi putus: ${reason}`);
+            setTimeout(connectMC, 30000);
+        });
+
+        function connectMC() {
+            if (!isConnecting) {
+                isConnecting = true;
+                console.log('⏳ Mencoba reconnect...');
+                mcBot.connect()
+                    .then(() => isConnecting = false)
+                    .catch(err => {
+                        console.error('💥 Gagal reconnect:', err.message);
+                        isConnecting = false;
+                    });
             }
-        });
+        }
 
-        mcBot.on('end', () => {
-            const delay = Math.min(30000 * (reconnectAttempts + 1), 300000);
-            console.log(`♻️ Akan reconnect dalam ${delay/1000} detik...`);
-            
-            setTimeout(() => {
-                reconnectAttempts++;
-                console.log(`🔗 Mencoba reconnect (Attempt ${reconnectAttempts})`);
-                mcBot.connect();
-            }, delay);
-        });
-
-        // ===== [ KONEKSI AWAL ] =====
-        console.log(`⏳ Menghubungkan ke BananaUcok.aternos.me:14262...`);
-        mcBot.connect().catch(err => {
-            console.error('💥 Gagal konek awal:', err.message);
-        });
-    },
-
-    // ===== [ FITUR TAMBAHAN ] =====
-    isConnected: () => mcBot && mcBot.isOnline
+        console.log('⏳ Menghubungkan ke server MC...'); // Debug 2
+        connectMC();
+    }
 };
