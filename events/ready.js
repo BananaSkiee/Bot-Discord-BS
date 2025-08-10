@@ -98,34 +98,46 @@ module.exports = {
     try { beritaModule(client); } catch (err) { console.error("❌ Auto berita error:", err); }
 
     // 💡 Status bot berganti tiap 1 menit
-    const statuses = [
-      "🌌 Menembus batas kemungkinan",
-      "📖 Membaca alur takdir",
-      "🎧 Mendengarkan suara hati server",
-      "🧠 Belajar tanpa akhir",
-      "🗝️ Menjaga kedamaian digital",
-      "🕊️ Menyebar aura positif",
-      "⚙️ Melayani tanpa lelah",
-      "🌙 Diam tapi ada",
-      "🔮 Menerawang masa depan",
-      "🌟 Jadi cahaya di kegelapan",
-      "🛡️ Mengamankan dunia maya",
-      "📡 Terhubung dengan dimensi lain",
-      "⏳ Waktu terus berjalan... dan aku tetap di sini",
-    ];
+const statuses = [
+  { text: 'Takemi Store | Top Up Game !!', type: 0, rich: true },
+  { text: '📖 Membaca alur takdir', type: 0 },
+  { text: '🧠 Belajar tanpa akhir', type: 0 },
+  { text: '🌟 Jadi cahaya di kegelapan', type: 0 },
+];
 
-    let index = 0;
-    const updateStatus = () => {
-      try {
-        const status = statuses[index % statuses.length];
-        client.user.setActivity(status, { type: 0 });
-        index++;
-      } catch (err) {
-        console.error("❌ Update status error:", err);
-      }
-    };
-    updateStatus();
-    setInterval(updateStatus, 60_000);
+let index = 0;
+const updateStatus = () => {
+  try {
+    const s = statuses[index % statuses.length];
+
+    if (s.rich) {
+      client.user.setPresence({
+        activities: [{
+          name: s.text,
+          type: s.type, // Playing
+          state: 'Teraman, Terpercaya dan Cepat !!',
+          assets: {
+            largeImage: '1000039682', // nama file di Art Assets
+            largeText: 'Join Sekarang !!'
+          },
+          buttons: [
+            { label: 'Join Sekarang !!', url: 'Https://discord.gg/5asgbezyR6' }
+          ]
+        }],
+        status: 'online'
+      });
+    } else {
+      client.user.setActivity(s.text, { type: s.type });
+    }
+
+    index++;
+  } catch (err) {
+    console.error("❌ Update status error:", err);
+  }
+};
+
+updateStatus();
+setInterval(updateStatus, 60_000);
 
     // 🔄 Icon server animasi
     try { iconAnim.startAutoAnimation(client); } catch (err) { console.error("❌ Icon anim error:", err); }
