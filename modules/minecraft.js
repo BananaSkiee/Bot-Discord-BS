@@ -1,14 +1,14 @@
-const { Bot } = require('mineflayer');
+const mineflayer = require('mineflayer'); // Perhatikan perubahan di sini
 const { EmbedBuilder } = require('discord.js');
 
 let mcBot = null;
-let isConnecting = false;
 
 module.exports = {
     init: (client) => {
-        console.log('🔄 Memulai koneksi Minecraft...'); // Debug 1
+        console.log('🔄 Memulai koneksi Minecraft...');
         
-        mcBot = new Bot({
+        // Gunakan mineflayer.createBot() bukan new Bot()
+        mcBot = mineflayer.createBot({
             host: 'BananaUcok.aternos.me',
             port: 14262,
             username: 'BotServer',
@@ -17,34 +17,17 @@ module.exports = {
         });
 
         mcBot.on('login', () => {
-            console.log(`✅ Terhubung ke ${mcBot.server.host}`);
+            console.log('✅ Bot MC terhubung!');
             client.user.setActivity('Main di Aternos', { type: 'PLAYING' });
-            mcBot.chat('/whitelist add BotServer');
         });
 
-        mcBot.on('error', (err) => {
+        mcBot.on('error', err => {
             console.error('❌ Error MC:', err.message);
         });
 
-        mcBot.on('end', (reason) => {
-            console.log(`🔌 Koneksi putus: ${reason}`);
-            setTimeout(connectMC, 30000);
+        mcBot.on('end', () => {
+            console.log('🔌 Koneksi terputus, mencoba reconnect...');
+            setTimeout(() => mcBot.connect(), 30000);
         });
-
-        function connectMC() {
-            if (!isConnecting) {
-                isConnecting = true;
-                console.log('⏳ Mencoba reconnect...');
-                mcBot.connect()
-                    .then(() => isConnecting = false)
-                    .catch(err => {
-                        console.error('💥 Gagal reconnect:', err.message);
-                        isConnecting = false;
-                    });
-            }
-        }
-
-        console.log('⏳ Menghubungkan ke server MC...'); // Debug 2
-        connectMC();
     }
 };
