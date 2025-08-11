@@ -1,6 +1,5 @@
 const mineflayer = require('mineflayer');
 const { EmbedBuilder } = require('discord.js');
-const mc = require('minecraft-protocol');
 
 let mcBot = null;
 let reconnectInterval = null;
@@ -8,31 +7,26 @@ let reconnectInterval = null;
 module.exports = {
     init: (client) => {
         console.log('🔄 Memulai koneksi Minecraft...');
-
-        const connect = (host, port) => {
+        
+        const connect = () => {
             mcBot = mineflayer.createBot({
-                host,
-                port,
+                host: 'BananaUcok.aternos.me',
+                port: 14262,
                 username: 'BotServer',
-                version: false, // auto detect versi server
+                version: '1.20.1',
                 auth: 'offline',
-                checkTimeoutInterval: 60000
+                checkTimeoutInterval: 60000 // Tambah waktu timeout
             });
 
             mcBot.on('login', () => {
-                console.log(`✅ Bot MC terhubung ke ${host}:${port}!`);
+                console.log('✅ Bot MC terhubung!');
                 client.user.setActivity('Main di Aternos', { type: 'PLAYING' });
-
+                
+                // Auto-whitelist dan ping periodik
                 setTimeout(() => {
                     mcBot.chat('/whitelist add BotServer');
                     mcBot.chat('Bot aktif!');
                 }, 5000);
-
-                // Anti AFK
-                setInterval(() => {
-                    mcBot.setControlState('jump', true);
-                    setTimeout(() => mcBot.setControlState('jump', false), 500);
-                }, 10000);
             });
 
             mcBot.on('error', err => {
@@ -52,30 +46,15 @@ module.exports = {
         };
 
         const scheduleReconnect = () => {
-            if (reconnectInterval) clearTimeout(reconnectInterval);
+            if (reconnectInterval) clearInterval(reconnectInterval);
             console.log('⏳ Akan reconnect dalam 30 detik...');
             reconnectInterval = setTimeout(() => {
                 console.log('♻️ Mencoba reconnect...');
-                getDynamicIP();
+                connect();
             }, 30000);
         };
 
-        const getDynamicIP = () => {
-            console.log('🔍 Mencari IP Dinamis Aternos...');
-            mc.ping({ host: 'BananaUcok.aternos.me', port: 14262 }, (err, res) => {
-                if (err) {
-                    console.error('⚠️ Gagal ping server:', err.message);
-                    scheduleReconnect();
-                } else {
-                    const host = res.host || 'BananaUcok.aternos.me';
-                    const port = res.port || 14262;
-                    console.log(`🌐 Dapat IP: ${host}:${port}`);
-                    connect(host, port);
-                }
-            });
-        };
-
-        // Start
-        getDynamicIP();
+        // Mulai koneksi pertama
+        connect();
     }
 };
