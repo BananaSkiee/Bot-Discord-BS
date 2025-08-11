@@ -195,11 +195,6 @@ client.on("messageCreate", (message) => {
   if (!message.author.bot) stickyHandler(client, message);
 });
 
-// 📌 Welcome Greeting
-client.on("guildMemberAdd", (member) => {
-  autoGreeting(client, member);
-});
-
 // 🔁 Update jumlah online & waktu
 client.on("presenceUpdate", () => {
   const guild = client.guilds.cache.first();
