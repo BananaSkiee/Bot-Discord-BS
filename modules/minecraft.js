@@ -10,7 +10,7 @@ module.exports = {
         
         const connect = () => {
             mcBot = mineflayer.createBot({
-                host: 'BananaUcok.aternos.me',
+                host: 'guerza.aternos.host',
                 port: 14262,
                 username: 'BotServer',
                 version: '1.20.1',
