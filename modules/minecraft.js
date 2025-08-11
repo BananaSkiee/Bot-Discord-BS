@@ -1,60 +1,36 @@
 const mineflayer = require('mineflayer');
-const { EmbedBuilder } = require('discord.js');
 
-let mcBot = null;
-let reconnectInterval = null;
+// Buat bot
+const bot = mineflayer.createBot({
+  host: 'BananaUcok.aternos.me', // IP Aternos kamu
+  port: 14262,                    // Port Aternos kamu
+  username: 'BotKu',              // Nama bot (bisa diganti)
+  version: '1.21.4'                // Versi server
+});
 
-module.exports = {
-    init: (client) => {
-        console.log('🔄 Memulai koneksi Minecraft...');
-        
-        const connect = () => {
-            mcBot = mineflayer.createBot({
-                host: 'guerza.aternos.host',
-                port: 14262,
-                username: 'BotServer',
-                version: '1.20.1',
-                auth: 'offline',
-                checkTimeoutInterval: 60000 // Tambah waktu timeout
-            });
+// Kalau berhasil masuk
+bot.once('spawn', () => {
+  console.log('✅ Bot berhasil masuk ke server!');
+  
+  // Anti-AFK: bergerak tiap 30 detik
+  setInterval(() => {
+    bot.setControlState('forward', true);
+    setTimeout(() => {
+      bot.setControlState('forward', false);
+      bot.look(Math.random() * Math.PI * 2, 0); // Lihat ke arah acak
+    }, 1000);
+  }, 30000);
+});
 
-            mcBot.on('login', () => {
-                console.log('✅ Bot MC terhubung!');
-                client.user.setActivity('Main di Aternos', { type: 'PLAYING' });
-                
-                // Auto-whitelist dan ping periodik
-                setTimeout(() => {
-                    mcBot.chat('/whitelist add BotServer');
-                    mcBot.chat('Bot aktif!');
-                }, 5000);
-            });
+// Pesan chat dari server → tampilkan di console
+bot.on('message', (message) => {
+  console.log(message.toAnsi());
+});
 
-            mcBot.on('error', err => {
-                console.error('❌ Error MC:', err.message);
-                scheduleReconnect();
-            });
-
-            mcBot.on('end', reason => {
-                console.log(`🔌 Koneksi terputus: ${reason}`);
-                scheduleReconnect();
-            });
-
-            mcBot.on('kicked', reason => {
-                console.log(`🚪 Dikick: ${reason}`);
-                scheduleReconnect();
-            });
-        };
-
-        const scheduleReconnect = () => {
-            if (reconnectInterval) clearInterval(reconnectInterval);
-            console.log('⏳ Akan reconnect dalam 30 detik...');
-            reconnectInterval = setTimeout(() => {
-                console.log('♻️ Mencoba reconnect...');
-                connect();
-            }, 30000);
-        };
-
-        // Mulai koneksi pertama
-        connect();
-    }
-};
+// Kalau koneksi putus → auto reconnect
+bot.on('end', () => {
+  console.log('⚠️ Bot terputus, mencoba reconnect...');
+  setTimeout(() => {
+    process.exit(); // Jalankan ulang via PM2 / npm restart
+  }, 5000);
+});
