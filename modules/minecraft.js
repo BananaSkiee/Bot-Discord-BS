@@ -1,36 +1,43 @@
 const mineflayer = require('mineflayer');
+const util = require('minecraft-server-util');
 
-// Buat bot
-const bot = mineflayer.createBot({
-  host: 'BananaUcok.aternos.me', // IP Aternos kamu
-  port: 14262,                    // Port Aternos kamu
-  username: 'BotKu',              // Nama bot (bisa diganti)
-  version: '1.21.4'                // Versi server
-});
+const serverName = 'BananaUcok.aternos.me'; // Host default Aternos
+const serverPort = 14262; // Port default
 
-// Kalau berhasil masuk
-bot.once('spawn', () => {
-  console.log('✅ Bot berhasil masuk ke server!');
-  
-  // Anti-AFK: bergerak tiap 30 detik
-  setInterval(() => {
-    bot.setControlState('forward', true);
-    setTimeout(() => {
-      bot.setControlState('forward', false);
-      bot.look(Math.random() * Math.PI * 2, 0); // Lihat ke arah acak
-    }, 1000);
-  }, 30000);
-});
+let bot;
 
-// Pesan chat dari server → tampilkan di console
-bot.on('message', (message) => {
-  console.log(message.toAnsi());
-});
+async function connectBot() {
+    try {
+        // Cek status server
+        const status = await util.status(serverName, serverPort, { timeout: 5000 });
+        console.log(`🌐 Server online: ${status.host}:${status.port}`);
+        
+        bot = mineflayer.createBot({
+            host: status.host,
+            port: status.port,
+            username: 'BotServer1',
+            version: '1.20.1',
+            auth: 'offline'
+        });
 
-// Kalau koneksi putus → auto reconnect
-bot.on('end', () => {
-  console.log('⚠️ Bot terputus, mencoba reconnect...');
-  setTimeout(() => {
-    process.exit(); // Jalankan ulang via PM2 / npm restart
-  }, 5000);
-});
+        bot.once('spawn', () => {
+            console.log('✅ Bot berhasil masuk!');
+            bot.chat('Bot aktif!');
+        });
+
+        bot.on('end', () => {
+            console.log('🔌 Bot terputus, mencoba reconnect dalam 30 detik...');
+            setTimeout(connectBot, 30000);
+        });
+
+        bot.on('error', (err) => {
+            console.error('❌ Error:', err.message);
+        });
+
+    } catch (err) {
+        console.log('⚠️ Server offline, cek lagi dalam 30 detik...');
+        setTimeout(connectBot, 30000);
+    }
+}
+
+connectBot();
