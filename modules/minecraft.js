@@ -1,43 +1,81 @@
 const mineflayer = require('mineflayer');
-const util = require('minecraft-server-util');
+const { EmbedBuilder } = require('discord.js');
+const mc = require('minecraft-protocol');
 
-const serverName = 'BananaUcok.aternos.me'; // Host default Aternos
-const serverPort = 14262; // Port default
+let mcBot = null;
+let reconnectInterval = null;
 
-let bot;
+module.exports = {
+    init: (client) => {
+        console.log('🔄 Memulai koneksi Minecraft...');
 
-async function connectBot() {
-    try {
-        // Cek status server
-        const status = await util.status(serverName, serverPort, { timeout: 5000 });
-        console.log(`🌐 Server online: ${status.host}:${status.port}`);
-        
-        bot = mineflayer.createBot({
-            host: status.host,
-            port: status.port,
-            username: 'BotServer1',
-            version: '1.20.1',
-            auth: 'offline'
-        });
+        const connect = (host, port) => {
+            mcBot = mineflayer.createBot({
+                host,
+                port,
+                username: 'BotServer',
+                version: false, // auto detect versi server
+                auth: 'offline',
+                checkTimeoutInterval: 60000
+            });
 
-        bot.once('spawn', () => {
-            console.log('✅ Bot berhasil masuk!');
-            bot.chat('Bot aktif!');
-        });
+            mcBot.on('login', () => {
+                console.log(`✅ Bot MC terhubung ke ${host}:${port}!`);
+                client.user.setActivity('Main di Aternos', { type: 'PLAYING' });
 
-        bot.on('end', () => {
-            console.log('🔌 Bot terputus, mencoba reconnect dalam 30 detik...');
-            setTimeout(connectBot, 30000);
-        });
+                setTimeout(() => {
+                    mcBot.chat('/whitelist add BotServer');
+                    mcBot.chat('Bot aktif!');
+                }, 5000);
 
-        bot.on('error', (err) => {
-            console.error('❌ Error:', err.message);
-        });
+                // Anti AFK
+                setInterval(() => {
+                    mcBot.setControlState('jump', true);
+                    setTimeout(() => mcBot.setControlState('jump', false), 500);
+                }, 10000);
+            });
 
-    } catch (err) {
-        console.log('⚠️ Server offline, cek lagi dalam 30 detik...');
-        setTimeout(connectBot, 30000);
+            mcBot.on('error', err => {
+                console.error('❌ Error MC:', err.message);
+                scheduleReconnect();
+            });
+
+            mcBot.on('end', reason => {
+                console.log(`🔌 Koneksi terputus: ${reason}`);
+                scheduleReconnect();
+            });
+
+            mcBot.on('kicked', reason => {
+                console.log(`🚪 Dikick: ${reason}`);
+                scheduleReconnect();
+            });
+        };
+
+        const scheduleReconnect = () => {
+            if (reconnectInterval) clearTimeout(reconnectInterval);
+            console.log('⏳ Akan reconnect dalam 30 detik...');
+            reconnectInterval = setTimeout(() => {
+                console.log('♻️ Mencoba reconnect...');
+                getDynamicIP();
+            }, 30000);
+        };
+
+        const getDynamicIP = () => {
+            console.log('🔍 Mencari IP Dinamis Aternos...');
+            mc.ping({ host: 'BananaUcok.aternos.me', port: 14262 }, (err, res) => {
+                if (err) {
+                    console.error('⚠️ Gagal ping server:', err.message);
+                    scheduleReconnect();
+                } else {
+                    const host = res.host || 'BananaUcok.aternos.me';
+                    const port = res.port || 14262;
+                    console.log(`🌐 Dapat IP: ${host}:${port}`);
+                    connect(host, port);
+                }
+            });
+        };
+
+        // Start
+        getDynamicIP();
     }
-}
-
-connectBot();
+};
