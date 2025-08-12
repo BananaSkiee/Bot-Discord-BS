@@ -20,8 +20,8 @@ module.exports = {
 name: "ready",
 once: true,
 async execute(client) {
-console.log(🤖 Bot siap sebagai ${client.user.tag});
-
+console.log(`🤖 Bot siap sebagai ${client.user.tag}`);
+  
 minecraft.init(client); // Letakkan setelah console.log(`🤖 Bot siap...`)  
   
 // 🔹 Kirim rules embed otomatis kalau belum ada  
