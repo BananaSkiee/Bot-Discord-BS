@@ -29,6 +29,7 @@ const updateTimeChannel = require("./modules/updateTimeChannel");
 const invitesTracker = require("./modules/invitesTracker");
 const slashCommandSetup = require("./modules/slashCommandSetup");
 const rulesCommand = require("./modules/rulesCommand");
+const mcModule = require('./modules/minecraft');
 require("./modules/srvName")(client); // ✅ client sudah ada
 
 client.commands = new Collection();
@@ -107,6 +108,16 @@ function initializeDataFiles() {
   });
 }
 
+const mc = mcModule.init(discordClient, {
+  host: 'BananaUcok.aternos.me',
+  port: 14262,
+  username: 'BotServer',
+  version: '1.20.1',
+  auth: 'offline',
+  authPassword: null, // jika pakai AuthMe
+  ownerName: 'NamaDiscordInGame' // optional untuk proteksi admin cmd
+});
+    
 // 📌 Ready Event
 client.once("ready", async () => {
   console.log(`✅ Bot ${client.user.tag} aktif!`);
