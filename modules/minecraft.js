@@ -3,7 +3,7 @@ const { pathfinder, Movements, goals } = require('mineflayer-pathfinder');
 const { Vec3 } = require('vec3');
 const autoeat = require('mineflayer-auto-eat').plugin;
 
-let mcBot = null;
+let mcBot = null; 
 let reconnectInterval = null;
 let isExploring = false;
 
