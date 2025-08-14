@@ -156,8 +156,10 @@ async function handleDiscordCommand(command, args, player) {
         case 'chop':
             const tree = mcBot.findBlock({
                 matching: (block) => block.name.includes('log'),
-                maxDistance: 64,
-                use          if (tree) {
+                maxDistance: 64
+            });
+
+            if (tree) {
                 await mcBot.pathfinder.goto(new goals.GoalNear(tree.position.x, tree.position.y, tree.position.z, 1));
                 await mcBot.dig(tree, true);
                 sendDiscordNotification(`Bot berhasil menebang pohon.`);
