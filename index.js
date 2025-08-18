@@ -108,14 +108,14 @@ function initializeDataFiles() {
   });
 }
 
-const mc = mcModule.init(discordClient, {
+const mc = mcModule.init(client, {
   host: 'BananaUcok.aternos.me',
   port: 14262,
   username: 'BotServer',
   version: '1.20.1',
   auth: 'offline',
-  authPassword: null, // jika pakai AuthMe
-  ownerName: 'NamaDiscordInGame' // optional untuk proteksi admin cmd
+  authPassword: null,
+  ownerName: 'NamaDiscordInGame'
 });
     
 // 📌 Ready Event
@@ -220,8 +220,9 @@ setInterval(() => updateTimeChannel(client), 30 * 1000);
 // 🌐 Web Server
 const app = express();
 app.get("/", (_, res) => res.send("✅ Bot Akira aktif"));
-app.listen(process.env.PORT || 3000, () => {
-  console.log("🌐 Web server hidup di port 3000");
+const PORT = process.env.PORT || 8080;
+app.listen(PORT, () => {
+  console.log(`🌐 Web server hidup di port ${PORT}`);
 });
 
 // 🔄 Auto-ping Koyeb URL supaya tidak sleep
