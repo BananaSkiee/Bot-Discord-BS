@@ -20,11 +20,14 @@
     "express": "^4.18.2",
     "lowdb": "^6.0.1",
     "mineflayer": "^4.31.0",
+    "mineflayer-auto-eat": "^1.2.5",
+    "mineflayer-pathfinder": "^2.1.2",
     "moment-timezone": "^0.5.43",
     "node-cron": "^3.0.3",
     "opusscript": "^0.0.8",
     "prism-media": "^1.3.2",
     "rss-parser": "^3.13.0",
+    "vec3": "^0.1.8",
     "ytdl-core": "^4.11.4"
   }
 }
