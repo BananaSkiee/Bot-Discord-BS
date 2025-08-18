@@ -1,7 +1,7 @@
 const mineflayer = require('mineflayer');
 const { pathfinder, Movements, goals } = require('mineflayer-pathfinder');
 const { Vec3 } = require('vec3');
-const autoeat = require('mineflayer-auto-eat').plugin;
+const autoeat = require('mineflayer-auto-eat');
 
 let mcBot = null;
 let isExploring = false;
