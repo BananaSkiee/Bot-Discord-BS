@@ -1,5 +1,5 @@
 # Gunakan Node.js versi 18
-FROM node:18
+FROM node:22
 
 # Set direktori kerja
 WORKDIR /app
