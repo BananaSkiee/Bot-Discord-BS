@@ -125,7 +125,7 @@ setInterval(() => {
 
 // --- Fungsi Perintah Manual ---
 async function handleDiscordCommand(command, args, player) {
-if (!mcBot) return sendDiscordNotification(Bot belum terhubung!);
+if (!mcBot) return sendDiscordNotification("Bot belum terhubung!");
 
 switch (command) {  
     // --- Movement ---  
