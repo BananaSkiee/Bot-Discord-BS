@@ -30,6 +30,7 @@ const invitesTracker = require("./modules/invitesTracker");
 const slashCommandSetup = require("./modules/slashCommandSetup");
 const rulesCommand = require("./modules/rulesCommand");
 const mcModule = require('./modules/minecraft');
+const { startPinger } = require("./modules/pinger");
 require("./modules/srvName")(client); // ✅ client sudah ada
 
 client.commands = new Collection();
@@ -125,6 +126,7 @@ client.once("ready", async () => {
   await slashCommandSetup(client);
   startCryptoSimulation(client);
   invitesTracker(client);
+  startPinger();
   setInterval(() => {
     cmdCrypto.processStakes();
     cmdCrypto.processLoans();
