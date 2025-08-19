@@ -31,12 +31,14 @@ const invitesTracker = require("./modules/invitesTracker");
 const slashCommandSetup = require("./modules/slashCommandSetup");
 const rulesCommand = require("./modules/rulesCommand");
 const mcModule = require("./modules/minecraft");
+const duelGame = require("./modules/duelGame");
 require("./modules/srvName")(client); 
 
 client.commands = new Collection();
 
 // 📂 Prefix Commands (Crypto Game)
 const prefixCommands = {
+  duel: duelGame.startDuel
   register: cmdCrypto.register,
   balance: cmdCrypto.balance,
   help: cmdCrypto.help,
