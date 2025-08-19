@@ -6,7 +6,6 @@ const countValidator = require("../modules/countValidator");
 const handleHapusTag = require("../modules/hapusTagCommand");
 const translateHandler = require("../modules/translate");
 const memeCommand = require("../modules/memeCommand");
-const autoReply = require("../modules/autoReply");
 const autoChat = require("../modules/autoChat");
 const generateWelcomeCard = require("../modules/welcomeCard");
 const getRandomQuote = require("../modules/welcomeQuotes"); // sesuaikan path-nya
@@ -18,6 +17,7 @@ const coinSystem = require("../modules/coinSystem");
 const rulesCommand = require("../modules/rulesCommand");
 const autoWarn = require("../modules/autoWarn");
 const antiLink = require("../modules/antiLink");
+const { handleAutoReply } = require("../modules/autoReply");
 const { handleGrafikCommand } = require("../modules/cryptoSimulator");
 
 const filePath = path.join(__dirname, "../data/taggedUsers.json");
@@ -66,9 +66,9 @@ module.exports = {
     if (message.author.bot) return;
  // Panggil fungsi-fungsinya saat ada pesan baru
     await countValidator(message);
-    await autoReply(message);
     await autoChat(message);
     await autoEmoji(message);
+    handleAutoReply(message);
     autoReactEmoji.execute(message);
     autoWarn.execute(message);     // Untuk toxic
     antiLink.execute(message);    
