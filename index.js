@@ -3,6 +3,7 @@ const { Client, GatewayIntentBits, Collection, EmbedBuilder } = require("discord
 const fs = require("fs");
 const path = require("path");
 const express = require("express");
+const axios = require("axios");
 const config = require("./config");
 
 // 📌 Init Bot
@@ -29,9 +30,9 @@ const updateTimeChannel = require("./modules/updateTimeChannel");
 const invitesTracker = require("./modules/invitesTracker");
 const slashCommandSetup = require("./modules/slashCommandSetup");
 const rulesCommand = require("./modules/rulesCommand");
-const mcModule = require('./modules/minecraft');
+const mcModule = require("./modules/minecraft");
 const { startPing } = require("./modules/pinger");
-require("./modules/srvName")(client); // ✅ client sudah ada
+require("./modules/srvName")(client); 
 
 client.commands = new Collection();
 
@@ -40,7 +41,7 @@ const prefixCommands = {
   register: cmdCrypto.register,
   balance: cmdCrypto.balance,
   help: cmdCrypto.help,
-  rules: rulesCommand.execute, // ✅ tambahin ini
+  rules: rulesCommand.execute,
   price: cmdCrypto.price,
   buy: cmdCrypto.buy,
   sell: cmdCrypto.sell,
@@ -109,29 +110,30 @@ function initializeDataFiles() {
   });
 }
 
-const mc = mcModule.init(client, {
-  host: 'BananaUcok.aternos.me',
-  port: 14262,
-  username: 'BotServer',
-  version: '1.20.1',
-  auth: 'offline',
-  authPassword: null,
-  ownerName: 'NamaDiscordInGame'
-});
-    
 // 📌 Ready Event
 client.once("ready", async () => {
   console.log(`✅ Bot ${client.user.tag} aktif!`);
+
+  // Init data & fitur
   initializeDataFiles();
   await slashCommandSetup(client);
   startCryptoSimulation(client);
   invitesTracker(client);
-  startPing();
-  setInterval(startPing, 5 * 60 * 1000);
+
+  // 🔁 Interval tasks
   setInterval(() => {
     cmdCrypto.processStakes();
     cmdCrypto.processLoans();
   }, 60 * 60 * 1000);
+
+  // 🔄 Ping Replit (keep-alive)
+  startPing();
+  setInterval(startPing, 5 * 60 * 1000);
+
+  // 🔄 Update online + waktu
+  setInterval(() => updateTimeChannel(client), 30 * 1000);
+
+  console.log("📌 Semua interval sudah aktif!");
 });
 
 // 📂 Load Events
@@ -209,7 +211,7 @@ client.on("messageCreate", (message) => {
   if (!message.author.bot) stickyHandler(client, message);
 });
 
-// 🔁 Update jumlah online & waktu
+// 🔁 Update jumlah online
 client.on("presenceUpdate", () => {
   const guild = client.guilds.cache.first();
   if (guild) updateOnline(guild);
@@ -218,27 +220,23 @@ client.on("voiceStateUpdate", () => {
   const guild = client.guilds.cache.first();
   if (guild) updateOnline(guild);
 });
-setInterval(() => updateTimeChannel(client), 30 * 1000);
 
 // 🌐 Web Server
 const app = express();
 app.get("/", (_, res) => res.send("✅ Bot Akira aktif"));
+app.get("/status", (_, res) => {
+  res.json({
+    bot: client.user?.tag || "offline",
+    uptime: process.uptime(),
+    guilds: client.guilds.cache.size,
+    ping: client.ws.ping,
+    time: new Date().toISOString()
+  });
+});
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
   console.log(`🌐 Web server hidup di port ${PORT}`);
 });
-
-// 🔄 Auto-ping Koyeb URL supaya tidak sleep
-const axios = require("axios");
-const selfURL = process.env.SELF_URL; // isi di env Koyeb, contoh: https://namabot.koyeb.app
-
-if (selfURL) {
-  setInterval(() => {
-    axios.get(selfURL)
-      .then(() => console.log("🔄 Ping ke URL sendiri sukses"))
-      .catch(err => console.error("⚠️ Gagal ping:", err.message));
-  }, 5 * 60 * 1000); // setiap 5 menit
-}
 
 // 🧯 Error Handler
 process.on("unhandledRejection", (err) => {
