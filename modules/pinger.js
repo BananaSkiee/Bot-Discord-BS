@@ -1,7 +1,7 @@
 const axios = require("axios");
 
 const urls = [
-  "https://194a2c34-3a81-4098-8a43-c57019ed739e-00-je64py35b2a3.pike.replit.dev/",
+  "https://194a2c34-3a81-4098-8a43-c57019ed739e-00-je64py35b2a3.pike.replit.dev:8080/",
   // kalau ada Replit lain tinggal tambah ke array ini
 ];
 
