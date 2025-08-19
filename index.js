@@ -32,6 +32,7 @@ const slashCommandSetup = require("./modules/slashCommandSetup");
 const rulesCommand = require("./modules/rulesCommand");
 const mcModule = require("./modules/minecraft");
 const gameManager = require("./modules/gameManager");
+const duelCommand = require("./commands/duel");
 require("./modules/srvName")(client); 
 
 client.commands = new Collection();
