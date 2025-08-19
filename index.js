@@ -31,7 +31,6 @@ const invitesTracker = require("./modules/invitesTracker");
 const slashCommandSetup = require("./modules/slashCommandSetup");
 const rulesCommand = require("./modules/rulesCommand");
 const mcModule = require("./modules/minecraft");
-const { startPing } = require("./modules/pinger");
 require("./modules/srvName")(client); 
 
 client.commands = new Collection();
@@ -127,7 +126,6 @@ client.once("ready", async () => {
   }, 60 * 60 * 1000);
 
   // 🔄 Ping Replit (keep-alive)
-  startPing();
   setInterval(startPing, 5 * 60 * 1000);
 
   // 🔄 Update online + waktu
