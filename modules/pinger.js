@@ -1,8 +1,9 @@
+// modules/pinger.js
 const axios = require("axios");
 
 const urls = [
   "https://194a2c34-3a81-4098-8a43-c57019ed739e-00-je64py35b2a3.pike.replit.dev:8080/",
-  // kalau ada Replit lain tinggal tambah ke array ini
+  // tambah replit lain kalau perlu
 ];
 
 function startPing() {
@@ -16,7 +17,5 @@ function startPing() {
   });
 }
 
-// langsung ping sekali
-startPing();
-// lalu ping ulang tiap 5 menit
-setInterval(startPing, 5 * 60 * 1000);
+// export supaya bisa dipakai di index.js
+module.exports = { startPing };
