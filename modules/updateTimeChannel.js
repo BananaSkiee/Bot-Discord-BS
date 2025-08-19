@@ -33,7 +33,7 @@ module.exports = (client) => {
 
       if (channel.name !== namaBaru) {
         await channel.setName(namaBaru);
-        console.log(`✅ Nama channel berhasil berubah: ${namaBaru}`);
+        console.log(`✅ Nama channel update: ${namaBaru}`);
       }
     } catch (error) {
       console.error("❌ Gagal update voice channel waktu:", error.message);
