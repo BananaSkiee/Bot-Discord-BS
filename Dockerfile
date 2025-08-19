@@ -10,7 +10,7 @@ COPY package*.json ./
 # Install dependencies
 RUN npm install
 
-# Copy semua source code
+# Copy semua source code 
 COPY . .
 
 # Expose port Express
