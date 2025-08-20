@@ -378,89 +378,75 @@ if (contentLower.startsWith("!newdm")) {
       }
     }
   
-  const args = contentRaw.split(/\s+/);
-  const user = message.mentions.users.first();
-  const inputTagRaw = args.slice(2).join(" ").trim();
-  const inputTag = inputTagRaw.toUpperCase().replace(/[\[\]]/g, "");
+    // ===== TEST DM =====
+    if (content.startsWith("!testdm")) {
+      if (!isAdmin) return message.reply("❌ Gak punya izin.");
 
-  if (!user || !inputTag) {
-    return message.reply("❌ Format salah. Contoh: `!testdm @user MOD`");
-  }
+      const args = message.content.trim().split(/\s+/);
+      const user = message.mentions.users.first();
+      const inputTagRaw = args.slice(2).join(" ").trim();
+      const inputTag = inputTagRaw.toUpperCase().replace(/[\[\]]/g, "");
 
-  const matchedRole = ROLES.find(r =>
-    r.tag.replace(/[\[\]]/g, "").toUpperCase() === inputTag
-  );
+      if (!user || !inputTag) return message.reply("❌ Contoh: `!testdm @user MOD`");
 
-  if (!matchedRole) {
-    return message.reply("❌ Tag tidak valid.");
-  }
+      const matchedRole = ROLES.find(r =>
+        r.tag.replace(/[\[\]]/g, "").toUpperCase() === inputTag
+      );
+      if (!matchedRole) return message.reply("❌ Tag tidak valid.");
 
-  const member = await message.guild.members.fetch(user.id);
-  const realTag = matchedRole.tag;
-  const safeTagId = realTag.replace(/[^\w-]/g, "").toLowerCase();
-  const displayName = user.globalName ?? user.username;
-  const roleDisplay = ROLE_DISPLAY_MAP[matchedRole.id] || "Tanpa Nama";
+      const realTag = matchedRole.tag;
+      const safeTagId = realTag.replace(/[^\w-]/g, "").toLowerCase();
+      const displayName = user.globalName ?? user.username;
+      const roleDisplay = ROLE_DISPLAY_MAP[matchedRole.id] || "Tanpa Nama";
+      const member = await message.guild.members.fetch(user.id);
 
-  let taggedUsers = {};
-  if (fs.existsSync(filePath)) {
-    taggedUsers = JSON.parse(fs.readFileSync(filePath));
-  }
+      let taggedUsers = {};
+      if (fs.existsSync(filePath)) {
+        taggedUsers = JSON.parse(fs.readFileSync(filePath));
+      }
 
-  if (!taggedUsers[user.id]) {
-    taggedUsers[user.id] = {
-      originalName: member.displayName,
-      usedTags: []
-    };
-  }
+      if (!taggedUsers[user.id]) {
+        taggedUsers[user.id] = {
+          originalName: member.displayName,
+          usedTags: []
+        };
+      }
 
-  // ======= LANGSUNG KASIH ROLE =======
-  if (!member.roles.cache.has(matchedRole.id)) {
-    await member.roles.add(matchedRole.id).catch(console.error);
-  }
-  // ===================================
+      if (!member.roles.cache.has(matchedRole.id)) {
+        await member.roles.add(matchedRole.id).catch(console.error);
+      }
 
-  taggedUsers[user.id].usedTags.push(matchedRole.id);
-  fs.writeFileSync(filePath, JSON.stringify(taggedUsers, null, 2));
+      taggedUsers[user.id].usedTags.push(matchedRole.id);
+      fs.writeFileSync(filePath, JSON.stringify(taggedUsers, null, 2));
 
-  const row = new ActionRowBuilder().addComponents(
-    new ButtonBuilder()
-      .setCustomId(`test_use_tag_${matchedRole.id}_${safeTagId}`)
-      .setLabel("Ya, pakai tag ${roleTag}")
-      .setStyle(ButtonStyle.Success),
-    new ButtonBuilder()
-      .setCustomId(`test_remove_tag_${matchedRole.id}_${safeTagId}`)
-      .setLabel("Tidak, tanpa tag")
-      .setStyle(ButtonStyle.Secondary)
-  );
+      const row = new ActionRowBuilder().addComponents(
+        new ButtonBuilder()
+          .setCustomId(`test_use_tag_${matchedRole.id}_${safeTagId}`)
+          .setLabel(`✅ Pakai Tag ${realTag}`)
+          .setStyle(ButtonStyle.Success),
+        new ButtonBuilder()
+          .setCustomId(`test_remove_tag_${matchedRole.id}_${safeTagId}`)
+          .setLabel(`❌ Jangan Pakai Tag`)
+          .setStyle(ButtonStyle.Secondary)
+      );
 
-  try {
-    await user.send({
-      content: `✨ *Selamat kepada ${displayName}!*
-
-🔰 Kamu menerima tag khusus: \`${realTag}\`
-📛 Diberikan karena kamu memiliki role: \`${roleDisplay}\`
-
-Ingin menampilkan tag itu di nickname kamu?
-Contoh: \`${realTag} ${displayName}\`
-
-─────────────────────────────
-Pilih salah satu opsi di bawah ini: 👇`,
-      components: [row]
-    });
-
-    await message.reply(`✅ DM berhasil dikirim ke ${displayName}`);
-  } catch (err) {
-    console.error("❌ Gagal kirim DM:", err);
-    if (err.code === 50007) {
-      return message.reply("❌ DM gagal. User matiin DM dari server.");
+      try {
+        await user.send({
+          content: `✨ *Selamat ${displayName}!*\n\n🔰 Kamu dapat tag: \`${realTag}\`\n📛 Role: \`${roleDisplay}\`\n\nIngin pakai tag ini di nickname?\n\n👇 Pilih tombol di bawah:`,
+          components: [row]
+        });
+        await message.reply(`✅ DM terkirim ke ${displayName}`);
+      } catch (err) {
+        console.error("❌ Gagal kirim DM:", err);
+        return message.reply("❌ Gagal kirim DM. Cek setting user.");
+      }
     }
-    return message.reply("❌ Terjadi kesalahan saat kirim DM.");
-  }
-}
 
-    // ========== 4. HAPUS TAG ============
-    if (contentLower.startsWith("!hapustag")) {
+    // ===== HAPUS TAG =====
+    if (content.startsWith("!hapustag")) {
+      if (!isAdmin) return message.reply("❌ Gak punya izin.");
       return handleHapusTag(message);
     }
+}
   } // Tutup execute()
 } // Tutup module.exports
