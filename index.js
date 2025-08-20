@@ -39,7 +39,6 @@ client.commands = new Collection();
 
 // 📂 Prefix Commands (Crypto Game)
 const prefixCommands = {
-  duel: duelCommand.execute,
   register: cmdCrypto.register,
   balance: cmdCrypto.balance,
   help: cmdCrypto.help,
