@@ -128,9 +128,6 @@ client.once("ready", async () => {
     cmdCrypto.processLoans();
   }, 60 * 60 * 1000);
 
-  // 🔄 Ping Replit (keep-alive)
-  setInterval(startPing, 5 * 60 * 1000);
-
   // 🔄 Update online + waktu
   setInterval(() => updateTimeChannel(client), 30 * 1000);
 
