@@ -12,6 +12,26 @@ function saveTaggedUsers(data) {
 module.exports = {
   name: "interactionCreate",
   async execute(interaction) {
+
+      // ===================== SLASH COMMAND =====================
+      if (interaction.isChatInputCommand()) {
+        const command = interaction.client.commands.get(interaction.commandName);
+        if (!command) {
+          return interaction.reply({ content: "❌ Command tidak ditemukan.", ephemeral: true });
+        }
+
+        try {
+          await command.execute(interaction, interaction.client);
+        } catch (err) {
+          console.error(`❌ Error di command ${interaction.commandName}:`, err);
+          if (interaction.replied || interaction.deferred) {
+            await interaction.followUp({ content: "❌ Terjadi error saat jalankan command.", ephemeral: true });
+          } else {
+            await interaction.reply({ content: "❌ Terjadi error saat jalankan command.", ephemeral: true });
+          }
+        }
+        return; // supaya nggak lanjut ke bawah (button handler)
+      }
     
   if (!interaction.isButton()) return;
     
@@ -200,7 +220,6 @@ if (
     });
   }
 }
-
     // ========== UNKNOWN ==========
     return interaction.reply({
       content: "⚠️ Tombol tidak dikenali.",
