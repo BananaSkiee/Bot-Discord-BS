@@ -1,17 +1,28 @@
-const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require("discord.js");
+// commands/duel.js
+const { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require("discord.js");
 const { startGame } = require("../modules/gameManager");
 
 module.exports = {
-  name: "duel",
-  description: "Tantang seseorang dalam Sutgun Duel",
-  async execute(message, args, client) {
-    const target = message.mentions.users.first();
-    if (!target) return message.reply("❌ Tag orang yang mau kamu tantang!");
-    if (target.id === message.author.id) return message.reply("❌ Tidak bisa duel diri sendiri!");
+  data: new SlashCommandBuilder()
+    .setName("duel")
+    .setDescription("Tantang seseorang dalam Sutgun Duel")
+    .addUserOption(option =>
+      option.setName("target")
+        .setDescription("Orang yang mau kamu tantang")
+        .setRequired(true)
+    ),
+
+  async execute(interaction, client) {
+    const target = interaction.options.getUser("target");
+    const challenger = interaction.user;
+
+    if (target.id === challenger.id) {
+      return interaction.reply({ content: "❌ Tidak bisa duel diri sendiri!", ephemeral: true });
+    }
 
     const embed = new EmbedBuilder()
       .setTitle("🔫 Sutgun Duels Challenge")
-      .setDescription(`${message.author} menantang ${target} untuk duel shotgun!\n\nApakah kamu berani?`)
+      .setDescription(`${challenger} menantang ${target} untuk duel shotgun!\n\nApakah kamu berani?`)
       .setColor("Red");
 
     const row = new ActionRowBuilder().addComponents(
@@ -19,15 +30,15 @@ module.exports = {
       new ButtonBuilder().setCustomId("decline_duel").setLabel("❌ Tolak").setStyle(ButtonStyle.Danger)
     );
 
-    const duelMsg = await message.channel.send({ embeds: [embed], components: [row] });
+    const duelMsg = await interaction.reply({ embeds: [embed], components: [row], fetchReply: true });
 
     const filter = (i) => i.user.id === target.id;
     const collector = duelMsg.createMessageComponentCollector({ filter, time: 15000 });
 
     collector.on("collect", async (i) => {
       if (i.customId === "accept_duel") {
-        await i.update({ content: `🔥 Duel dimulai antara ${message.author} vs ${target}!`, embeds: [], components: [] });
-        startGame(message.channel, message.author, target, client);
+        await i.update({ content: `🔥 Duel dimulai antara ${challenger} vs ${target}!`, embeds: [], components: [] });
+        startGame(interaction.channel, challenger, target, client);
       } else if (i.customId === "decline_duel") {
         await i.update({ content: `${target} menolak duel 😢`, embeds: [], components: [] });
       }
