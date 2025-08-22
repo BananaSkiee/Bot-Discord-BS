@@ -1,3 +1,4 @@
+// commands/duel.js
 const {
   SlashCommandBuilder,
   ActionRowBuilder,
@@ -31,42 +32,34 @@ module.exports = {
       .setColor("Red");
 
     const row = new ActionRowBuilder().addComponents(
-      new ButtonBuilder().setCustomId("accept_duel").setLabel("Terima").setStyle(ButtonStyle.Success),
-      new ButtonBuilder().setCustomId("decline_duel").setLabel("Tolak").setStyle(ButtonStyle.Danger)
+      new ButtonBuilder().setCustomId("accept_duel").setLabel("✅ Terima").setStyle(ButtonStyle.Success),
+      new ButtonBuilder().setCustomId("decline_duel").setLabel("❌ Tolak").setStyle(ButtonStyle.Danger)
     );
 
-    const message = await interaction.reply({
-      embeds: [embed],
-      components: [row],
-      fetchReply: true,
-    });
+    const message = await interaction.reply({ embeds: [embed], components: [row], fetchReply: true });
 
-    // Collector: hanya target yang bisa accept/decline
+    // ✅ Collector: siapa aja bisa klik, tapi cuma target yg valid
     const collector = message.createMessageComponentCollector({ time: 30000 });
 
     collector.on("collect", async (i) => {
       if (i.user.id !== target.id) {
-        return i.reply({
-          content: "❌ Kamu bukan bagian dari duel ini.",
-          ephemeral: true,
-        });
+        // orang lain pencet → ditolak
+        return i.reply({ content: "❌ Kamu bukan bagian dari duel ini.", ephemeral: true });
       }
 
+      // target pencet tombol
       if (i.customId === "accept_duel") {
-        await i.reply({
+        await i.update({
           embeds: [
             new EmbedBuilder()
               .setTitle("🔥 Duel Dimulai!")
               .setDescription(`${challenger} 🆚 ${target}\n\nBersiaplah menembak!`)
               .setColor("Green"),
           ],
-          ephemeral: false,
+          components: [],
         });
 
-        // Edit pesan utama biar tombol ilang
-        await message.edit({ components: [] });
-
-        // Simulasi game
+        // 🔥 simulasi hasil duel
         setTimeout(() => {
           const winner = Math.random() < 0.5 ? challenger : target;
           const loser = winner.id === challenger.id ? target : challenger;
@@ -83,17 +76,15 @@ module.exports = {
       }
 
       if (i.customId === "decline_duel") {
-        await i.reply({
+        await i.update({
           embeds: [
             new EmbedBuilder()
               .setTitle("🚫 Duel Ditolak")
               .setDescription(`${target} menolak tantangan dari ${challenger}.`)
               .setColor("Grey"),
           ],
-          ephemeral: false,
+          components: [],
         });
-
-        await message.edit({ components: [] });
       }
 
       collector.stop();
