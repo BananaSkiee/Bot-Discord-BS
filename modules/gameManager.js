@@ -46,4 +46,49 @@ function showTurn(channel, game) {
   channel.send({ embeds: [embed], components: [row] });
 }
 
-module.exports = { startGame };
+// =============================
+// Handler tombol
+// =============================
+async function handleButton(interaction) {
+  const game = activeGames.get(interaction.channel.id);
+  if (!game) {
+    return interaction.reply({ content: "⚠️ Tidak ada game aktif di channel ini.", ephemeral: true });
+  }
+
+  const player = interaction.user;
+  if (player.id !== game.turn) {
+    return interaction.reply({ content: "❌ Bukan giliranmu!", ephemeral: true });
+  }
+
+  const opponent = game.players.find(p => p.id !== player.id);
+
+  if (interaction.customId === "shoot_self" || interaction.customId === "shoot_enemy") {
+    const bullet = nextBullet(game.chamber);
+    let target = interaction.customId === "shoot_self" ? player : opponent;
+
+    if (bullet) {
+      game.health[target.id] -= 1;
+      await interaction.reply(`💥 BOOM! ${target.username} kena tembak!\n❤️ Sisa HP: ${game.health[target.id]}`);
+    } else {
+      await interaction.reply(`😮 Klik! Senjata kosong. Selamat untuk ${target.username}!`);
+    }
+
+    // cek kalau ada yang mati
+    if (game.health[target.id] <= 0) {
+      activeGames.delete(interaction.channel.id);
+      return interaction.followUp(`🏆 **${target.id === player.id ? opponent.username : player.username} MENANG!**`);
+    }
+
+    // ganti giliran
+    game.turn = opponent.id;
+    showTurn(interaction.channel, game);
+    return;
+  }
+
+  if (interaction.customId === "use_item") {
+    await interaction.reply("🎲 Item belum diimplementasi.");
+    return;
+  }
+}
+
+module.exports = { startGame, handleButton };
