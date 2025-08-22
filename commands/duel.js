@@ -16,8 +16,9 @@ module.exports = {
     const target = interaction.options.getUser("target");
     const challenger = interaction.user;
 
-    if (target.id === challenger.id)
+    if (target.id === challenger.id) {
       return interaction.reply({ content: "❌ Tidak bisa duel diri sendiri!", ephemeral: true });
+    }
 
     const embed = new EmbedBuilder()
       .setTitle("🔫 Sutgun Duels Challenge")
@@ -26,25 +27,25 @@ module.exports = {
 
     const row = new ActionRowBuilder().addComponents(
       new ButtonBuilder()
-        .setCustomId(`accept_duel_${challenger.id}_${target.id}`)
+        .setCustomId("accept_duel")
         .setLabel("✅ Terima")
         .setStyle(ButtonStyle.Success),
       new ButtonBuilder()
-        .setCustomId(`decline_duel_${challenger.id}_${target.id}`)
+        .setCustomId("decline_duel")
         .setLabel("❌ Tolak")
         .setStyle(ButtonStyle.Danger)
     );
 
     const duelMsg = await interaction.reply({ embeds: [embed], components: [row] });
 
-    const filter = i => i.user.id === target.id;
+    const filter = (i) => i.user.id === target.id;
     const collector = duelMsg.createMessageComponentCollector({ filter, time: 15000 });
 
-    collector.on("collect", async i => {
-      if (i.customId.startsWith("accept_duel")) {
+    collector.on("collect", async (i) => {
+      if (i.customId === "accept_duel") {
         await i.update({ content: `🔥 Duel dimulai antara ${challenger} vs ${target}!`, embeds: [], components: [] });
         startGame(interaction.channel, challenger, target, client);
-      } else if (i.customId.startsWith("decline_duel")) {
+      } else if (i.customId === "decline_duel") {
         await i.update({ content: `${target} menolak duel 😢`, embeds: [], components: [] });
       }
     });
