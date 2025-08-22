@@ -11,9 +11,8 @@ module.exports = {
   data: new SlashCommandBuilder()
     .setName("duel")
     .setDescription("Tantang seseorang untuk duel shotgun!")
-    .addUserOption((option) =>
-      option
-        .setName("target")
+    .addUserOption(option =>
+      option.setName("target")
         .setDescription("Orang yang ingin ditantang")
         .setRequired(true)
     ),
@@ -31,9 +30,7 @@ module.exports = {
 
     const embed = new EmbedBuilder()
       .setTitle("🔫 Shotgun Duels Challenge")
-      .setDescription(
-        `${challenger} menantang ${target} untuk duel shotgun!\n\nApakah kamu berani?`
-      )
+      .setDescription(`${challenger} menantang ${target} untuk duel shotgun!\n\nApakah kamu berani?`)
       .setColor("Red");
 
     const row = new ActionRowBuilder().addComponents(
@@ -53,12 +50,9 @@ module.exports = {
       fetchReply: true,
     });
 
-    // ✅ filter: cuma target yang bisa klik
-    const filter = (i) => i.user.id === target.id;
-    const collector = message.createMessageComponentCollector({
-      filter,
-      time: 30000,
-    });
+    // filter: cuma target yg bisa klik
+    const filter = i => i.user.id === target.id;
+    const collector = message.createMessageComponentCollector({ filter, time: 30000 });
 
     collector.on("collect", async (i) => {
       if (i.customId === "accept_duel") {
@@ -72,7 +66,7 @@ module.exports = {
           components: [],
         });
 
-        // Simulasi hasil duel
+        // Simulasi duel (acak pemenang)
         setTimeout(() => {
           const winner = Math.random() < 0.5 ? challenger : target;
           const loser = winner.id === challenger.id ? target : challenger;
@@ -81,9 +75,7 @@ module.exports = {
             embeds: [
               new EmbedBuilder()
                 .setTitle("🏆 Hasil Duel")
-                .setDescription(
-                  `💥 ${winner} lebih cepat dari ${loser}!\n\n🔥 ${winner} MENANG!`
-                )
+                .setDescription(`💥 ${winner} lebih cepat dari ${loser}!\n\n🔥 ${winner} MENANG!`)
                 .setColor("Gold"),
             ],
           });
