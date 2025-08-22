@@ -34,18 +34,16 @@ module.exports = {
 
     const message = await interaction.reply({ embeds: [embed], components: [row], fetchReply: true });
 
-    // Filter hanya target yang bisa pencet tombol
-    const filter = (i) => {
-      if (i.user.id !== target.id) {
-        i.reply({ content: "❌ Kamu bukan bagian dari duel ini.", ephemeral: true }).catch(() => {});
-        return false;
-      }
-      return true;
-    };
-
-    const collector = message.createMessageComponentCollector({ filter, time: 30000, max: 1 });
+    // Collector: hanya target yang bisa accept/decline
+    const collector = message.createMessageComponentCollector({ time: 30000 });
 
     collector.on("collect", async (i) => {
+      if (i.user.id !== target.id) {
+        // orang lain pencet → balas ephemeral
+        return i.reply({ content: "❌ Kamu bukan bagian dari duel ini.", ephemeral: true });
+      }
+
+      // Target beneran pencet
       if (i.customId === "accept_duel") {
         await i.update({
           embeds: [
@@ -57,7 +55,7 @@ module.exports = {
           components: [],
         });
 
-        // Game logic bisa dimasukin di sini
+        // Contoh simulasi game
         setTimeout(() => {
           const winner = Math.random() < 0.5 ? challenger : target;
           const loser = winner.id === challenger.id ? target : challenger;
@@ -66,7 +64,7 @@ module.exports = {
             embeds: [
               new EmbedBuilder()
                 .setTitle("🏆 Hasil Duel")
-                .setDescription(`💥 ${winner} berhasil menembak lebih cepat dari ${loser}!\n\n🔥 ${winner} MENANG!`)
+                .setDescription(`💥 ${winner} lebih cepat dari ${loser}!\n\n🔥 ${winner} MENANG!`)
                 .setColor("Gold"),
             ],
           });
@@ -84,6 +82,8 @@ module.exports = {
           components: [],
         });
       }
+
+      collector.stop(); // biar ga dobel trigger
     });
 
     collector.on("end", async (collected) => {
