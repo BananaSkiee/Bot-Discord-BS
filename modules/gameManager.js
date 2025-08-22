@@ -1,3 +1,4 @@
+// modules/gameManager.js
 const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require("discord.js");
 const { createChamber, nextBullet } = require("./chamber");
 const { getRandomItems } = require("./items");
@@ -17,6 +18,7 @@ function startGame(channel, p1, p2, client) {
     chamber,
     turn: p1.id,
     items,
+    bonusTurn: false
   };
 
   activeGames.set(channel.id, gameState);
@@ -46,9 +48,6 @@ function showTurn(channel, game) {
   channel.send({ embeds: [embed], components: [row] });
 }
 
-// =============================
-// Handler tombol
-// =============================
 async function handleButton(interaction) {
   const game = activeGames.get(interaction.channel.id);
   if (!game) {
@@ -67,20 +66,41 @@ async function handleButton(interaction) {
     let target = interaction.customId === "shoot_self" ? player : opponent;
 
     if (bullet) {
+      // kena isi
       game.health[target.id] -= 1;
       await interaction.reply(`💥 BOOM! ${target.username} kena tembak!\n❤️ Sisa HP: ${game.health[target.id]}`);
     } else {
-      await interaction.reply(`😮 Klik! Senjata kosong. Selamat untuk ${target.username}!`);
+      // kena kosong
+      if (target.id === player.id) {
+        // tembak diri + kosong = bonus turn
+        game.bonusTurn = true;
+        await interaction.reply(`😮 Klik! Senjata kosong! ${player.username} selamat dan dapat BONUS turn 🎁`);
+      } else {
+        await interaction.reply(`😮 Klik! Senjata kosong. ${opponent.username} selamat!`);
+      }
     }
 
-    // cek kalau ada yang mati
+    // cek mati
     if (game.health[target.id] <= 0) {
       activeGames.delete(interaction.channel.id);
       return interaction.followUp(`🏆 **${target.id === player.id ? opponent.username : player.username} MENANG!**`);
     }
 
+    // cek reset chamber
+    if (game.chamber.filled === 0 || game.chamber.empty === 0) {
+      game.chamber = createChamber();
+      game.items[player.id] = getRandomItems();
+      game.items[opponent.id] = getRandomItems();
+      await interaction.followUp("♻️ Peluru & item direset ulang!");
+    }
+
     // ganti giliran
-    game.turn = opponent.id;
+    if (game.bonusTurn) {
+      game.bonusTurn = false; // tetap di player sama
+    } else {
+      game.turn = opponent.id;
+    }
+
     showTurn(interaction.channel, game);
     return;
   }
