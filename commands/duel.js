@@ -19,7 +19,10 @@ module.exports = {
     const target = interaction.options.getUser("target");
 
     if (target.id === challenger.id) {
-      return interaction.reply({ content: "❌ Kamu tidak bisa menantang dirimu sendiri!", ephemeral: true });
+      return interaction.reply({
+        content: "❌ Kamu tidak bisa menantang dirimu sendiri!",
+        ephemeral: true,
+      });
     }
 
     const embed = new EmbedBuilder()
@@ -32,30 +35,38 @@ module.exports = {
       new ButtonBuilder().setCustomId("decline_duel").setLabel("Tolak").setStyle(ButtonStyle.Danger)
     );
 
-    const message = await interaction.reply({ embeds: [embed], components: [row], fetchReply: true });
+    const message = await interaction.reply({
+      embeds: [embed],
+      components: [row],
+      fetchReply: true,
+    });
 
     // Collector: hanya target yang bisa accept/decline
     const collector = message.createMessageComponentCollector({ time: 30000 });
 
     collector.on("collect", async (i) => {
       if (i.user.id !== target.id) {
-        // orang lain pencet → balas ephemeral
-        return i.reply({ content: "❌ Kamu bukan bagian dari duel ini.", ephemeral: true });
+        return i.reply({
+          content: "❌ Kamu bukan bagian dari duel ini.",
+          ephemeral: true,
+        });
       }
 
-      // Target beneran pencet
       if (i.customId === "accept_duel") {
-        await i.update({
+        await i.reply({
           embeds: [
             new EmbedBuilder()
               .setTitle("🔥 Duel Dimulai!")
               .setDescription(`${challenger} 🆚 ${target}\n\nBersiaplah menembak!`)
               .setColor("Green"),
           ],
-          components: [],
+          ephemeral: false,
         });
 
-        // Contoh simulasi game
+        // Edit pesan utama biar tombol ilang
+        await message.edit({ components: [] });
+
+        // Simulasi game
         setTimeout(() => {
           const winner = Math.random() < 0.5 ? challenger : target;
           const loser = winner.id === challenger.id ? target : challenger;
@@ -72,18 +83,20 @@ module.exports = {
       }
 
       if (i.customId === "decline_duel") {
-        await i.update({
+        await i.reply({
           embeds: [
             new EmbedBuilder()
               .setTitle("🚫 Duel Ditolak")
               .setDescription(`${target} menolak tantangan dari ${challenger}.`)
               .setColor("Grey"),
           ],
-          components: [],
+          ephemeral: false,
         });
+
+        await message.edit({ components: [] });
       }
 
-      collector.stop(); // biar ga dobel trigger
+      collector.stop();
     });
 
     collector.on("end", async (collected) => {
