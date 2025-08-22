@@ -221,7 +221,7 @@ if (
   }
 }
 
-      // ========== TOMBOL DUEL ==========
+// ========== TOMBOL DUEL ==========
 if (customId.startsWith("accept_duel") || customId.startsWith("decline_duel")) {
   const [action, challengerId, targetId] = customId.split("_");
 
@@ -233,7 +233,6 @@ if (customId.startsWith("accept_duel") || customId.startsWith("decline_duel")) {
   }
 
   if (action === "accept") {
-    // TODO: lanjutkan duel (panggil file duel.js misalnya)
     return interaction.reply({
       content: `⚔️ Duel dimulai antara <@${challengerId}> dan <@${targetId}>!`,
     });
@@ -244,6 +243,8 @@ if (customId.startsWith("accept_duel") || customId.startsWith("decline_duel")) {
       content: `❌ <@${targetId}> menolak duel dari <@${challengerId}>.`,
     });
   }
+
+  return; // ✅ tambahin biar nggak turun ke UNKNOWN
 }
 
 // ========== TOMBOL SHOOT ==========
@@ -257,11 +258,10 @@ if (customId.startsWith("shoot_")) {
     });
   }
 
-  // TODO: logika nembak (random menang/kalah, dll)
   return interaction.reply({
     content: `🔫 <@${interaction.user.id}> menembak dalam duel!`,
   });
-      }
+}
     
     // ========== UNKNOWN ==========
     return interaction.reply({
