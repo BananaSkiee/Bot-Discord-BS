@@ -1,57 +1,103 @@
-// commands/duel.js
-const { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require("discord.js");
-const { startGame } = require("../modules/gameManager");
+const {
+  SlashCommandBuilder,
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  EmbedBuilder,
+} = require("discord.js");
 
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("duel")
-    .setDescription("Tantang seseorang dalam Sutgun Duel")
-    .addUserOption(option =>
-      option.setName("target")
-        .setDescription("Orang yang mau kamu tantang")
-        .setRequired(true)
+    .setDescription("Tantang seseorang untuk duel shotgun!")
+    .addUserOption((option) =>
+      option.setName("target").setDescription("Orang yang ingin ditantang").setRequired(true)
     ),
 
-  async execute(interaction, client) {
-    const target = interaction.options.getUser("target");
+  async execute(interaction) {
     const challenger = interaction.user;
+    const target = interaction.options.getUser("target");
 
     if (target.id === challenger.id) {
-      return interaction.reply({ content: "❌ Tidak bisa duel diri sendiri!", ephemeral: true });
+      return interaction.reply({ content: "❌ Kamu tidak bisa menantang dirimu sendiri!", ephemeral: true });
     }
 
     const embed = new EmbedBuilder()
-      .setTitle("🔫 Sutgun Duels Challenge")
+      .setTitle("🔫 Shotgun Duels Challenge")
       .setDescription(`${challenger} menantang ${target} untuk duel shotgun!\n\nApakah kamu berani?`)
       .setColor("Red");
 
     const row = new ActionRowBuilder().addComponents(
-      new ButtonBuilder().setCustomId("accept_duel").setLabel("✅ Terima").setStyle(ButtonStyle.Success),
-      new ButtonBuilder().setCustomId("decline_duel").setLabel("❌ Tolak").setStyle(ButtonStyle.Danger)
+      new ButtonBuilder().setCustomId("accept_duel").setLabel("Terima").setStyle(ButtonStyle.Success),
+      new ButtonBuilder().setCustomId("decline_duel").setLabel("Tolak").setStyle(ButtonStyle.Danger)
     );
 
-    const duelMsg = await interaction.reply({ embeds: [embed], components: [row] });
-    const filter = (i) => i.user.id === target.id;
-    const collector = duelMsg.createMessageComponentCollector({ filter, time: 15000 });
+    const message = await interaction.reply({ embeds: [embed], components: [row], fetchReply: true });
+
+    // Filter hanya target yang bisa pencet tombol
+    const filter = (i) => {
+      if (i.user.id !== target.id) {
+        i.reply({ content: "❌ Kamu bukan bagian dari duel ini.", ephemeral: true }).catch(() => {});
+        return false;
+      }
+      return true;
+    };
+
+    const collector = message.createMessageComponentCollector({ filter, time: 30000, max: 1 });
 
     collector.on("collect", async (i) => {
       if (i.customId === "accept_duel") {
-        await i.deferUpdate();
-        collector.stop("accepted");
-        await i.message.edit({ content: `🔥 Duel dimulai antara ${challenger} vs ${target}!`, embeds: [], components: [] });
-        startGame(interaction.channel, challenger, target, client);
+        await i.update({
+          embeds: [
+            new EmbedBuilder()
+              .setTitle("🔥 Duel Dimulai!")
+              .setDescription(`${challenger} 🆚 ${target}\n\nBersiaplah menembak!`)
+              .setColor("Green"),
+          ],
+          components: [],
+        });
 
-      } else if (i.customId === "decline_duel") {
-        await i.deferUpdate();
-        collector.stop("declined");
-        await i.message.edit({ content: `${target} menolak duel 😢`, embeds: [], components: [] });
+        // Game logic bisa dimasukin di sini
+        setTimeout(() => {
+          const winner = Math.random() < 0.5 ? challenger : target;
+          const loser = winner.id === challenger.id ? target : challenger;
+
+          message.edit({
+            embeds: [
+              new EmbedBuilder()
+                .setTitle("🏆 Hasil Duel")
+                .setDescription(`💥 ${winner} berhasil menembak lebih cepat dari ${loser}!\n\n🔥 ${winner} MENANG!`)
+                .setColor("Gold"),
+            ],
+          });
+        }, 5000);
+      }
+
+      if (i.customId === "decline_duel") {
+        await i.update({
+          embeds: [
+            new EmbedBuilder()
+              .setTitle("🚫 Duel Ditolak")
+              .setDescription(`${target} menolak tantangan dari ${challenger}.`)
+              .setColor("Grey"),
+          ],
+          components: [],
+        });
       }
     });
 
-    collector.on("end", (collected, reason) => {
-      if (reason === "time" || collected.size === 0) {
-        duelMsg.edit({ content: "⏳ Waktu habis, duel dibatalkan.", embeds: [], components: [] }).catch(() => {});
+    collector.on("end", async (collected) => {
+      if (collected.size === 0) {
+        await message.edit({
+          embeds: [
+            new EmbedBuilder()
+              .setTitle("⌛ Waktu Habis")
+              .setDescription(`${target} tidak merespon tantangan duel.`)
+              .setColor("Grey"),
+          ],
+          components: [],
+        });
       }
     });
-  }
+  },
 };
