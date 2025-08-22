@@ -26,33 +26,31 @@ module.exports = {
       .setColor("Red");
 
     const row = new ActionRowBuilder().addComponents(
-      new ButtonBuilder()
-        .setCustomId("accept_duel")
-        .setLabel("✅ Terima")
-        .setStyle(ButtonStyle.Success),
-      new ButtonBuilder()
-        .setCustomId("decline_duel")
-        .setLabel("❌ Tolak")
-        .setStyle(ButtonStyle.Danger)
+      new ButtonBuilder().setCustomId("accept_duel").setLabel("✅ Terima").setStyle(ButtonStyle.Success),
+      new ButtonBuilder().setCustomId("decline_duel").setLabel("❌ Tolak").setStyle(ButtonStyle.Danger)
     );
 
     const duelMsg = await interaction.reply({ embeds: [embed], components: [row] });
-
     const filter = (i) => i.user.id === target.id;
     const collector = duelMsg.createMessageComponentCollector({ filter, time: 15000 });
 
     collector.on("collect", async (i) => {
       if (i.customId === "accept_duel") {
-        await i.update({ content: `🔥 Duel dimulai antara ${challenger} vs ${target}!`, embeds: [], components: [] });
+        await i.deferUpdate();
+        collector.stop("accepted");
+        await i.message.edit({ content: `🔥 Duel dimulai antara ${challenger} vs ${target}!`, embeds: [], components: [] });
         startGame(interaction.channel, challenger, target, client);
+
       } else if (i.customId === "decline_duel") {
-        await i.update({ content: `${target} menolak duel 😢`, embeds: [], components: [] });
+        await i.deferUpdate();
+        collector.stop("declined");
+        await i.message.edit({ content: `${target} menolak duel 😢`, embeds: [], components: [] });
       }
     });
 
-    collector.on("end", collected => {
-      if (collected.size === 0) {
-        duelMsg.edit({ content: "⏳ Waktu habis, duel dibatalkan.", embeds: [], components: [] });
+    collector.on("end", (collected, reason) => {
+      if (reason === "time" || collected.size === 0) {
+        duelMsg.edit({ content: "⏳ Waktu habis, duel dibatalkan.", embeds: [], components: [] }).catch(() => {});
       }
     });
   }
