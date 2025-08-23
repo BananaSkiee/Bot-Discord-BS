@@ -30,10 +30,9 @@ module.exports = {
       });
     }
 
-    // Cek apakah target sudah dalam duel lain
-    if (gameManager.isUserInGame(target.id)) {
+    if (gameManager.isUserInGame(target.id) || gameManager.isUserInGame(challenger.id)) {
       return interaction.reply({
-        content: `❌ ${target} sudah dalam duel lain!`,
+        content: `❌ Salah satu dari kalian sudah dalam duel lain!`,
         ephemeral: true,
       });
     }
@@ -45,11 +44,11 @@ module.exports = {
 
     const row = new ActionRowBuilder().addComponents(
       new ButtonBuilder()
-        .setCustomId(`duel_accept_${challenger.id}_${target.id}`)
+        .setCustomId(`accept_duel`)
         .setLabel("✅ Terima")
         .setStyle(ButtonStyle.Success),
       new ButtonBuilder()
-        .setCustomId(`duel_decline_${challenger.id}_${target.id}`)
+        .setCustomId(`decline_duel`)
         .setLabel("❌ Tolak")
         .setStyle(ButtonStyle.Danger)
     );
@@ -62,27 +61,32 @@ module.exports = {
 
     const collector = message.createMessageComponentCollector({
       filter: (i) => i.user.id === target.id,
-      time: 60000, // Waktu respons 60 detik
+      time: 60000,
     });
 
     collector.on("collect", async (i) => {
-      // Deferring the update to prevent interaction timeout
       await i.deferUpdate();
 
-      if (i.customId.startsWith("duel_accept")) {
-        // Hapus tombol-tombol tantangan
+      if (i.customId === "accept_duel") {
         await i.editReply({
-          content: `${target} menerima tantangan! Duel akan dimulai.`,
-          embeds: [],
+          embeds: [
+            new EmbedBuilder()
+              .setTitle("🔥 Duel Dimulai!")
+              .setDescription(`${challenger} 🆚 ${target}\n\nBersiaplah menembak!`)
+              .setColor("Green"),
+          ],
           components: [],
         });
 
-        // Panggil gameManager untuk memulai game
-        gameManager.startGame(i.channel, challenger, target, i.client);
-      } else if (i.customId.startsWith("duel_decline")) {
+        gameManager.startGame(i.channel, challenger, target);
+      } else if (i.customId === "decline_duel") {
         await i.editReply({
-          content: `${target} menolak tantangan dari ${challenger}.`,
-          embeds: [],
+          embeds: [
+            new EmbedBuilder()
+              .setTitle("🚫 Duel Ditolak")
+              .setDescription(`${target} menolak tantangan dari ${challenger}.`)
+              .setColor("Grey"),
+          ],
           components: [],
         });
       }
@@ -92,12 +96,15 @@ module.exports = {
 
     collector.on("end", async (collected) => {
       if (collected.size === 0) {
-        // Edit pesan jika waktu habis dan belum ada yang merespons
         await message.edit({
-          content: `${target} tidak merespon tantangan duel.`,
-          embeds: [],
+          embeds: [
+            new EmbedBuilder()
+              .setTitle("⌛ Waktu Habis")
+              .setDescription(`${target} tidak merespon tantangan duel.`)
+              .setColor("Grey"),
+          ],
           components: [],
-        }).catch(err => console.error("Failed to edit message:", err));
+        }).catch(err => console.error("Gagal edit pesan setelah timeout:", err));
       }
     });
   },
