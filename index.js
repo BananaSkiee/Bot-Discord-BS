@@ -235,6 +235,13 @@ app.listen(PORT, () => {
   console.log(`🌐 Web server hidup di port ${PORT}`);
 });
 
+// 📌 Ping internal supaya bot tidak tidur (Koyeb Free workaround)
+setInterval(() => {
+  axios.get(`http://localhost:${PORT}/status`)
+    .then(() => console.log("🔄 Self-ping sukses, bot tetap aktif"))
+    .catch((err) => console.log("⚠️ Self-ping gagal:", err.message));
+}, 5 * 60 * 1000); // tiap 5 menit
+
 // 🧯 Error Handler
 process.on("unhandledRejection", (err) => {
   console.error("🚨 Unhandled Error:", err);
