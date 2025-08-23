@@ -161,7 +161,7 @@ module.exports = {
         }
       }
 
-     // ====================== ⚔️ DUEL SYSTEM ======================
+// ====================== ⚔️ DUEL SYSTEM ======================
 if (customId.startsWith("accept_duel") || customId.startsWith("decline_duel")) {
   const parts = customId.split("_");
   const action = parts[0]; // "accept" atau "decline"
@@ -184,21 +184,7 @@ if (customId.startsWith("accept_duel") || customId.startsWith("decline_duel")) {
     });
   }
 }
-
-// ========== TOMBOL SHOOT ==========
-if (customId.startsWith("shoot_")) {
-  const parts = customId.split("_");
-  const challengerId = parts[1];
-  const targetId = parts[2];
-
-  if (interaction.user.id !== challengerId && interaction.user.id !== targetId) {
-    return interaction.reply({ content: "❌ Kamu bukan bagian dari duel ini.", ephemeral: true });
-  }
-
-  return interaction.reply({
-    content: `🔫 <@${interaction.user.id}> menembak dalam duel!`,
-  });
-}
+      
       // ========== UNKNOWN ==========
       return interaction.reply({ content: "⚠️ Tombol tidak dikenali.", ephemeral: true });
 
