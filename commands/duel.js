@@ -23,6 +23,7 @@ module.exports = {
     const challenger = interaction.user;
     const target = interaction.options.getUser("target");
 
+    // ❌ Cegah duel diri sendiri
     if (target.id === challenger.id) {
       return interaction.reply({
         content: "❌ Kamu tidak bisa menantang dirimu sendiri!",
@@ -30,6 +31,7 @@ module.exports = {
       });
     }
 
+    // ❌ Cegah kalau salah satu udah dalam duel
     if (
       gameManager.isUserInGame(target.id) ||
       gameManager.isUserInGame(challenger.id)
@@ -40,6 +42,7 @@ module.exports = {
       });
     }
 
+    // 📩 Embed tantangan duel
     const embed = new EmbedBuilder()
       .setTitle("🔫 Shotgun Duels Challenge")
       .setDescription(
@@ -47,6 +50,7 @@ module.exports = {
       )
       .setColor("Red");
 
+    // ✅❌ Tombol terima/tolak dengan ID unik
     const row = new ActionRowBuilder().addComponents(
       new ButtonBuilder()
         .setCustomId(`accept_duel_${challenger.id}_${target.id}`)
@@ -58,12 +62,14 @@ module.exports = {
         .setStyle(ButtonStyle.Danger)
     );
 
+    // Kirim pesan tantangan
     const message = await interaction.reply({
       embeds: [embed],
       components: [row],
       fetchReply: true,
     });
 
+    // Kolektor tombol hanya untuk target
     const collector = message.createMessageComponentCollector({
       filter: (i) => i.user.id === target.id,
       time: 60000,
@@ -72,7 +78,8 @@ module.exports = {
     collector.on("collect", async (i) => {
       await i.deferUpdate();
 
-      if (i.customId.startsWith("accept_duel")) {
+      if (i.customId === `accept_duel_${challenger.id}_${target.id}`) {
+        // Duel diterima
         await i.editReply({
           embeds: [
             new EmbedBuilder()
@@ -84,7 +91,8 @@ module.exports = {
         });
 
         gameManager.startGame(i.channel, challenger, target);
-      } else if (i.customId.startsWith("decline_duel")) {
+      } else if (i.customId === `decline_duel_${challenger.id}_${target.id}`) {
+        // Duel ditolak
         await i.editReply({
           embeds: [
             new EmbedBuilder()
@@ -99,6 +107,7 @@ module.exports = {
       collector.stop();
     });
 
+    // Timeout kalau target ga respon
     collector.on("end", async (collected) => {
       if (collected.size === 0) {
         await message
