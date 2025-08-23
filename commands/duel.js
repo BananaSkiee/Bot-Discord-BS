@@ -30,7 +30,10 @@ module.exports = {
       });
     }
 
-    if (gameManager.isUserInGame(target.id) || gameManager.isUserInGame(challenger.id)) {
+    if (
+      gameManager.isUserInGame(target.id) ||
+      gameManager.isUserInGame(challenger.id)
+    ) {
       return interaction.reply({
         content: `❌ Salah satu dari kalian sudah dalam duel lain!`,
         ephemeral: true,
@@ -39,16 +42,18 @@ module.exports = {
 
     const embed = new EmbedBuilder()
       .setTitle("🔫 Shotgun Duels Challenge")
-      .setDescription(`${challenger} menantang ${target} untuk duel shotgun!\n\nApakah kamu berani?`)
+      .setDescription(
+        `${challenger} menantang ${target} untuk duel shotgun!\n\nApakah kamu berani?`
+      )
       .setColor("Red");
 
     const row = new ActionRowBuilder().addComponents(
       new ButtonBuilder()
-        .setCustomId(`accept_duel`)
+        .setCustomId(`accept_duel_${challenger.id}_${target.id}`)
         .setLabel("✅ Terima")
         .setStyle(ButtonStyle.Success),
       new ButtonBuilder()
-        .setCustomId(`decline_duel`)
+        .setCustomId(`decline_duel_${challenger.id}_${target.id}`)
         .setLabel("❌ Tolak")
         .setStyle(ButtonStyle.Danger)
     );
@@ -67,7 +72,7 @@ module.exports = {
     collector.on("collect", async (i) => {
       await i.deferUpdate();
 
-      if (i.customId === "accept_duel") {
+      if (i.customId.startsWith("accept_duel")) {
         await i.editReply({
           embeds: [
             new EmbedBuilder()
@@ -79,7 +84,7 @@ module.exports = {
         });
 
         gameManager.startGame(i.channel, challenger, target);
-      } else if (i.customId === "decline_duel") {
+      } else if (i.customId.startsWith("decline_duel")) {
         await i.editReply({
           embeds: [
             new EmbedBuilder()
@@ -96,15 +101,19 @@ module.exports = {
 
     collector.on("end", async (collected) => {
       if (collected.size === 0) {
-        await message.edit({
-          embeds: [
-            new EmbedBuilder()
-              .setTitle("⌛ Waktu Habis")
-              .setDescription(`${target} tidak merespon tantangan duel.`)
-              .setColor("Grey"),
-          ],
-          components: [],
-        }).catch(err => console.error("Gagal edit pesan setelah timeout:", err));
+        await message
+          .edit({
+            embeds: [
+              new EmbedBuilder()
+                .setTitle("⌛ Waktu Habis")
+                .setDescription(`${target} tidak merespon tantangan duel.`)
+                .setColor("Grey"),
+            ],
+            components: [],
+          })
+          .catch((err) =>
+            console.error("Gagal edit pesan setelah timeout:", err)
+          );
       }
     });
   },
