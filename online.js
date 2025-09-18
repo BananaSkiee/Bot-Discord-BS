@@ -10,8 +10,8 @@ module.exports = async function updateOnline(guild) {
         ["online", "idle", "dnd"].includes(m.presence?.status)
     ).size;
 
-    const voiceChannel = guild.channels.cache.get(config.voiceChannelId);
-    const logChannel = guild.channels.cache.get(config.logChannelId); // Log ke sini
+    const voiceChannel = guild.channels.cache.get(config.VOICE_CHANNEL_ID);
+    const logChannel = guild.channels.cache.get(config.LOG_CHANNEL_ID); // Log ke sini
 
     if (voiceChannel && voiceChannel.isVoiceBased()) {
       await voiceChannel.setName(`「 Online: ${onlineCount} 」`);
