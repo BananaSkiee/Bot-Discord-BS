@@ -6,6 +6,7 @@ const countValidator = require("../modules/countValidator");
 const handleHapusTag = require("../modules/hapusTagCommand");
 const translateHandler = require("../modules/translate");
 const memeCommand = require("../modules/memeCommand");
+const autoReply = require("../modules/autoReply");
 const autoChat = require("../modules/autoChat");
 const generateWelcomeCard = require("../modules/welcomeCard");
 const getRandomQuote = require("../modules/welcomeQuotes"); // sesuaikan path-nya
@@ -17,8 +18,6 @@ const coinSystem = require("../modules/coinSystem");
 const rulesCommand = require("../modules/rulesCommand");
 const autoWarn = require("../modules/autoWarn");
 const antiLink = require("../modules/antiLink");
-const handleAutoReply = require("../modules/autoReply");
-const { handleGrafikCommand } = require("../modules/cryptoSimulator");
 
 const filePath = path.join(__dirname, "../data/taggedUsers.json");
 
@@ -66,9 +65,9 @@ module.exports = {
     if (message.author.bot) return;
  // Panggil fungsi-fungsinya saat ada pesan baru
     await countValidator(message);
+    await autoReply(message);
     await autoChat(message);
     await autoEmoji(message);
-    handleAutoReply(message);
     autoReactEmoji.execute(message);
     autoWarn.execute(message);     // Untuk toxic
     antiLink.execute(message);    
@@ -84,10 +83,6 @@ if (!contentRaw.startsWith(prefix)) return;
 const [commandRaw, ...args] = contentRaw.slice(prefix.length).trim().split(/ +/);
 const command = commandRaw.toLowerCase();
 
-if (message.content === "!grafik") {
-    await handleGrafikCommand(message, client);
-}
-    
 if (command === "rules") {
     return rulesCommand(message);
 }
@@ -104,7 +99,7 @@ if (command === "meme") {
 if (command === "tebakangka") {
   return tebakAngka(message);
 }
-    
+
 // Command cek saldo
 if (command === "coin") {
   const balance = coinSystem.getCoins(message.author.id);
@@ -336,9 +331,9 @@ Total Members   : ${member.guild.memberCount}`,
 });
 
         // Hapus pesan perintah !testwelcome agar channel bersih (opsional)
-if (channel.messages.cache.has(message.id)) {
-    await message.delete().catch(console.error);
-}
+        if (message.deletable) {
+            await message.delete().catch(console.error);
+        }
 
     } catch (error) {
         console.error("ERROR SAAT TES WELCOME MANUAL:", error);
@@ -348,7 +343,7 @@ if (channel.messages.cache.has(message.id)) {
 }
     
 // ====== !testdm command ======
-if (contentLower.startsWith("!newdm")) {
+if (contentLower.startsWith("!testdm")) {
   const memberAuthor = await message.guild.members.fetch(message.author.id);
   if (!memberAuthor.roles.cache.has(ADMIN_ROLE_ID)) {
     return message.reply("❌ Kamu tidak punya izin pakai command ini.");
@@ -378,75 +373,89 @@ if (contentLower.startsWith("!newdm")) {
       }
     }
   
-    // ===== TEST DM =====
-    if (content.startsWith("!testdm")) {
-      if (!isAdmin) return message.reply("❌ Gak punya izin.");
+  const args = contentRaw.split(/\s+/);
+  const user = message.mentions.users.first();
+  const inputTagRaw = args.slice(2).join(" ").trim();
+  const inputTag = inputTagRaw.toUpperCase().replace(/[\[\]]/g, "");
 
-      const args = message.content.trim().split(/\s+/);
-      const user = message.mentions.users.first();
-      const inputTagRaw = args.slice(2).join(" ").trim();
-      const inputTag = inputTagRaw.toUpperCase().replace(/[\[\]]/g, "");
+  if (!user || !inputTag) {
+    return message.reply("❌ Format salah. Contoh: `!testdm @user MOD`");
+  }
 
-      if (!user || !inputTag) return message.reply("❌ Contoh: `!testdm @user MOD`");
+  const matchedRole = ROLES.find(r =>
+    r.tag.replace(/[\[\]]/g, "").toUpperCase() === inputTag
+  );
 
-      const matchedRole = ROLES.find(r =>
-        r.tag.replace(/[\[\]]/g, "").toUpperCase() === inputTag
-      );
-      if (!matchedRole) return message.reply("❌ Tag tidak valid.");
+  if (!matchedRole) {
+    return message.reply("❌ Tag tidak valid.");
+  }
 
-      const realTag = matchedRole.tag;
-      const safeTagId = realTag.replace(/[^\w-]/g, "").toLowerCase();
-      const displayName = user.globalName ?? user.username;
-      const roleDisplay = ROLE_DISPLAY_MAP[matchedRole.id] || "Tanpa Nama";
-      const member = await message.guild.members.fetch(user.id);
+  const member = await message.guild.members.fetch(user.id);
+  const realTag = matchedRole.tag;
+  const safeTagId = realTag.replace(/[^\w-]/g, "").toLowerCase();
+  const displayName = user.globalName ?? user.username;
+  const roleDisplay = ROLE_DISPLAY_MAP[matchedRole.id] || "Tanpa Nama";
 
-      let taggedUsers = {};
-      if (fs.existsSync(filePath)) {
-        taggedUsers = JSON.parse(fs.readFileSync(filePath));
-      }
+  let taggedUsers = {};
+  if (fs.existsSync(filePath)) {
+    taggedUsers = JSON.parse(fs.readFileSync(filePath));
+  }
 
-      if (!taggedUsers[user.id]) {
-        taggedUsers[user.id] = {
-          originalName: member.displayName,
-          usedTags: []
-        };
-      }
+  if (!taggedUsers[user.id]) {
+    taggedUsers[user.id] = {
+      originalName: member.displayName,
+      usedTags: []
+    };
+  }
 
-      if (!member.roles.cache.has(matchedRole.id)) {
-        await member.roles.add(matchedRole.id).catch(console.error);
-      }
+  // ======= LANGSUNG KASIH ROLE =======
+  if (!member.roles.cache.has(matchedRole.id)) {
+    await member.roles.add(matchedRole.id).catch(console.error);
+  }
+  // ===================================
 
-      taggedUsers[user.id].usedTags.push(matchedRole.id);
-      fs.writeFileSync(filePath, JSON.stringify(taggedUsers, null, 2));
+  taggedUsers[user.id].usedTags.push(matchedRole.id);
+  fs.writeFileSync(filePath, JSON.stringify(taggedUsers, null, 2));
 
-      const row = new ActionRowBuilder().addComponents(
-        new ButtonBuilder()
-          .setCustomId(`test_use_tag_${matchedRole.id}_${safeTagId}`)
-          .setLabel(`✅ Pakai Tag ${realTag}`)
-          .setStyle(ButtonStyle.Success),
-        new ButtonBuilder()
-          .setCustomId(`test_remove_tag_${matchedRole.id}_${safeTagId}`)
-          .setLabel(`❌ Jangan Pakai Tag`)
-          .setStyle(ButtonStyle.Secondary)
-      );
+  const row = new ActionRowBuilder().addComponents(
+    new ButtonBuilder()
+      .setCustomId(`test_use_tag_${matchedRole.id}_${safeTagId}`)
+      .setLabel("Ya, pakai tag ${roleTag}")
+      .setStyle(ButtonStyle.Success),
+    new ButtonBuilder()
+      .setCustomId(`test_remove_tag_${matchedRole.id}_${safeTagId}`)
+      .setLabel("Tidak, tanpa tag")
+      .setStyle(ButtonStyle.Secondary)
+  );
 
-      try {
-        await user.send({
-          content: `✨ *Selamat ${displayName}!*\n\n🔰 Kamu dapat tag: \`${realTag}\`\n📛 Role: \`${roleDisplay}\`\n\nIngin pakai tag ini di nickname?\n\n👇 Pilih tombol di bawah:`,
-          components: [row]
-        });
-        await message.reply(`✅ DM terkirim ke ${displayName}`);
-      } catch (err) {
-        console.error("❌ Gagal kirim DM:", err);
-        return message.reply("❌ Gagal kirim DM. Cek setting user.");
-      }
+  try {
+    await user.send({
+      content: `✨ *Selamat kepada ${displayName}!*
+
+🔰 Kamu menerima tag khusus: \`${realTag}\`
+📛 Diberikan karena kamu memiliki role: \`${roleDisplay}\`
+
+Ingin menampilkan tag itu di nickname kamu?
+Contoh: \`${realTag} ${displayName}\`
+
+─────────────────────────────
+Pilih salah satu opsi di bawah ini: 👇`,
+      components: [row]
+    });
+
+    await message.reply(`✅ DM berhasil dikirim ke ${displayName}`);
+  } catch (err) {
+    console.error("❌ Gagal kirim DM:", err);
+    if (err.code === 50007) {
+      return message.reply("❌ DM gagal. User matiin DM dari server.");
     }
-
-    // ===== HAPUS TAG =====
-    if (content.startsWith("!hapustag")) {
-      if (!isAdmin) return message.reply("❌ Gak punya izin.");
-      return handleHapusTag(message);
-    }
+    return message.reply("❌ Terjadi kesalahan saat kirim DM.");
+  }
 }
-  } // Tutup execute()
-} // Tutup module.exports
+
+    // ========== 4. HAPUS TAG ============
+if (contentLower.startsWith("!hapustag")) {
+return handleHapusTag(message);
+}
+    }
+};
