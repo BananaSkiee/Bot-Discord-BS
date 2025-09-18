@@ -248,4 +248,4 @@ process.on("unhandledRejection", (err) => {
 });
 
 // 🔐 Login
-client.login(config.token);
+client.login(process.env.DISCORD_TOKEN);
