@@ -1,7 +1,7 @@
 const mineflayer = require("mineflayer");
 const { pathfinder, Movements, goals } = require("mineflayer-pathfinder");
 const autoeat = require("mineflayer-auto-eat");
-const config = require("../config"); // ✅ Panggil config
+// const config = require("../config"); // ✅ Baris ini dihapus
 
 let mcBot = null;
 let isExploring = false;
@@ -17,19 +17,19 @@ module.exports = {
 
     sendDiscordNotification = (message) => {
       if (client.isReady()) {
-        const channel = client.channels.cache.get(config.CHANNELS.minecraft);
+        const channel = client.channels.cache.get(process.env.MC_LOG_CHANNEL_ID);
         if (channel) channel.send(message).catch(() => {});
       }
     };
 
     const connect = () => {
       try {
-        // ✅ Gunakan variabel dari config.js
+        // ✅ Langsung mengambil nilai dari process.env
         mcBot = mineflayer.createBot({
-          host: config.MINECRAFT.host,
-          port: Number(config.MINECRAFT.port),
-          username: config.MINECRAFT.username,
-          version: config.MINECRAFT.version, 
+          host: process.env.MC_HOST || "localhost",
+          port: Number(process.env.MC_PORT) || 25565,
+          username: process.env.MC_USERNAME || "BotServer",
+          version: process.env.MC_VERSION || "1.20.1",
           auth: "offline",
           checkTimeoutInterval: 60000,
         });
