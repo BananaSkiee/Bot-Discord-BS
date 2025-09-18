@@ -12,7 +12,7 @@ function saveTaggedUsers(data) {
 module.exports = {
   name: "interactionCreate",
   async execute(interaction) {
-    try {
+
       // ===================== SLASH COMMAND =====================
       if (interaction.isChatInputCommand()) {
         const command = interaction.client.commands.get(interaction.commandName);
@@ -30,12 +30,12 @@ module.exports = {
             await interaction.reply({ content: "❌ Terjadi error saat jalankan command.", ephemeral: true });
           }
         }
-        return; // stop disini
+        return; // supaya nggak lanjut ke bawah (button handler)
       }
-
-      // ===================== BUTTON HANDLER =====================
-      if (!interaction.isButton()) return;
-
+    
+  if (!interaction.isButton()) return;
+    
+    try {
       console.log("👉 Tombol ditekan:", interaction.customId);
 
       const username = interaction.user.globalName ?? interaction.user.username;
@@ -44,7 +44,10 @@ module.exports = {
 
       const member = await guild.members.fetch(interaction.user.id).catch(() => null);
       if (!member) {
-        return interaction.reply({ content: "❌ Gagal ambil datamu dari server.", ephemeral: true });
+        return interaction.reply({
+          content: "❌ Gagal ambil datamu dari server.",
+          ephemeral: true,
+        });
       }
 
       const customId = interaction.customId;
@@ -130,101 +133,112 @@ module.exports = {
           .setImage("https://i.ibb.co.com/WvSvsVfH/standard-34.gif");
 
         return interaction.reply({ embeds: [warnEmbed], ephemeral: true });
-            }
-      
+      }
+        
       // ========== TOMBOL ✅ UMUM ==========
       if (customId === "use_tag") {
         const role = ROLES.find(r => member.roles.cache.has(r.id));
         if (!role) {
-          return interaction.reply({ content: "❌ Kamu tidak punya role yang cocok untuk tag ini.", ephemeral: true });
+          return interaction.reply({
+            content: "❌ Kamu tidak punya role yang cocok untuk tag ini.",
+            ephemeral: true,
+          });
         }
 
         await member.setNickname(`${role.tag} ${username}`).catch(console.error);
         taggedUsers[member.id] = true;
         saveTaggedUsers(taggedUsers);
 
-        return interaction.reply({ content: `✅ Nama kamu sekarang: \`${role.tag} ${username}\``, ephemeral: true });
+        return interaction.reply({
+          content: `✅ Nama kamu sekarang: \`${role.tag} ${username}\``,
+          ephemeral: true,
+        });
       }
 
+      // ========== TOMBOL ❌ HAPUS TAG UMUM ==========
       if (customId === "remove_tag") {
         await member.setNickname(username).catch(console.error);
         taggedUsers[member.id] = false;
         saveTaggedUsers(taggedUsers);
 
-        return interaction.reply({ content: "✅ Tag dihapus dan nickname dikembalikan.", ephemeral: true });
+        return interaction.reply({
+          content: "✅ Tag dihapus dan nickname dikembalikan.",
+          ephemeral: true,
+        });
       }
 
-      // ========== TOMBOL TEST ✅ / ❌ ==========
-      if (customId.startsWith("test_use_tag_") || customId.startsWith("test_remove_tag_")) {
-        const parts = customId.split("_");
-        const action = parts[1]; // "use" atau "remove"
-        const roleId = parts[3];
-        const safeTagId = parts.slice(4).join("_");
-
-        const matched = ROLES.find(
-          r => r.id === roleId && r.tag.replace(/[^\w-]/g, "").toLowerCase() === safeTagId
-        );
-
-        if (!matched) {
-          return interaction.reply({ content: "❌ Tag tidak ditemukan atau tidak valid.", ephemeral: true });
-        }
-
-        const realTag = matched.tag;
-
-        if (action === "use") {
-          await member.setNickname(`${realTag} ${username}`).catch(console.error);
-          if (!member.roles.cache.has(matched.id)) {
-            await member.roles.add(matched.id).catch(console.error);
-          }
-          taggedUsers[member.id] = true;
-          saveTaggedUsers(taggedUsers);
-
-          return interaction.reply({ content: `🧪 Nickname kamu sekarang: \`${realTag} ${username}\``, ephemeral: true });
-        }
-
-        if (action === "remove") {
-          await member.setNickname(username).catch(console.error);
-          taggedUsers[member.id] = false;
-          saveTaggedUsers(taggedUsers);
-
-          return interaction.reply({ content: `🧪 Nickname kamu dikembalikan menjadi \`${username}\``, ephemeral: true });
-        }
-      }
-
-// ====================== ⚔️ DUEL SYSTEM ======================
-if (customId.startsWith("accept_duel") || customId.startsWith("decline_duel")) {
+// ...
+// ========== TOMBOL TEST ✅ / ❌ ==========
+if (
+  interaction.isButton() && (
+    customId.startsWith("test_use_tag_") ||
+    customId.startsWith("test_remove_tag_")
+  )
+) {
   const parts = customId.split("_");
-  const action = parts[0]; // "accept" atau "decline"
-  const challengerId = parts[2];
-  const targetId = parts[3];
+  const action = parts[1];
+  const roleId = parts[3];
+  const safeTagId = parts.slice(4).join("_");
 
-  if (interaction.user.id !== targetId && interaction.user.id !== challengerId) {
-    return interaction.reply({ content: "❌ Kamu bukan bagian dari duel ini.", ephemeral: true });
-  }
+  const matched = ROLES.find(
+    r =>
+      r.id === roleId &&
+      r.tag.replace(/[^\w-]/g, "").toLowerCase() === safeTagId
+  );
 
-  if (action === "accept") {
+  if (!matched) {
     return interaction.reply({
-      content: `⚔️ Duel dimulai antara <@${challengerId}> dan <@${targetId}>!`,
+      content: "❌ Tag tidak ditemukan atau tidak valid.",
+      ephemeral: true,
     });
   }
 
-  if (action === "decline") {
+  const realTag = matched.tag;
+
+  if (action === "use") {
+    await member.setNickname(`${realTag} ${username}`).catch(console.error);
+    if (!member.roles.cache.has(matched.id)) {
+      await member.roles.add(matched.id).catch(console.error);
+    }
+    taggedUsers[member.id] = true;
+    saveTaggedUsers(taggedUsers);
+
     return interaction.reply({
-      content: `❌ <@${targetId}> menolak duel dari <@${challengerId}>.`,
+      content: `🧪 Nickname kamu sekarang: \`${realTag} ${username}\``,
+      ephemeral: true,
+    });
+  }
+
+  if (action === "remove") {
+    await member.setNickname(username).catch(console.error);
+    taggedUsers[member.id] = false;
+    saveTaggedUsers(taggedUsers);
+
+    return interaction.reply({
+      content: `🧪 Nickname kamu dikembalikan menjadi \`${username}\``,
+      ephemeral: true,
     });
   }
 }
-      
-      // ========== UNKNOWN ==========
-      return interaction.reply({ content: "⚠️ Tombol tidak dikenali.", ephemeral: true });
+    // ========== UNKNOWN ==========
+    return interaction.reply({
+      content: "⚠️ Tombol tidak dikenali.",
+      ephemeral: true,
+    });
 
-    } catch (err) {
-      console.error("❌ ERROR GLOBAL DI INTERACTIONCREATE:", err);
-      if (interaction.replied || interaction.deferred) {
-        await interaction.followUp({ content: "❌ Terjadi error internal.", ephemeral: true });
-      } else {
-        await interaction.reply({ content: "❌ Terjadi error internal.", ephemeral: true });
-      }
+} catch (err) {
+    console.error("❌ ERROR GLOBAL DI INTERACTIONCREATE:", err);
+    if (interaction.replied || interaction.deferred) {
+      await interaction.followUp({
+        content: "❌ Terjadi error internal.",
+        ephemeral: true,
+      });
+    } else {
+      await interaction.reply({
+        content: "❌ Terjadi error internal.",
+        ephemeral: true,
+      });
     }
   }
-};
+} // ⬅️ Tutup fungsi execute
+};   // ⬅️ Tutup module.exports
