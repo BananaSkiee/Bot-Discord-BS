@@ -1,21 +1,13 @@
 const mineflayer = require("mineflayer");
 const { pathfinder, Movements, goals } = require("mineflayer-pathfinder");
 const autoeat = require("mineflayer-auto-eat");
+const config = require("../config"); // ✅ Panggil config
 
 let mcBot = null;
 let isExploring = false;
 let isBotReady = false;
 let isGuarding = false;
 let guardPos = null;
-
-// Config manual
-const configMC = {
-  host: "BananaUcok.aternos.me",
-  port: 14262,
-  username: "BotServer",
-  version: false, // auto detect
-  logChannel: "1405311668455735446",
-};
 
 let sendDiscordNotification = (message) => {};
 
@@ -25,18 +17,19 @@ module.exports = {
 
     sendDiscordNotification = (message) => {
       if (client.isReady()) {
-        const channel = client.channels.cache.get(configMC.logChannel);
+        const channel = client.channels.cache.get(config.CHANNELS.minecraft);
         if (channel) channel.send(message).catch(() => {});
       }
     };
 
     const connect = () => {
       try {
+        // ✅ Menggunakan konfigurasi dari config.js
         mcBot = mineflayer.createBot({
-          host: configMC.host,
-          port: configMC.port,
-          username: configMC.username,
-          version: configMC.version,
+          host: config.MINECRAFT.host,
+          port: Number(config.MINECRAFT.port),
+          username: config.MINECRAFT.username,
+          version: config.MINECRAFT.version,
           auth: "offline",
           checkTimeoutInterval: 60000,
         });
@@ -44,27 +37,29 @@ module.exports = {
         mcBot.loadPlugin(pathfinder);
         mcBot.loadPlugin(autoeat);
 
+        // ✅ Event 'login'
         mcBot.on("login", () => {
           console.log("✅ Bot MC terhubung!");
           sendDiscordNotification("✅ Bot Minecraft sudah login ke server!");
         });
 
+        // ✅ Event 'spawn'
         mcBot.on("spawn", () => {
           isBotReady = true;
           client.user.setActivity("Main di Aternos", { type: "PLAYING" });
           mcBot.chat("Bot aktif!");
-
           const movements = new Movements(mcBot);
           mcBot.pathfinder.setMovements(movements);
-
           startAutoTasks();
         });
 
+        // ✅ Event 'death'
         mcBot.on("death", () => {
           sendDiscordNotification("☠️ Bot mati! Respawn otomatis...");
           setTimeout(() => mcBot.emit("respawn"), 3000);
         });
 
+        // ✅ Event 'end'
         mcBot.on("end", (reason) => {
           isBotReady = false;
           console.log(`🔌 Bot terputus: ${reason}`);
@@ -72,11 +67,13 @@ module.exports = {
           setTimeout(connect, 30000);
         });
 
+        // ✅ Event 'error'
         mcBot.on("error", (err) => {
           console.error("❌ Error MC:", err.message);
           sendDiscordNotification(`❌ Error: ${err.message}`);
         });
 
+        // ✅ Event 'chat'
         mcBot.on("chat", (username, message) => {
           if (username === mcBot.username) return;
           sendDiscordNotification(`[MC] <${username}> ${message}`);
@@ -90,14 +87,13 @@ module.exports = {
 
     client.on("messageCreate", (message) => {
       if (message.author.bot || !message.content.startsWith("!")) return;
-
       const args = message.content.slice(1).split(/ +/);
       const command = args.shift().toLowerCase();
       const player = message.author.username;
-
       handleDiscordCommand(command, args, player);
     });
 
+    // ✅ Mulai koneksi
     connect();
   },
 };
@@ -110,6 +106,7 @@ function startAutoTasks() {
     bannedFood: [],
   };
 
+  // ✅ Interval untuk eksplorasi
   setInterval(() => {
     if (isExploring && isBotReady) {
       const randomPos = mcBot.entity.position.offset(
@@ -121,9 +118,7 @@ function startAutoTasks() {
         new goals.GoalBlock(randomPos.x, mcBot.entity.position.y, randomPos.z)
       );
       sendDiscordNotification(
-        `🧭 Bot menjelajah ke koordinat: ${randomPos.x.toFixed(
-          0
-        )}, ${randomPos.z.toFixed(0)}`
+        `🧭 Bot menjelajah ke koordinat: ${randomPos.x.toFixed(0)}, ${randomPos.z.toFixed(0)}`
       );
     }
   }, 60000);
@@ -142,15 +137,14 @@ async function handleDiscordCommand(command, args, player) {
         if (!targetPlayer || !targetPlayer.entity)
           return sendDiscordNotification(`❌ Player ${args[0]} tidak ditemukan.`);
         mcBot.pathfinder.setGoal(
-          new goals.GoalFollow(targetPlayer.entity, 2),
-          true
+          new goals.GoalFollow(targetPlayer.entity, 2), true
         );
         sendDiscordNotification(`👣 Bot mengikuti ${args[0]}`);
         break;
       }
       case "goto": {
         if (args.length !== 3)
-          return sendDiscordNotification("❌ Usage: !goto <x> <y> <z>");
+          return sendDiscordNotification("❌ Penggunaan: !goto <x> <y> <z>");
         const [x, y, z] = args.map(Number);
         mcBot.pathfinder.setGoal(new goals.GoalBlock(x, y, z));
         sendDiscordNotification(`➡️ Bot menuju: ${x}, ${y}, ${z}`);
@@ -241,11 +235,7 @@ async function handleDiscordCommand(command, args, player) {
       case "status": {
         const pos = mcBot.entity.position;
         sendDiscordNotification(
-          `📊 Status bot:\n- Posisi: x${pos.x.toFixed(1)} y${pos.y.toFixed(
-            1
-          )} z${pos.z.toFixed(1)}\n- Health: ${mcBot.health.toFixed(
-            1
-          )}/20\n- Food: ${mcBot.food}/20`
+          `📊 Status bot:\n- Posisi: x${pos.x.toFixed(1)} y${pos.y.toFixed(1)} z${pos.z.toFixed(1)}\n- Health: ${mcBot.health.toFixed(1)}/20\n- Food: ${mcBot.food}/20`
         );
         break;
       }
