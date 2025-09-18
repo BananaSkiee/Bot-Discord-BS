@@ -24,12 +24,12 @@ module.exports = {
 
     const connect = () => {
       try {
-        // ✅ Menggunakan konfigurasi dari config.js
+        // ✅ Gunakan variabel dari config.js
         mcBot = mineflayer.createBot({
-    host: process.env.MC_HOST || null,
-    port: process.env.MC_PORT || null,
-    username: process.env.MC_USERNAME || null,
-    version: process.env.MC_VERSION || "1.20.1", // ✅ Ganti MINECRAFT_VERSION menjadi MC_VERSION
+          host: config.MINECRAFT.host,
+          port: Number(config.MINECRAFT.port),
+          username: config.MINECRAFT.username,
+          version: config.MINECRAFT.version, 
           auth: "offline",
           checkTimeoutInterval: 60000,
         });
