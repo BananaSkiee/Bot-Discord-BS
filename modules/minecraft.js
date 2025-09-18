@@ -1,7 +1,8 @@
+// minecraft.js
 const mineflayer = require("mineflayer");
 const { pathfinder, Movements, goals } = require("mineflayer-pathfinder");
 const autoeat = require("mineflayer-auto-eat");
-// const config = require("../config"); // ✅ Baris ini dihapus
+const config = require("../config"); // ✅ Menggunakan config.js
 
 let mcBot = null;
 let isExploring = false;
@@ -17,26 +18,28 @@ module.exports = {
 
     sendDiscordNotification = (message) => {
       if (client.isReady()) {
-        const channel = client.channels.cache.get(process.env.MC_LOG_CHANNEL_ID);
+        // Menggunakan config.CHANNELS.minecraft
+        const channel = client.channels.cache.get(config.CHANNELS.minecraft); 
         if (channel) channel.send(message).catch(() => {});
       }
     };
 
     const connect = () => {
       try {
-        // ✅ Langsung mengambil nilai dari process.env
+        // Mengambil dari config.MINECRAFT
         mcBot = mineflayer.createBot({
-          host: process.env.MC_HOST || "localhost",
-          port: Number(process.env.MC_PORT) || 25565,
-          username: process.env.MC_USERNAME || "BotServer",
-          version: process.env.MC_VERSION || "1.20.1",
+          host: config.MINECRAFT.host || "localhost",
+          port: Number(config.MINECRAFT.port) || 25565,
+          username: config.MINECRAFT.username || "BotServer",
+          version: config.MINECRAFT.version || "1.20.1",
           auth: "offline",
           checkTimeoutInterval: 60000,
         });
 
         mcBot.loadPlugin(pathfinder);
         mcBot.loadPlugin(autoeat);
-
+        
+        // ... (kode event lainnya tetap sama)
         // ✅ Event 'login'
         mcBot.on("login", () => {
           console.log("✅ Bot MC terhubung!");
@@ -78,6 +81,7 @@ module.exports = {
           if (username === mcBot.username) return;
           sendDiscordNotification(`[MC] <${username}> ${message}`);
         });
+
       } catch (err) {
         console.error("❌ Gagal connect:", err.message);
         sendDiscordNotification(`❌ Error connect: ${err.message}`);
@@ -98,7 +102,7 @@ module.exports = {
   },
 };
 
-// --- Auto Tasks ---
+// ... (sisanya tidak berubah) ...
 function startAutoTasks() {
   mcBot.autoEat.options = {
     priority: "foodPoints",
@@ -106,7 +110,6 @@ function startAutoTasks() {
     bannedFood: [],
   };
 
-  // ✅ Interval untuk eksplorasi
   setInterval(() => {
     if (isExploring && isBotReady) {
       const randomPos = mcBot.entity.position.offset(
@@ -124,7 +127,6 @@ function startAutoTasks() {
   }, 60000);
 }
 
-// --- Command Handler ---
 async function handleDiscordCommand(command, args, player) {
   if (!mcBot || !isBotReady) {
     return sendDiscordNotification("⚠️ Bot Minecraft belum siap!");
