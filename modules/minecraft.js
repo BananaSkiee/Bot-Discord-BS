@@ -15,7 +15,7 @@ module.exports = {
 
     // Fungsi kirim pesan ke Discord
     sendDiscordNotification = (message) => {
-      const channelId = "1405311668455735446"; // ganti dengan channel ID kamu
+      const channelId = process.env.MC_LOG_CHANNEL_ID || "1405311668455735446"; 
       if (client.isReady()) {
         const channel = client.channels.cache.get(channelId);
         if (channel) channel.send(message).catch(() => {});
@@ -24,59 +24,63 @@ module.exports = {
 
     // Fungsi koneksi ke server MC
     const connect = () => {
-      mcBot = mineflayer.createBot({
-        host: "BananaUcok.aternos.me",
-        port: 14262,
-        username: "Plyer456",
-        version: "1.20.1",
-        auth: "offline",
-        checkTimeoutInterval: 60000,
-      });
+      try {
+        mcBot = mineflayer.createBot({
+          host: process.env.MC_HOST,
+          port: parseInt(process.env.MC_PORT),
+          username: process.env.MC_USERNAME || "MinecraftBot",
+          version: process.env.MC_VERSION || false, // auto detect jika false
+          auth: "offline",
+          checkTimeoutInterval: 60000,
+        });
 
-      // Load plugin
-      mcBot.loadPlugin(pathfinder);
-      mcBot.loadPlugin(autoeat);
+        // Load plugin
+        mcBot.loadPlugin(pathfinder);
+        mcBot.loadPlugin(autoeat);
 
-      // Event login
-      mcBot.on("login", () => {
-        console.log("✅ Bot MC terhubung!");
-        sendDiscordNotification("Bot Minecraft telah terhubung ke server!");
-      });
+        // Event login
+        mcBot.on("login", () => {
+          console.log("✅ Bot MC terhubung!");
+          sendDiscordNotification("Bot Minecraft telah terhubung ke server!");
+        });
 
-      // Event spawn
-      mcBot.on("spawn", () => {
-        console.log("✅ Bot telah spawn di dunia!");
-        isBotReady = true;
-        client.user.setActivity("Main di Aternos", { type: "PLAYING" });
+        // Event spawn
+        mcBot.on("spawn", () => {
+          console.log("✅ Bot telah spawn di dunia!");
+          isBotReady = true;
+          client.user.setActivity("Main di Aternos", { type: "PLAYING" });
 
-        mcBot.chat("Bot aktif!");
+          mcBot.chat("Bot aktif!");
 
-        const movements = new Movements(mcBot);
-        mcBot.pathfinder.setMovements(movements);
+          const movements = new Movements(mcBot);
+          mcBot.pathfinder.setMovements(movements);
 
-        startAutoTasks();
-      });
+          startAutoTasks();
+        });
 
-      // Event disconnect
-      mcBot.on("end", (reason) => {
-        isBotReady = false;
-        console.log(`🔌 Koneksi terputus: ${reason}`);
-        sendDiscordNotification(`Bot Minecraft terputus: ${reason}`);
+        // Event disconnect
+        mcBot.on("end", (reason) => {
+          isBotReady = false;
+          console.log(`🔌 Koneksi terputus: ${reason}`);
+          sendDiscordNotification(`Bot Minecraft terputus: ${reason}`);
+          setTimeout(connect, 30000); // auto reconnect
+        });
 
-        // Auto reconnect setelah delay
+        mcBot.on("error", (err) => {
+          console.error("❌ Error MC:", err.message);
+          sendDiscordNotification(`Error Bot Minecraft: ${err.message}`);
+        });
+
+        // Chat dari Minecraft → Discord
+        mcBot.on("chat", (username, message) => {
+          if (username === mcBot.username) return;
+          sendDiscordNotification(`[Minecraft] <${username}> ${message}`);
+        });
+      } catch (err) {
+        console.error("❌ Gagal membuat bot:", err.message);
+        sendDiscordNotification(`Gagal membuat bot: ${err.message}`);
         setTimeout(connect, 30000);
-      });
-
-      mcBot.on("error", (err) => {
-        console.error("❌ Error MC:", err.message);
-        sendDiscordNotification(`Error Bot Minecraft: ${err.message}`);
-      });
-
-      // Chat dari Minecraft → Discord
-      mcBot.on("chat", (username, message) => {
-        if (username === mcBot.username) return;
-        sendDiscordNotification(`[Minecraft] <${username}> ${message}`);
-      });
+      }
     };
 
     // Command dari Discord → Minecraft
