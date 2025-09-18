@@ -3,10 +3,12 @@
 // require("dotenv").config(); 
 
 module.exports = {
-  // ✅ Ambil data utama dari .env
-  TOKEN: process.env.TOKEN || null,
-  GUILD_ID: process.env.GUILD_ID || null,
-  CLIENT_ID: process.env.CLIENT_ID || null,
+  // ✅ Objek DISCORD untuk mengatasi error "cannot read token"
+  DISCORD: {
+    token: process.env.TOKEN || null,
+    clientId: process.env.CLIENT_ID || null,
+    guildId: process.env.GUILD_ID || null,
+  },
 
   // ✅ Kelompokkan semua ID channel dalam satu objek
   CHANNELS: {
@@ -17,18 +19,16 @@ module.exports = {
     main: process.env.CHANNEL_ID || null,
     welcome: process.env.WELCOME_CHANNEL_ID || null,
     goodbye: process.env.GOODBYE_CHANNEL_ID || null,
-    minecraft: process.env.MINECRAFT_CHANNEL_ID || null, // ✅ Tambahan untuk MC
+    minecraft: process.env.MINECRAFT_CHANNEL_ID || null,
   },
 
   // ✅ Kelompokkan semua ID role dalam satu objek
   ROLES: {
-    // Role umum
     admin: process.env.ADMIN_ROLE_ID || null,
     muted: process.env.MUTED_ROLE_ID || null,
     member: process.env.MEMBER_ID || null,
-    rainbow: process.env.RAINBOW_ROLE_ID || null, // ✅ Menggunakan singular ID
+    rainbow: process.env.RAINBOW_ROLE_ID || null,
     
-    // Role level (sebagai array untuk kemudahan)
     levelRoles: [
       process.env.ROLE_1_ID,
       process.env.ROLE_2_ID,
@@ -45,10 +45,10 @@ module.exports = {
       process.env.ROLE_13_ID,
       process.env.ROLE_14_ID,
       process.env.ROLE_15_ID,
-    ].filter(id => id), // ✅ Filter null atau undefined
+    ].filter(id => id),
   },
   
-  // ✅ Peta untuk nama role (akses dengan config.ROLE_DISPLAY_MAP['ID_ROLE_NYA'])
+  // ✅ Peta untuk nama role
   ROLE_DISPLAY_MAP: {
     [process.env.ROLE_1_ID]: "「 👑 」sᴇʀᴠᴇʀ ᴏᴡɴᴇʀ",
     [process.env.ROLE_2_ID]: "「 ❗ 」ᴀᴅᴍɪɴɪsᴛʀᴀᴛᴏʀ",
@@ -72,7 +72,7 @@ module.exports = {
     host: process.env.MC_HOST || null,
     port: process.env.MC_PORT || null,
     username: process.env.MC_USERNAME || null,
-    version: process.env.MINECRAFT_VERSION || "1.20.1", // ✅ Tambahkan ini
+    version: process.env.MC_VERSION || "1.20.1", // ✅ Diganti menjadi MC_VERSION
   },
   
   // URL untuk ping
