@@ -131,12 +131,19 @@ setInterval(updateStatus, 60_000);
 try { iconAnim.startAutoAnimation(client); } catch (err) { console.error("❌ Icon anim error:", err); }  
 
 // 📸 Auto meme tiap 3 jam  
-try {  
-  const memeChannel = await client.channels.fetch(memeChannelId);  
-  setInterval(() => autoSendMeme(memeChannel), 10_800_000);  
-} catch (err) {  
-  console.error("❌ Gagal fetch channel untuk auto meme:", err);  
-}  
+const memeChannel = client.channels.cache.get(memeChannelId);
+if (memeChannel) {
+  setInterval(() => {
+    try {
+      autoSendMeme(memeChannel);
+    } catch (err) {
+      console.error("❌ Gagal mengirim meme:", err);
+    }
+  }, 10_800_000);
+  console.log("✅ Fitur auto meme aktif.");
+} else {
+  console.error("❌ Channel meme tidak ditemukan. Fitur auto meme dinonaktifkan.");
+}
 
 // 🔊 Join VC otomatis saat bot online  
 try { await joinvoice(client); } catch (err) { console.error("❌ Gagal join voice channel:", err); }
