@@ -17,7 +17,7 @@ const coinSystem = require("../modules/coinSystem");
 const rulesCommand = require("../modules/rulesCommand");
 const autoWarn = require("../modules/autoWarn");
 const antiLink = require("../modules/antiLink");
-const { handleAutoReply } = require("../modules/autoReply");
+const handleAutoReply = require("../modules/autoReply");
 const { handleGrafikCommand } = require("../modules/cryptoSimulator");
 
 const filePath = path.join(__dirname, "../data/taggedUsers.json");
