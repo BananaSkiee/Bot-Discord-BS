@@ -80,9 +80,9 @@ module.exports = {
           .setColor("Red")
           .setFooter({
             text: "© Copyright | BananaSkiee Community",
-            iconURL: "https://i.imgur.com/RGp8pqJ.jpeg",
+            iconURL: "https://i.imgur.co/RGp8pqJ.jpeg",
           })
-          .setImage("https://i.ibb.co/4wcgBZQ/6f59b29a5247.gif");
+          .setImage("https://i.ibb.com/4wcgBZQS/6f59b29a5247.gif");
 
         return interaction.reply({ embeds: [allowedEmbed, notAllowedEmbed], ephemeral: true });
       }
@@ -91,17 +91,47 @@ module.exports = {
       if (customId === "punishment_btn") {
         const warnEmbed = new EmbedBuilder()
           .setTitle("📜 HUKUMAN SERVER BANANASKIEE COMMUNITY ")
-          .setDescription("... (isi aturan tetap sama, aku potong biar ringkas) ...")
+          .setDescription(
+            '### ⚠️ SISTEM WARNING\n' +
+            '<a:seru:1402337929556263002> | **Warn 1** = Peringatan\n' +
+            '<a:seru:1402337929556263002> | **Warn 2** = Mute 5 menit\n' +
+            '<a:seru:1402337929556263002> | **Warn 3** = Mute 10 menit\n' +
+            '<a:seru:1402337929556263002> | **Warn 4** = Mute 1 jam\n' +
+            '<a:seru:1402337929556263002> | **Warn 5** = Mute 1 hari\n' +
+            '<a:seru:1402337929556263002> | **Warn 6** = Mute 3 hari\n' +
+            '<a:seru:1402337929556263002> | **Warn 7** = Softban + Mute 1 minggu\n' +
+            '<a:seru:1402337929556263002> | **Warn 8** = Ban 1 hari\n' +
+            '<a:seru:1402337929556263002> | **Warn 9** = Ban 3 hari\n' +
+            '<a:seru:1402337929556263002> | **Warn 10** = Ban 1 minggu\n' +
+            '<a:seru:1402337929556263002> | **Warn 11** = **BAN PERMANEN**\n\n' +
+            '### 🔇 PELANGGARAN AUTO-MUTE\n' +
+            '- **Spam/Flood** = Mute 20 menit\n' +
+            '- **Bahasa NSFW** = Mute 1 hari\n' +
+            '- **Kirim NSFW/Gore** = Mute 7 hari\n' +
+            '- **Link scam** = Mute 3 hari\n' +
+            '- **Rasis/SARA** = Mute 5 hari\n\n' +
+            '### 🔨 PELANGGARAN AUTO-SOFTBAN\n' +
+            '- **Spam link scam** = Mute 4 hari\n' +
+            '- **Plagiarisme** = Mute 3 hari\n\n' +
+            '### 🚫 PELANGGARAN AUTO-BAN\n' +
+            '- **Akun/PFP NSFW** = Ban 7 hari\n' +
+            '- **Akun spam NSFW** = Ban 10 hari\n\n' +
+            '**📌 CATATAN PENTING:**\n' +
+            '1. Semua warn akan **hangus setelah 1 bulan**\n' +
+            '2. Pelanggaran **NSFW/Rasis/SARA** tidak bisa di-reset\n' +
+            '3. Admin berhak memberikan hukuman tambahan sesuai tingkat pelanggaran\n\n' +
+            '"Hukuman diberikan bukan untuk menyusahkan, tapi untuk menjaga kenyamanan bersama!" 🍍'
+          )
           .setColor("Yellow")
           .setFooter({
             text: "© Copyright | BananaSkiee Community",
             iconURL: "https://i.imgur.com/RGp8pqJ.jpeg",
           })
-          .setImage("https://i.ibb.co/WvSvsVf/standard-34.gif"); // ✅ URL diperbaiki
+          .setImage("https://i.ibb.co.com/WvSvsVfH/standard-34.gif");
 
         return interaction.reply({ embeds: [warnEmbed], ephemeral: true });
-      }
-
+            }
+      
       // ========== TOMBOL ✅ UMUM ==========
       if (customId === "use_tag") {
         const role = ROLES.find(r => member.roles.cache.has(r.id));
