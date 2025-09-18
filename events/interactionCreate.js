@@ -220,6 +220,49 @@ if (
     });
   }
 }
+
+      // ========== TOMBOL DUEL ==========
+if (customId.startsWith("accept_duel") || customId.startsWith("decline_duel")) {
+  const [action, challengerId, targetId] = customId.split("_");
+
+  if (interaction.user.id !== targetId && interaction.user.id !== challengerId) {
+    return interaction.reply({
+      content: "❌ Kamu bukan bagian dari duel ini.",
+      ephemeral: true,
+    });
+  }
+
+  if (action === "accept") {
+    // TODO: lanjutkan duel (panggil file duel.js misalnya)
+    return interaction.reply({
+      content: `⚔️ Duel dimulai antara <@${challengerId}> dan <@${targetId}>!`,
+    });
+  }
+
+  if (action === "decline") {
+    return interaction.reply({
+      content: `❌ <@${targetId}> menolak duel dari <@${challengerId}>.`,
+    });
+  }
+}
+
+// ========== TOMBOL SHOOT ==========
+if (customId.startsWith("shoot_")) {
+  const [_, challengerId, targetId] = customId.split("_");
+
+  if (interaction.user.id !== challengerId && interaction.user.id !== targetId) {
+    return interaction.reply({
+      content: "❌ Kamu bukan bagian dari duel ini.",
+      ephemeral: true,
+    });
+  }
+
+  // TODO: logika nembak (random menang/kalah, dll)
+  return interaction.reply({
+    content: `🔫 <@${interaction.user.id}> menembak dalam duel!`,
+  });
+      }
+    
     // ========== UNKNOWN ==========
     return interaction.reply({
       content: "⚠️ Tombol tidak dikenali.",
