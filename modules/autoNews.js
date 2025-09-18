@@ -28,7 +28,12 @@ const sourceLogos = {
 
 function loadSentLinks() {
   if (!fs.existsSync(SENT_FILE)) return [];
-  return JSON.parse(fs.readFileSync(SENT_FILE));
+  try {
+    return JSON.parse(fs.readFileSync(SENT_FILE));
+  } catch (err) {
+    console.error("❌ Gagal membaca sentNews.json:", err);
+    return [];
+  }
 }
 
 function saveSentLink(link) {
@@ -50,18 +55,41 @@ module.exports = async function autoNews(client) {
     const hour = now.getHours();
     const minute = now.getMinutes();
 
-    // Cek kalau jam sekarang masuk jadwal
+    // Cek kalau jam sekarang masuk jadwal dan menitnya 0
     if (scheduleHours.includes(hour) && minute === 0) {
-      const channel = await client.channels.fetch(channelId);
+      console.log(`[AutoNews] Waktu cocok (${hour}:${minute}). Memulai proses pengiriman berita.`);
+      
+      const channel = await client.channels.fetch(channelId).catch(err => {
+        console.error(`❌ Gagal fetch channel ${channelId} untuk berita:`, err.message);
+        return null;
+      });
+
       if (!channel) return;
+
+      // Hapus pesan berita lama yang dikirim bot
+      try {
+        const messages = await channel.messages.fetch({ limit: 10 });
+        const lastBotMessage = messages.find(msg => msg.author.id === client.user.id);
+        
+        if (lastBotMessage) {
+          await lastBotMessage.delete();
+          console.log("✅ Pesan berita lama berhasil dihapus.");
+        }
+      } catch (err) {
+        console.error("❌ Gagal menghapus pesan berita lama:", err);
+      }
 
       const sentLinks = loadSentLinks();
 
       for (const feedUrl of rssFeeds) {
         try {
           const feed = await parser.parseURL(feedUrl);
+          // Cari berita terbaru yang belum pernah dikirim
           const item = feed.items.find(i => !sentLinks.includes(i.link));
-          if (!item) continue;
+          if (!item) {
+            console.log(`[AutoNews] Tidak ada berita baru dari ${feed.title}.`);
+            continue;
+          }
 
           let image = null;
           if (item.enclosure?.url) {
@@ -91,11 +119,13 @@ module.exports = async function autoNews(client) {
 
           await channel.send({ embeds: [embed] });
           saveSentLink(item.link);
+          console.log(`✅ Berita dari ${feed.title} berhasil dikirim.`);
           return; // Kirim satu berita saja per jadwal
         } catch (err) {
-          console.error(`Gagal ambil RSS dari ${feedUrl}:`, err.message);
+          console.error(`❌ Gagal ambil RSS dari ${feedUrl}:`, err.message);
         }
       }
+      console.log("[AutoNews] Selesai mencari berita. Tidak ada berita baru yang ditemukan saat ini.");
     }
-  }, 60_000); // cek setiap 1 menit
+  }, 60_000); // Cek setiap 1 menit
 };
