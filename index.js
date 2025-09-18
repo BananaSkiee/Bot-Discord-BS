@@ -1,5 +1,6 @@
+// index.js
 require("dotenv").config();
-const { Client, GatewayIntentBits, Collection, EmbedBuilder } = require("discord.js");
+const { Client, GatewayIntentBits, Collection, Events, EmbedBuilder } = require("discord.js");
 const fs = require("fs");
 const path = require("path");
 const express = require("express");
@@ -112,7 +113,8 @@ function initializeDataFiles() {
 }
 
 // 📌 Ready Event
-client.once("ready", async () => {
+// ✅ Perbaikan: Mengganti "ready" dengan Events.ClientReady
+client.once(Events.ClientReady, async () => {
   console.log(`✅ Bot ${client.user.tag} aktif!`);
 
   // Init data & fitur
@@ -150,7 +152,8 @@ client.on("messageCreate", async (message) => {
   const args = message.content.slice(1).trim().split(/ +/);
   const commandName = args.shift().toLowerCase();
   const command = prefixCommands[commandName];
-  const adminRoleId = process.env.ADMIN_ROLE_ID || "1352279577174605884";
+  // ✅ Menggunakan config.ROLES.admin dari file config.js
+  const adminRoleId = config.ROLES.admin || "1352279577174605884";
 
   // 📜 Help
   if (commandName === "help") {
@@ -248,4 +251,6 @@ process.on("unhandledRejection", (err) => {
 });
 
 // 🔐 Login
-client.login(process.env.DISCORD_TOKEN);
+// ✅ Perbaikan: Menggunakan config.DISCORD.token
+client.login(config.DISCORD.token);
+        
