@@ -47,25 +47,23 @@ module.exports = (client) => {
         }
         saveInvites();
 
-        // ❌ Perbaikan: Mengganti process.env dengan config.ROLES
         const isVerified = member.roles.cache.has(config.ROLES.member);
         const verifiedStatus = isVerified ? "✅ Verified" : "❌ Belum Verified";
 
         const embed = new EmbedBuilder()
             .setColor("Green")
-            // ✅ PERBAIKAN UTAMA: Judul embed yang lebih pendek
+            // ✅ PERBAIKAN: Judul yang lebih pendek
             .setTitle(`Selamat datang di ${member.guild.name}!`)
             .setThumbnail(member.user.displayAvatarURL({ dynamic: true }))
             .setDescription(
                 `👤 **Member** : <@${member.id}>\n` +
-                `🏠 **Server** : BananaSkiee Community\n` +
+                `🏠 **Server** : ${member.guild.name}\n` +
                 `🎁 **Invited by** : ${inviter ? `<@${inviter.id}>` : "Tidak diketahui"}\n` +
                 `🔗 **Link Invite** : ${inviteCode}\n` +
                 `📈 **Total Invites** : ${inviter ? `${invitesData[member.guild.id].users[inviter.id]} (+1)` : "-"}\n` +
                 `👥 **Total Members** : ${member.guild.memberCount}\n` +
                 `🛡 **Status** : ${verifiedStatus}\n` +
-                `📅 **Bergabung** : ${formatDateIndo(Date.now())}\n\n` +
-                `-# . <a:merah:1361623714541604894> <a:garis:1361628335297527910><a:garis:1361628335297527910><a:garis:1361628335297527910><a:garis:1361628335297527910><a:garis:1361628335297527910><a:garis:1361628335297527910><a:garis:1361628335297527910><a:garis:1361628335297527910><a:garis:1361628335297527910><a:garis:1361628335297527910><a:garis:1361628335297527910><a:garis:1361628335297527910> <a:merah:1361623714541604894>`
+                `📅 **Bergabung** : ${formatDateIndo(Date.now())}\n`
             )
             .setFooter({
                 text: "© Copyright | BananaSkiee Community",
@@ -93,16 +91,15 @@ module.exports = (client) => {
 
         const embed = new EmbedBuilder()
             .setColor("Red")
-            // ✅ PERBAIKAN UTAMA: Judul embed yang lebih pendek
-            .setTitle(`Sampai jumpa di ${member.guild.name}!`)
+            // ✅ PERBAIKAN: Judul yang lebih pendek
+            .setTitle(`Sampai jumpa dari ${member.guild.name}!`)
             .setThumbnail(member.user.displayAvatarURL({ dynamic: true }))
             .setDescription(
                 `👤 **Member** : <@${member.id}>\n` +
                 `🎁 **Invited by** : ${inviterId ? `<@${inviterId}>` : "Tidak diketahui"}\n` +
                 `📉 **Total Invites** : ${inviterId ? `${guildData.users[inviterId]} (-1)` : "-"}\n` +
                 `👥 **Total Members** : ${member.guild.memberCount}\n` +
-                `📅 **Keluar** : ${formatDateIndo(Date.now())}\n\n` +
-                `-# . <a:merah:1361623714541604894> <a:garis:1361628335297527910><a:garis:1361628335297527910><a:garis:1361628335297527910><a:garis:1361628335297527910><a:garis:1361628335297527910><a:garis:1361628335297527910><a:garis:1361628335297527910><a:garis:1361628335297527910><a:garis:1361628335297527910><a:garis:1361628335297527910><a:garis:1361628335297527910><a:garis:1361628335297527910> <a:merah:1361623714541604894>`
+                `📅 **Keluar** : ${formatDateIndo(Date.now())}\n`
             )
             .setFooter({
                 text: "© Copyright | BananaSkiee Community",
