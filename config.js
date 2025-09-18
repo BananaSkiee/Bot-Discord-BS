@@ -1,45 +1,54 @@
 // config.js
-require("dotenv").config();
+
+// Tidak perlu dotenv di sini jika sudah ada di index.js
+// require("dotenv").config(); 
 
 module.exports = {
-  token: process.env.TOKEN,
-  clientId: process.env.CLIENT_ID,
-  guildId: process.env.GUILD_ID,
-  voiceChannelId: process.env.VOICE_CHANNEL_ID,
-  logChannelId: process.env.LOG_CHANNEL_ID,
-  autoChatChannelId: process.env.AUTO_CHAT_CHANNEL_ID,
-  vcId: process.env.VC_ID,
-  greetingChannelId: process.env.GREETING_CHANNEL,
-  channelId: process.env.CHANNEL_ID,
-  welcomeChannelId: process.env.WELCOME_CHANNEL_ID,
-  goodbyeChannelId: process.env.GOODBYE_CHANNEL_ID,
-  rainbowRoleIds: process.env.RAINBOW_ROLE_IDS,
-  memberId: process.env.MEMBER_ID,
-  adminRoleId: process.env.ADMIN_ROLE_ID,
-  mutedRoleId: process.env.MUTED_ROLE_ID,
-  selfUrl: process.env.SELF_URL,
-  mcHost: process.env.MC_HOST,
-  mcPort: process.env.MC_PORT,
-  mcUsername: process.env.MC_USERNAME,
+  // ✅ Ambil data utama dari .env
+  TOKEN: process.env.TOKEN,
+  GUILD_ID: process.env.GUILD_ID,
+  CLIENT_ID: process.env.CLIENT_ID,
 
-  ROLES: [
-    { id: process.env.ROLE_1_ID, tag: "[OWNER]" },
-    { id: process.env.ROLE_2_ID, tag: "[ADMIN]" },
-    { id: process.env.ROLE_3_ID, tag: "[MOD]" },
-    { id: process.env.ROLE_4_ID, tag: "[BOOST]" },
-    { id: process.env.ROLE_5_ID, tag: "[CREATOR]" },
-    { id: process.env.ROLE_6_ID, tag: "[ALUMNI]" },
-    { id: process.env.ROLE_7_ID, tag: "[100]" },
-    { id: process.env.ROLE_8_ID, tag: "[80]" },
-    { id: process.env.ROLE_9_ID, tag: "[70]" },
-    { id: process.env.ROLE_10_ID, tag: "[60]" },
-    { id: process.env.ROLE_11_ID, tag: "[55]" },
-    { id: process.env.ROLE_12_ID, tag: "[VIP]" },
-    { id: process.env.ROLE_13_ID, tag: "[FRIEND]" },
-    { id: process.env.ROLE_14_ID, tag: "[PARTNER]" },
-    { id: process.env.ROLE_15_ID, tag: "[MEM]" },
-  ],
+  // ✅ Kelompokkan semua ID channel dalam satu objek
+  CHANNELS: {
+    voice: process.env.VOICE_CHANNEL_ID,
+    log: process.env.LOG_CHANNEL_ID,
+    autoChat: process.env.AUTO_CHAT_CHANNEL_ID,
+    greeting: process.env.GREETING_CHANNEL,
+    main: process.env.CHANNEL_ID,
+    welcome: process.env.WELCOME_CHANNEL_ID,
+    goodbye: process.env.GOODBYE_CHANNEL_ID,
+  },
 
+  // ✅ Kelompokkan semua ID role dalam satu objek
+  ROLES: {
+    // Role umum
+    admin: process.env.ADMIN_ROLE_ID,
+    muted: process.env.MUTED_ROLE_ID,
+    member: process.env.MEMBER_ID,
+    rainbow: process.env.RAINBOW_ROLE_IDS, // Jika hanya 1 ID
+    
+    // Role level (sebagai array untuk kemudahan)
+    levelRoles: [
+      process.env.ROLE_1_ID,
+      process.env.ROLE_2_ID,
+      process.env.ROLE_3_ID,
+      process.env.ROLE_4_ID,
+      process.env.ROLE_5_ID,
+      process.env.ROLE_6_ID,
+      process.env.ROLE_7_ID,
+      process.env.ROLE_8_ID,
+      process.env.ROLE_9_ID,
+      process.env.ROLE_10_ID,
+      process.env.ROLE_11_ID,
+      process.env.ROLE_12_ID,
+      process.env.ROLE_13_ID,
+      process.env.ROLE_14_ID,
+      process.env.ROLE_15_ID,
+    ],
+  },
+  
+  // ✅ Peta untuk nama role (akses dengan config.ROLE_DISPLAY_MAP['ID_ROLE_NYA'])
   ROLE_DISPLAY_MAP: {
     [process.env.ROLE_1_ID]: "「 👑 」sᴇʀᴠᴇʀ ᴏᴡɴᴇʀ",
     [process.env.ROLE_2_ID]: "「 ❗ 」ᴀᴅᴍɪɴɪsᴛʀᴀᴛᴏʀ",
@@ -57,4 +66,14 @@ module.exports = {
     [process.env.ROLE_14_ID]: "「🤝」ᴘᴀʀᴛɴᴇʀsʜɪᴘ",
     [process.env.ROLE_15_ID]: "『〽️』ᴍᴇᴍʙᴇʀ",
   },
+  
+  // ✅ Kelompokkan konfigurasi Minecraft
+  MINECRAFT: {
+    host: process.env.MC_HOST,
+    port: process.env.MC_PORT,
+    username: process.env.MC_USERNAME,
+  },
+  
+  // URL untuk ping
+  SELF_URL: process.env.SELF_URL,
 };
